@@ -8,9 +8,10 @@ import { ConfirmModal } from './ConfirmModal';
 interface BillItemProps {
   bill: Bill;
   onDelete: (id: string) => void;
+  isLast?: boolean;
 }
 
-export const BillItem = ({ bill, onDelete }: BillItemProps) => {
+export const BillItem = ({ bill, onDelete, isLast = false }: BillItemProps) => {
   const navigate = useNavigate();
   const [translateX, setTranslateX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -100,7 +101,7 @@ export const BillItem = ({ bill, onDelete }: BillItemProps) => {
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-xl">
+      <div className={`relative overflow-hidden ${isLast ? 'rounded-br-xl' : ''}`}>
         <div className="absolute top-0 right-0 bottom-0 flex">
           <button
             onClick={handleEdit}

@@ -143,8 +143,8 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="divide-y divide-gray-50">
-                  {group.bills.map((bill) => (
-                    <BillItem key={bill.id} bill={bill} onDelete={deleteBill} />
+                  {group.bills.map((bill, idx) => (
+                    <BillItem key={bill.id} bill={bill} onDelete={deleteBill} isLast={idx === group.bills.length - 1} />
                   ))}
                 </div>
               </div>
