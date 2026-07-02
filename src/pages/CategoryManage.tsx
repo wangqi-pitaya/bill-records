@@ -132,23 +132,17 @@ export default function CategoryManage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white px-4 py-3 shadow-sm">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-base font-bold text-gray-800">管理分类</h1>
-        </div>
-      </header>
-
-      <main className="max-w-lg mx-auto px-4 py-4">
-        <div className="bg-white rounded-2xl shadow-sm p-4">
-          <div className="flex mb-4 bg-gray-100 rounded-xl p-1">
+          <div className="flex bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => setActiveTab('expense')}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-1.5 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'expense'
                   ? 'bg-red-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -158,7 +152,7 @@ export default function CategoryManage() {
             </button>
             <button
               onClick={() => setActiveTab('income')}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-1.5 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'income'
                   ? 'bg-green-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -167,7 +161,12 @@ export default function CategoryManage() {
               收入
             </button>
           </div>
+          <div className="w-8 h-8" />
+        </div>
+      </header>
 
+      <main className="max-w-lg mx-auto px-4 py-4">
+        <div className="bg-white rounded-2xl shadow-sm p-4">
           <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
 
           <div className="grid grid-cols-4 gap-3">

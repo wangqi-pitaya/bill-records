@@ -79,23 +79,17 @@ export default function AddBill() {
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
       <header className="bg-white px-4 py-3 shadow-sm shrink-0">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
-            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-base font-bold text-gray-800">{isEdit ? '编辑账单' : '新建账单'}</h1>
-        </div>
-      </header>
-
-      <main className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4">
-          <div className="flex mb-4 bg-gray-100 rounded-xl p-1">
+          <div className="flex bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => handleTabChange('expense')}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-1.5 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'expense'
                   ? 'bg-red-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -105,7 +99,7 @@ export default function AddBill() {
             </button>
             <button
               onClick={() => handleTabChange('income')}
-              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-1.5 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'income'
                   ? 'bg-green-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -114,7 +108,12 @@ export default function AddBill() {
               收入
             </button>
           </div>
+          <div className="w-8 h-8" />
+        </div>
+      </header>
 
+      <main className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-medium text-gray-700">选择分类</h3>
