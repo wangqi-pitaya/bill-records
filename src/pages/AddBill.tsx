@@ -1,10 +1,38 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Settings, Calendar } from 'lucide-react';
+import { ArrowLeft, Settings, Plus } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { CategoryGrid } from '../components/CategoryGrid';
 import { Category, BillType } from '../types';
+
+const formatDate = (d: Date) => d.toISOString().split('T')[0];
+
+const getQuickDates = () => {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const dayBefore = new Date(today);
+  dayBefore.setDate(today.getDate() - 2);
+  return {
+    today: formatDate(today),
+    yesterday: formatDate(yesterday),
+    dayBefore: formatDate(dayBefore),
+  };
+};
+
+const getDateLabel = (dateStr: string) => {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  const dayBefore = new Date(today);
+  dayBefore.setDate(today.getDate() - 2);
+  
+  if (dateStr === formatDate(today)) return '今天';
+  if (dateStr === formatDate(yesterday)) return '昨天';
+  if (dateStr === formatDate(dayBefore)) return '前天';
+  return dateStr;
+};
 
 export default function AddBill() {
   const navigate = useNavigate();
@@ -20,7 +48,7 @@ export default function AddBill() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(formatDate(new Date()));
 
   useEffect(() => {
     const categories = getCategoriesByType(activeTab);
@@ -47,7 +75,7 @@ export default function AddBill() {
     }
   }, [isEdit, id, getBillById, getCategoriesByType]);
 
-  const handleSubmit = () => {
+  const handleSave = () => {
     if (!selectedCategory || !amount) {
       return;
     }
@@ -70,6 +98,27 @@ export default function AddBill() {
     navigate('/');
   };
 
+  const handleSaveAndContinue = () => {
+    if (!selectedCategory || !amount) {
+      return;
+    }
+    
+    const billData = {
+      type: selectedCategory.type,
+      category: selectedCategory.name,
+      icon: selectedCategory.icon,
+      amount: parseFloat(amount),
+      note,
+      date,
+    };
+    
+    addBill(billData);
+    
+    // 重置金额和备注，保留分类和日期
+    setAmount('');
+    setNote('');
+  };
+
   const handleTabChange = (type: BillType) => {
     setActiveTab(type);
     const categories = getCategoriesByType(type);
@@ -77,6 +126,12 @@ export default function AddBill() {
   };
 
   const currentCategories = getCategoriesByType(activeTab);
+  const quickDates = getQuickDates();
+  const quickDateOptions = [
+    { label: '今天', value: quickDates.today },
+    { label: '昨天', value: quickDates.yesterday },
+    { label: '前天', value: quickDates.dayBefore },
+  ];
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
@@ -130,7 +185,7 @@ export default function AddBill() {
             />
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <input
               type="text"
               value={note}
@@ -139,43 +194,82 @@ export default function AddBill() {
               className="w-full px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
+
+          <div className="flex items-center gap-2">
+            {quickDateOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setDate(opt.value)}
+                className={`flex-1 py-1.5 text-xs rounded-lg font-medium transition-colors ${
+                  date === opt.value
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+            <div className="flex-1">
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={`w-full py-1.5 px-2 text-xs rounded-lg border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-center ${
+                  quickDateOptions.some(opt => opt.value === date)
+                    ? 'bg-gray-100 text-gray-400'
+                    : 'bg-emerald-500 text-white'
+                }`}
+                title={getDateLabel(date)}
+              />
+            </div>
+          </div>
         </div>
       </main>
 
       <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
-        <div className="max-w-lg mx-auto">
-          <div className="relative mb-3">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">¥</span>
+        <div className="max-w-lg mx-auto flex items-center gap-3">
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="添加备注..."
+            className="flex-1 px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+          />
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base">¥</span>
             <input
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full pl-10 pr-4 py-3 text-xl font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+              className="w-24 pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-              />
-            </div>
+          {!isEdit && (
             <button
-              onClick={handleSubmit}
+              onClick={handleSaveAndContinue}
               disabled={!selectedCategory || !amount}
-              className={`flex-1 py-2 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
+              className={`p-3 rounded-xl font-medium transition-all duration-200 ${
                 selectedCategory && amount
-                  ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
-                  : 'bg-gray-300 cursor-not-allowed'
+                  ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
+              title="保存并继续"
             >
-              保存
+              <Plus className="w-5 h-5" />
             </button>
-          </div>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={!selectedCategory || !amount}
+            className={`px-6 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
+              selectedCategory && amount
+                ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
+                : 'bg-gray-300 cursor-not-allowed'
+            }`}
+          >
+            保存
+          </button>
         </div>
       </div>
     </div>
