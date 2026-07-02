@@ -118,7 +118,7 @@ export const BillItem = ({ bill, onDelete, isLast = false }: BillItemProps) => {
         </div>
 
         <div
-          className="bg-white p-4 shadow-sm cursor-grab active:cursor-grabbing relative"
+          className={`bg-white p-4 shadow-sm cursor-grab active:cursor-grabbing relative ${isLast ? 'rounded-br-xl' : ''}`}
           style={{ transform: `translateX(${translateX}px)` }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
