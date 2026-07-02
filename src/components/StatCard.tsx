@@ -1,45 +1,40 @@
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 
 interface StatCardProps {
-  type: 'income' | 'expense' | 'balance';
-  label: string;
-  amount: number;
+  income: number;
+  expense: number;
+  balance: number;
 }
 
-export const StatCard = ({ type, label, amount }: StatCardProps) => {
-  const iconProps = { className: 'w-6 h-6' };
-  
-  const config = {
-    income: {
-      icon: <TrendingUp {...iconProps} className="w-6 h-6 text-green-500" />,
-      bgGradient: 'from-green-50 to-green-100',
-      textColor: 'text-green-600',
-      prefix: '+',
-    },
-    expense: {
-      icon: <TrendingDown {...iconProps} className="w-6 h-6 text-red-500" />,
-      bgGradient: 'from-red-50 to-red-100',
-      textColor: 'text-red-600',
-      prefix: '-',
-    },
-    balance: {
-      icon: <Wallet {...iconProps} className="w-6 h-6 text-blue-500" />,
-      bgGradient: 'from-blue-50 to-blue-100',
-      textColor: 'text-blue-600',
-      prefix: '',
-    },
-  };
-
-  const { icon, bgGradient, textColor, prefix } = config[type];
-
+export const StatCard = ({ income, expense, balance }: StatCardProps) => {
   return (
-    <div className={`bg-gradient-to-br ${bgGradient} rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300`}>
+    <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl p-6 shadow-md text-white">
       <div className="flex items-center justify-between mb-4">
-        <span className="text-gray-600 font-medium">{label}</span>
-        {icon}
+        <div className="flex items-center gap-2">
+          <Wallet className="w-5 h-5" />
+          <span className="text-sm font-medium text-emerald-50">余额</span>
+        </div>
+        <span className="text-2xl font-bold">¥{balance.toFixed(2)}</span>
       </div>
-      <div className={`text-2xl font-bold ${textColor}`}>
-        {prefix}¥{amount.toFixed(2)}
+      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-emerald-300/50">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs text-emerald-100">收入</div>
+            <div className="text-base font-semibold">¥{income.toFixed(2)}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <TrendingDown className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-xs text-emerald-100">支出</div>
+            <div className="text-base font-semibold">¥{expense.toFixed(2)}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
