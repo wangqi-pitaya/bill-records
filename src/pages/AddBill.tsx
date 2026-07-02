@@ -108,22 +108,18 @@ export default function AddBill() {
               收入
             </button>
           </div>
-          <div className="w-8 h-8" />
+          <button
+            onClick={() => navigate('/categories')}
+            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4">
-          <div className="mb-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-gray-700">选择分类</h3>
-              <button
-                onClick={() => navigate('/categories')}
-                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-              >
-                <Settings className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
+        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4 h-full flex flex-col">
+          <div className="flex-1 mb-4">
             <CategoryGrid
               categories={currentCategories}
               selectedCategory={selectedCategory}
@@ -133,7 +129,6 @@ export default function AddBill() {
           </div>
 
           <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">备注</h3>
             <input
               type="text"
               value={note}
@@ -166,7 +161,7 @@ export default function AddBill() {
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
           >
-            {isEdit ? '保存' : '保存'}
+            保存
           </button>
         </div>
       </div>
