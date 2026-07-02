@@ -94,7 +94,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white px-4 shadow-sm h-12 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white px-4 shadow-sm h-12 flex items-center justify-between">
         <div></div>
         <div className="flex items-center gap-3">
           <button
@@ -116,7 +116,7 @@ export default function Home() {
         <div></div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-4">
+      <main className="max-w-4xl mx-auto px-4 pt-16 pb-4">
         <div className="mb-6">
           <StatCard income={yearStatistics.income} expense={yearStatistics.expense} balance={yearStatistics.balance} />
         </div>
