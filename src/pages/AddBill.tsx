@@ -43,7 +43,7 @@ export default function AddBill() {
   const [note, setNote] = useState('');
   const [date, setDate] = useState(formatDate(new Date()));
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [amountWidth, setAmountWidth] = useState(96);
+  const [amountWidth, setAmountWidth] = useState(120);
   const amountMeasureRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function AddBill() {
 
   useEffect(() => {
     if (amountMeasureRef.current) {
-      setAmountWidth(amountMeasureRef.current.offsetWidth + 36);
+      setAmountWidth(Math.max(amountMeasureRef.current.offsetWidth + 48, 120));
     }
   }, [amount]);
 
@@ -170,7 +170,7 @@ export default function AddBill() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4 h-full flex flex-col">
+        <div className="max-w-lg mx-auto p-4 h-full flex flex-col">
           <div className="flex-1">
             <CategoryGrid
               categories={currentCategories}
@@ -196,8 +196,8 @@ export default function AddBill() {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none">¥</span>
               <span
                 ref={amountMeasureRef}
-                className="invisible absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold"
-                style={{ fontVariantNumeric: 'tabular-nums' }}
+                className="absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold"
+                style={{ fontVariantNumeric: 'tabular-nums', opacity: 0 }}
               >
                 {amount || '0.00'}
               </span>
