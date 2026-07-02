@@ -77,8 +77,8 @@ export default function AddBill() {
   const currentCategories = getCategoriesByType(activeTab);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <header className="bg-white px-4 py-3 shadow-sm">
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      <header className="bg-white px-4 py-3 shadow-sm shrink-0">
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate('/')}
@@ -90,8 +90,8 @@ export default function AddBill() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto max-w-lg mx-auto w-full px-4 py-4">
-        <div className="bg-white rounded-2xl shadow-sm p-4">
+      <main className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4">
           <div className="flex mb-4 bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => handleTabChange('expense')}
@@ -146,28 +146,30 @@ export default function AddBill() {
         </div>
       </main>
 
-      <div className="bg-white border-t border-gray-100 px-4 py-4 max-w-lg mx-auto w-full">
-        <div className="relative mb-4">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">¥</span>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="w-full pl-10 pr-4 py-4 text-2xl font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-          />
+      <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
+        <div className="max-w-lg mx-auto flex items-center gap-3">
+          <div className="relative flex-1">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">¥</span>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              className="w-full pl-10 pr-4 py-3 text-xl font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+            />
+          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedCategory || !amount}
+            className={`px-6 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
+              selectedCategory && amount
+                ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
+                : 'bg-gray-300 cursor-not-allowed'
+            }`}
+          >
+            {isEdit ? '保存' : '保存'}
+          </button>
         </div>
-        <button
-          onClick={handleSubmit}
-          disabled={!selectedCategory || !amount}
-          className={`w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 ${
-            selectedCategory && amount
-              ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
-              : 'bg-gray-300 cursor-not-allowed'
-          }`}
-        >
-          {isEdit ? '保存修改' : '保存'}
-        </button>
       </div>
     </div>
   );

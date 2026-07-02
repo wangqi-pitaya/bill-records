@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, MinusCircle, GripVertical } from 'lucide-react';
+import { ArrowLeft, Plus, MinusCircle } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -18,6 +18,11 @@ export default function CategoryManage() {
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [touchDragging, setTouchDragging] = useState(false);
+  
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null);
+  const draggedRef = useRef<HTMLDivElement | null>(null);
   
   const categories = getCategoriesByType(activeTab);
 
@@ -50,6 +55,7 @@ export default function CategoryManage() {
     }
   };
 
+  // HTML5 拖拽（桌面端）
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
   };
@@ -57,6 +63,15 @@ export default function CategoryManage() {
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (index: number) => {
+    if (draggedIndex === null || draggedIndex === index) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
     
     const newCategories = [...categories];
     const draggedItem = newCategories[draggedIndex];
@@ -64,11 +79,54 @@ export default function CategoryManage() {
     newCategories.splice(index, 0, draggedItem);
     
     reorderCategories(activeTab, newCategories);
-    setDraggedIndex(index);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleDragEnd = () => {
     setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  // 触摸拖拽（移动端）
+  const handleTouchStart = (e: React.TouchEvent, index: number) => {
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+    setDraggedIndex(index);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (draggedIndex === null || !touchStartPos.current) return;
+    
+    e.preventDefault();
+    const touch = e.touches[0];
+    setTouchDragging(true);
+    
+    // 找到当前手指下的元素
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    const categoryItem = elementBelow?.closest('[data-category-index]') as HTMLElement | null;
+    
+    if (categoryItem) {
+      const overIndex = parseInt(categoryItem.dataset.categoryIndex || '-1');
+      if (overIndex >= 0 && overIndex !== dragOverIndex) {
+        setDragOverIndex(overIndex);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (draggedIndex !== null && dragOverIndex !== null && draggedIndex !== dragOverIndex) {
+      const newCategories = [...categories];
+      const draggedItem = newCategories[draggedIndex];
+      newCategories.splice(draggedIndex, 1);
+      newCategories.splice(dragOverIndex, 0, draggedItem);
+      reorderCategories(activeTab, newCategories);
+    }
+    
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    setTouchDragging(false);
+    touchStartPos.current = null;
   };
 
   return (
@@ -110,34 +168,49 @@ export default function CategoryManage() {
             </button>
           </div>
 
+          <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
+
           <div className="grid grid-cols-4 gap-3">
             {categories.map((category, index) => {
               const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
+              const isDragging = draggedIndex === index;
+              const isDragOver = dragOverIndex === index && draggedIndex !== index;
               
               return (
                 <div
                   key={category.id}
+                  data-category-index={index}
+                  ref={isDragging ? draggedRef : null}
                   draggable
                   onDragStart={() => handleDragStart(index)}
                   onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={() => handleDrop(index)}
                   onDragEnd={handleDragEnd}
-                  className={`relative cursor-grab ${draggedIndex === index ? 'opacity-50' : ''}`}
+                  onTouchStart={(e) => handleTouchStart(e, index)}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                  className={`relative cursor-grab active:cursor-grabbing select-none transition-all duration-150 ${
+                    isDragging ? 'opacity-40 scale-95' : ''
+                  } ${isDragOver ? 'scale-105' : ''} ${touchDragging && isDragging ? 'z-10' : ''}`}
                 >
                   <button
-                    className="w-full flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                    className={`w-full flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200 ${
+                      isDragOver
+                        ? activeTab === 'income'
+                          ? 'bg-green-100 ring-2 ring-green-400'
+                          : 'bg-red-100 ring-2 ring-red-400'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
                   >
                     <IconComponent className="w-6 h-6" />
                     <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
                   </button>
                   <button
                     onClick={() => handleDeleteRequest(category)}
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-red-100 transition-colors"
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-red-100 transition-colors z-20"
                   >
                     <MinusCircle className="w-4 h-4 text-gray-400 hover:text-red-500" />
                   </button>
-                  <div className="absolute -left-1 top-1/2 -translate-y-1/2 opacity-0 hover:opacity-100 transition-opacity">
-                    <GripVertical className="w-4 h-4 text-gray-400" />
-                  </div>
                 </div>
               );
             })}
