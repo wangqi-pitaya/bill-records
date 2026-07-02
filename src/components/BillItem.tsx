@@ -16,7 +16,9 @@ export const BillItem = ({ bill, onDelete, isLast = false }: BillItemProps) => {
   const [translateX, setTranslateX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
   const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const currentTranslateRef = useRef(0);
 
   const actionWidth = 140;
@@ -25,20 +27,32 @@ export const BillItem = ({ bill, onDelete, isLast = false }: BillItemProps) => {
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;
+    startYRef.current = e.touches[0].clientY;
     currentTranslateRef.current = translateX;
     setIsDragging(true);
+    setIsScrolling(false);
   }, [translateX]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging) return;
-    const diff = e.touches[0].clientX - startXRef.current;
-    let newTranslate = currentTranslateRef.current + diff;
+    
+    const diffX = e.touches[0].clientX - startXRef.current;
+    const diffY = e.touches[0].clientY - startYRef.current;
+    
+    if (!isScrolling && Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 5) {
+      setIsScrolling(true);
+      return;
+    }
+    
+    if (isScrolling) return;
+    
+    let newTranslate = currentTranslateRef.current + diffX;
     
     if (newTranslate > 0) newTranslate = 0;
     if (newTranslate < -actionWidth) newTranslate = -actionWidth;
     
     setTranslateX(newTranslate);
-  }, [isDragging]);
+  }, [isDragging, isScrolling]);
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
