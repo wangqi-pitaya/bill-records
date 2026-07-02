@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Settings } from 'lucide-react';
+import { ArrowLeft, Settings, Calendar } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { CategoryGrid } from '../components/CategoryGrid';
@@ -20,6 +20,7 @@ export default function AddBill() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     const categories = getCategoriesByType(activeTab);
@@ -35,6 +36,7 @@ export default function AddBill() {
         setActiveTab(bill.type);
         setAmount(bill.amount.toString());
         setNote(bill.note);
+        setDate(bill.date);
         
         const categories = getCategoriesByType(bill.type);
         const cat = categories.find(c => c.name === bill.category);
@@ -56,7 +58,7 @@ export default function AddBill() {
       icon: selectedCategory.icon,
       amount: parseFloat(amount),
       note,
-      date: isEdit ? getBillById(id!)?.date || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      date,
     };
     
     if (isEdit && id) {
@@ -141,8 +143,8 @@ export default function AddBill() {
       </main>
 
       <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <div className="relative flex-1">
+        <div className="max-w-lg mx-auto">
+          <div className="relative mb-3">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">¥</span>
             <input
               type="number"
@@ -152,17 +154,28 @@ export default function AddBill() {
               className="w-full pl-10 pr-4 py-3 text-xl font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
           </div>
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedCategory || !amount}
-            className={`px-6 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
-              selectedCategory && amount
-                ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
-                : 'bg-gray-300 cursor-not-allowed'
-            }`}
-          >
-            保存
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+              />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={!selectedCategory || !amount}
+              className={`flex-1 py-2 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
+                selectedCategory && amount
+                  ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
+                  : 'bg-gray-300 cursor-not-allowed'
+              }`}
+            >
+              保存
+            </button>
+          </div>
         </div>
       </div>
     </div>
