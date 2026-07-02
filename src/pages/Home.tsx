@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
@@ -92,6 +92,24 @@ export default function Home() {
     }
   };
 
+  const [showFloatingButton, setShowFloatingButton] = useState(true);
+  const prevScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > prevScrollY.current && currentScrollY > 100) {
+        setShowFloatingButton(false);
+      } else {
+        setShowFloatingButton(true);
+      }
+      prevScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="fixed top-0 left-0 right-0 z-50 bg-white px-4 shadow-sm h-12 flex items-center justify-between">
@@ -158,7 +176,7 @@ export default function Home() {
         )}
       </main>
 
-      <FloatingButton onClick={() => navigate('/add')} />
+      <FloatingButton onClick={() => navigate('/add')} visible={showFloatingButton} />
     </div>
   );
 }
