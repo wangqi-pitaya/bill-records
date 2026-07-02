@@ -249,7 +249,7 @@ export default function AddBill() {
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none">¥</span>
               <span
                 ref={amountMeasureRef}
-                className="absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold"
+                className="absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold pointer-events-none"
                 style={{ fontVariantNumeric: 'tabular-nums', opacity: 0 }}
               >
                 {amount || '0.00'}
@@ -262,6 +262,14 @@ export default function AddBill() {
                 onChange={(e) => {
                   const val = validateAmount(e.target.value);
                   setAmount(val);
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.currentTarget.focus();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  e.currentTarget.focus();
                 }}
                 placeholder="0.00"
                 style={{ width: `${amountWidth}px`, maxWidth: '200px' }}
