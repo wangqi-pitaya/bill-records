@@ -167,7 +167,7 @@ export default function CategoryManage() {
 
       <main className="max-w-lg mx-auto px-4 py-4">
         <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-5 gap-2">
             {categories.map((category, index) => {
               const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
               const isDragging = draggedIndex === index;
@@ -191,7 +191,7 @@ export default function CategoryManage() {
                   } ${isDragOver ? 'scale-105' : ''} ${touchDragging && isDragging ? 'z-10' : ''}`}
                 >
                   <button
-                    className={`w-full flex flex-col items-center gap-1 p-1.5 rounded-md transition-all duration-200 ${
+                    className={`w-full flex flex-col items-center justify-center gap-0.5 p-1.5 rounded-md aspect-square transition-all duration-200 ${
                       isDragOver
                         ? activeTab === 'income'
                           ? 'bg-green-100 ring-2 ring-green-400'
@@ -200,7 +200,7 @@ export default function CategoryManage() {
                     }`}
                   >
                     <IconComponent className="w-4 h-4" />
-                    <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
+                    <span className="text-xs font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
                   </button>
                   <button
                     onClick={() => handleDeleteRequest(category)}
@@ -214,10 +214,10 @@ export default function CategoryManage() {
             
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex flex-col items-center gap-1 p-1.5 rounded-md bg-gray-50 text-gray-500 hover:bg-gray-100 transition-all duration-200"
+              className="flex flex-col items-center justify-center gap-0.5 p-1.5 rounded-md bg-gray-50 text-gray-500 hover:bg-gray-100 transition-all duration-200"
             >
               <Plus className="w-4 h-4" />
-              <span className="text-sm font-medium whitespace-nowrap">添加</span>
+              <span className="text-xs font-medium whitespace-nowrap">添加</span>
             </button>
           </div>
       </main>

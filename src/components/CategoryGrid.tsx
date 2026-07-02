@@ -10,7 +10,7 @@ interface CategoryGridProps {
 
 export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: CategoryGridProps) => {
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-5 gap-2">
       {categories.map((category) => {
         const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
         const isSelected = selectedCategory?.id === category.id;
@@ -19,7 +19,7 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
           <button
             key={category.id}
             onClick={() => onSelect(category)}
-            className={`flex flex-col items-center gap-1 p-1.5 rounded-md transition-all duration-200 ${
+            className={`flex flex-col items-center justify-center gap-0.5 p-1.5 rounded-md aspect-square transition-all duration-200 ${
               isSelected
                 ? type === 'income'
                   ? 'bg-green-500 text-white shadow-lg scale-105'
@@ -28,7 +28,7 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
             }`}
           >
             <IconComponent className="w-4 h-4" />
-            <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
+            <span className="text-xs font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
           </button>
         );
       })}
