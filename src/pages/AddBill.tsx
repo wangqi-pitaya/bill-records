@@ -195,6 +195,21 @@ export default function AddBill() {
             />
           </div>
 
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">¥</span>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              className="w-full pl-10 pr-4 py-3 text-xl font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+            />
+          </div>
+        </div>
+      </main>
+
+      <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
+        <div className="max-w-lg mx-auto space-y-3">
           <div className="flex items-center gap-2">
             {quickDateOptions.map((opt) => (
               <button
@@ -223,53 +238,34 @@ export default function AddBill() {
               />
             </div>
           </div>
-        </div>
-      </main>
 
-      <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="添加备注..."
-            className="flex-1 px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-          />
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base">¥</span>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="w-24 pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-            />
-          </div>
-          {!isEdit && (
+          <div className="flex items-center gap-3">
+            {!isEdit && (
+              <button
+                onClick={handleSaveAndContinue}
+                disabled={!selectedCategory || !amount}
+                className={`p-3 rounded-xl font-medium transition-all duration-200 ${
+                  selectedCategory && amount
+                    ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+                title="保存并继续"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            )}
             <button
-              onClick={handleSaveAndContinue}
+              onClick={handleSave}
               disabled={!selectedCategory || !amount}
-              className={`p-3 rounded-xl font-medium transition-all duration-200 ${
+              className={`flex-1 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
                 selectedCategory && amount
-                  ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
+                  : 'bg-gray-300 cursor-not-allowed'
               }`}
-              title="保存并继续"
             >
-              <Plus className="w-5 h-5" />
+              保存
             </button>
-          )}
-          <button
-            onClick={handleSave}
-            disabled={!selectedCategory || !amount}
-            className={`px-6 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
-              selectedCategory && amount
-                ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
-                : 'bg-gray-300 cursor-not-allowed'
-            }`}
-          >
-            保存
-          </button>
+          </div>
         </div>
       </div>
     </div>
