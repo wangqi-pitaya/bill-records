@@ -8,6 +8,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/add" element={<AddBill />} />
+        <Route path="/edit/:id" element={<AddBill />} />
       </Routes>
     </Router>
   );

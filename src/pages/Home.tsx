@@ -6,7 +6,7 @@ import { FloatingButton } from '../components/FloatingButton';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { bills, getStatistics } = useBillStore();
+  const { bills, getStatistics, deleteBill } = useBillStore();
   const { income, expense, balance } = getStatistics();
 
   return (
@@ -27,7 +27,7 @@ export default function Home() {
         {bills.length > 0 ? (
           <div className="space-y-3">
             {bills.map((bill) => (
-              <BillItem key={bill.id} bill={bill} />
+              <BillItem key={bill.id} bill={bill} onDelete={deleteBill} />
             ))}
           </div>
         ) : (

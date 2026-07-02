@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { CategoryGrid } from '../components/CategoryGrid';
@@ -8,26 +8,54 @@ import { Category, BillType } from '../types';
 
 export default function AddBill() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const addBill = useBillStore((state) => state.addBill);
+  const updateBill = useBillStore((state) => state.updateBill);
+  const getBillById = useBillStore((state) => state.getBillById);
+  
+  const isEdit = !!id;
   
   const [activeTab, setActiveTab] = useState<BillType>('expense');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
 
+  useEffect(() => {
+    if (isEdit && id) {
+      const bill = getBillById(id);
+      if (bill) {
+        setActiveTab(bill.type);
+        setAmount(bill.amount.toString());
+        setNote(bill.note);
+        
+        const categories = bill.type === 'expense' ? expenseCategories : incomeCategories;
+        const cat = categories.find(c => c.name === bill.category);
+        if (cat) {
+          setSelectedCategory(cat);
+        }
+      }
+    }
+  }, [isEdit, id, getBillById]);
+
   const handleSubmit = () => {
     if (!selectedCategory || !amount) {
       return;
     }
     
-    addBill({
+    const billData = {
       type: selectedCategory.type,
       category: selectedCategory.name,
       icon: selectedCategory.icon,
       amount: parseFloat(amount),
       note,
-      date: new Date().toISOString().split('T')[0],
-    });
+      date: isEdit ? getBillById(id!)?.date || new Date().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    };
+    
+    if (isEdit && id) {
+      updateBill(id, billData);
+    } else {
+      addBill(billData);
+    }
     
     navigate('/');
   };
@@ -44,7 +72,7 @@ export default function AddBill() {
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
-          <h1 className="text-lg font-bold text-gray-800">新建账单</h1>
+          <h1 className="text-lg font-bold text-gray-800">{isEdit ? '编辑账单' : '新建账单'}</h1>
         </div>
       </header>
 
@@ -123,10 +151,10 @@ export default function AddBill() {
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
           >
-            保存
+            {isEdit ? '保存修改' : '保存'}
           </button>
         </div>
       </main>
     </div>
   );
-};
+}
