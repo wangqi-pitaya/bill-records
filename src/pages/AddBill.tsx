@@ -235,10 +235,10 @@ export default function AddBill() {
             />
           </div>
 
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-3 mb-3 flex-nowrap">
             <button
               onClick={() => setShowDatePicker(true)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-medium transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-medium transition-colors min-w-[120px] whitespace-nowrap ${
                 isEdit ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -264,7 +264,7 @@ export default function AddBill() {
                   setAmount(val);
                 }}
                 placeholder="0.00"
-                style={{ width: `${amountWidth}px` }}
+                style={{ width: `${amountWidth}px`, maxWidth: '200px' }}
                 className="pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
               />
             </div>
