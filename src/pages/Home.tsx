@@ -19,15 +19,15 @@ const getDateLabel = (dateStr: string) => {
   const dayBefore = new Date(today);
   dayBefore.setDate(today.getDate() - 2);
   
-  if (dateStr === formatDate(today)) return '今天';
-  if (dateStr === formatDate(yesterday)) return '昨天';
-  if (dateStr === formatDate(dayBefore)) return '前天';
-  
   const date = new Date(dateStr);
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   const weekday = weekdays[date.getDay()];
+  
+  if (dateStr === formatDate(today)) return `${month}月${day}日 今天`;
+  if (dateStr === formatDate(yesterday)) return `${month}月${day}日 昨天`;
+  if (dateStr === formatDate(dayBefore)) return `${month}月${day}日 前天`;
   
   return `${month}月${day}日 ${weekday}`;
 };
