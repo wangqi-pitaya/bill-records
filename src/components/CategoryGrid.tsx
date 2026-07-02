@@ -1,4 +1,5 @@
 import * as Icons from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { Category, BillType } from '../types';
 
 interface CategoryGridProps {
@@ -6,9 +7,10 @@ interface CategoryGridProps {
   selectedCategory: Category | null;
   onSelect: (category: Category) => void;
   type: BillType;
+  onManage?: () => void;
 }
 
-export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: CategoryGridProps) => {
+export const CategoryGrid = ({ categories, selectedCategory, onSelect, type, onManage }: CategoryGridProps) => {
   return (
     <div className="grid grid-cols-4 gap-3">
       {categories.map((category) => {
@@ -19,7 +21,7 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
           <button
             key={category.id}
             onClick={() => onSelect(category)}
-            className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-all duration-200 ${
+            className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200 ${
               isSelected
                 ? type === 'income'
                   ? 'bg-green-500 text-white shadow-lg scale-105'
@@ -28,10 +30,20 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
             }`}
           >
             <IconComponent className="w-6 h-6" />
-            <span className="text-sm font-medium">{category.name}</span>
+            <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
           </button>
         );
       })}
+      
+      {onManage && (
+        <button
+          onClick={onManage}
+          className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
+        >
+          <Settings className="w-6 h-6" />
+          <span className="text-sm font-medium whitespace-nowrap">管理</span>
+        </button>
+      )}
     </div>
   );
 };

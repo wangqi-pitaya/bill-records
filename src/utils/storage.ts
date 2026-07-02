@@ -1,6 +1,24 @@
-import { Bill } from '../types';
+import { Bill, Category } from '../types';
 
-const STORAGE_KEY = 'bill_records';
+const BILLS_STORAGE_KEY = 'bill_records';
+const CATEGORIES_STORAGE_KEY = 'categories';
+
+const defaultCategories: Category[] = [
+  { id: 'food', name: '餐饮', icon: 'UtensilsCrossed', type: 'expense' },
+  { id: 'transport', name: '交通', icon: 'Car', type: 'expense' },
+  { id: 'shopping', name: '购物', icon: 'ShoppingBag', type: 'expense' },
+  { id: 'entertainment', name: '娱乐', icon: 'Gamepad2', type: 'expense' },
+  { id: 'housing', name: '居住', icon: 'Home', type: 'expense' },
+  { id: 'medical', name: '医疗', icon: 'Heart', type: 'expense' },
+  { id: 'education', name: '教育', icon: 'GraduationCap', type: 'expense' },
+  { id: 'other_expense', name: '其他', icon: 'MoreHorizontal', type: 'expense' },
+  
+  { id: 'salary', name: '工资', icon: 'Briefcase', type: 'income' },
+  { id: 'bonus', name: '奖金', icon: 'Gift', type: 'income' },
+  { id: 'investment', name: '投资', icon: 'TrendingUp', type: 'income' },
+  { id: 'parttime', name: '兼职', icon: 'Clock', type: 'income' },
+  { id: 'other_income', name: '其他', icon: 'PlusCircle', type: 'income' },
+];
 
 const mockBills: Bill[] = [
   { id: '1', type: 'expense', category: '餐饮', icon: 'UtensilsCrossed', amount: 35.5, note: '午餐', date: '2026-07-02', timestamp: Date.now() - 86400000 },
@@ -14,7 +32,7 @@ const mockBills: Bill[] = [
 
 export const loadBills = (): Bill[] => {
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
+    const data = localStorage.getItem(BILLS_STORAGE_KEY);
     if (data) {
       return JSON.parse(data);
     }
@@ -27,8 +45,29 @@ export const loadBills = (): Bill[] => {
 
 export const saveBills = (bills: Bill[]): void => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bills));
+    localStorage.setItem(BILLS_STORAGE_KEY, JSON.stringify(bills));
   } catch {
     console.error('Failed to save bills');
+  }
+};
+
+export const loadCategories = (): Category[] => {
+  try {
+    const data = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+    if (data) {
+      return JSON.parse(data);
+    }
+    saveCategories(defaultCategories);
+    return defaultCategories;
+  } catch {
+    return defaultCategories;
+  }
+};
+
+export const saveCategories = (categories: Category[]): void => {
+  try {
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+  } catch {
+    console.error('Failed to save categories');
   }
 };

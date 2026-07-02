@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
+import { useCategoryStore } from '../store/useCategoryStore';
 import { CategoryGrid } from '../components/CategoryGrid';
-import { expenseCategories, incomeCategories } from '../data/categories';
+import { CategoryManager } from '../components/CategoryManager';
 import { Category, BillType } from '../types';
 
 export default function AddBill() {
@@ -12,6 +13,7 @@ export default function AddBill() {
   const addBill = useBillStore((state) => state.addBill);
   const updateBill = useBillStore((state) => state.updateBill);
   const getBillById = useBillStore((state) => state.getBillById);
+  const getCategoriesByType = useCategoryStore((state) => state.getCategoriesByType);
   
   const isEdit = !!id;
   
@@ -19,7 +21,17 @@ export default function AddBill() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
+  // 默认选中第一个分类
+  useEffect(() => {
+    const categories = getCategoriesByType(activeTab);
+    if (!selectedCategory && categories.length > 0) {
+      setSelectedCategory(categories[0]);
+    }
+  }, [activeTab, selectedCategory, getCategoriesByType]);
+
+  // 编辑模式回填数据
   useEffect(() => {
     if (isEdit && id) {
       const bill = getBillById(id);
@@ -28,14 +40,14 @@ export default function AddBill() {
         setAmount(bill.amount.toString());
         setNote(bill.note);
         
-        const categories = bill.type === 'expense' ? expenseCategories : incomeCategories;
+        const categories = getCategoriesByType(bill.type);
         const cat = categories.find(c => c.name === bill.category);
         if (cat) {
           setSelectedCategory(cat);
         }
       }
     }
-  }, [isEdit, id, getBillById]);
+  }, [isEdit, id, getBillById, getCategoriesByType]);
 
   const handleSubmit = () => {
     if (!selectedCategory || !amount) {
@@ -60,7 +72,14 @@ export default function AddBill() {
     navigate('/');
   };
 
-  const currentCategories = activeTab === 'expense' ? expenseCategories : incomeCategories;
+  const handleTabChange = (type: BillType) => {
+    setActiveTab(type);
+    // 切换Tab时选中该类型的第一个分类
+    const categories = getCategoriesByType(type);
+    setSelectedCategory(categories.length > 0 ? categories[0] : null);
+  };
+
+  const currentCategories = getCategoriesByType(activeTab);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,10 +99,7 @@ export default function AddBill() {
         <div className="bg-white rounded-2xl shadow-sm p-6">
           <div className="flex mb-6 bg-gray-100 rounded-xl p-1">
             <button
-              onClick={() => {
-                setActiveTab('expense');
-                setSelectedCategory(null);
-              }}
+              onClick={() => handleTabChange('expense')}
               className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                 activeTab === 'expense'
                   ? 'bg-red-500 text-white shadow-md'
@@ -93,10 +109,7 @@ export default function AddBill() {
               支出
             </button>
             <button
-              onClick={() => {
-                setActiveTab('income');
-                setSelectedCategory(null);
-              }}
+              onClick={() => handleTabChange('income')}
               className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
                 activeTab === 'income'
                   ? 'bg-green-500 text-white shadow-md'
@@ -114,6 +127,7 @@ export default function AddBill() {
               selectedCategory={selectedCategory}
               onSelect={setSelectedCategory}
               type={activeTab}
+              onManage={() => setShowCategoryManager(true)}
             />
           </div>
 
@@ -155,6 +169,12 @@ export default function AddBill() {
           </button>
         </div>
       </main>
+
+      <CategoryManager
+        isOpen={showCategoryManager}
+        type={activeTab}
+        onClose={() => setShowCategoryManager(false)}
+      />
     </div>
   );
 }
