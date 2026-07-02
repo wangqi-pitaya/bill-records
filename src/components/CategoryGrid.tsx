@@ -19,15 +19,15 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
           <button
             key={category.id}
             onClick={() => onSelect(category)}
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 ${
+            className={`flex flex-col items-center gap-1 p-1.5 rounded-md transition-all duration-200 ${
               isSelected
                 ? type === 'income'
                   ? 'bg-green-500 text-white shadow-lg scale-105'
                   : 'bg-red-500 text-white shadow-lg scale-105'
-                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
-            <IconComponent className="w-5 h-5" />
+            <IconComponent className="w-4 h-4" />
             <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
           </button>
         );

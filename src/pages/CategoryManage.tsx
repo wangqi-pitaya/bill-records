@@ -191,15 +191,15 @@ export default function CategoryManage() {
                   } ${isDragOver ? 'scale-105' : ''} ${touchDragging && isDragging ? 'z-10' : ''}`}
                 >
                   <button
-                    className={`w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 ${
+                    className={`w-full flex flex-col items-center gap-1 p-1.5 rounded-md transition-all duration-200 ${
                       isDragOver
                         ? activeTab === 'income'
                           ? 'bg-green-100 ring-2 ring-green-400'
                           : 'bg-red-100 ring-2 ring-red-400'
-                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                        : 'bg-white text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    <IconComponent className="w-5 h-5" />
+                    <IconComponent className="w-4 h-4" />
                     <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
                   </button>
                   <button
@@ -214,9 +214,9 @@ export default function CategoryManage() {
             
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
+              className="flex flex-col items-center gap-1 p-1.5 rounded-md bg-gray-50 text-gray-500 hover:bg-gray-100 transition-all duration-200"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
               <span className="text-sm font-medium whitespace-nowrap">添加</span>
             </button>
           </div>
