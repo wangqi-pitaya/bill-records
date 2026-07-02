@@ -131,18 +131,18 @@ export default function CategoryManage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white px-4 py-3 shadow-sm">
-        <div className="flex items-center justify-between">
+      <header className="bg-white px-4 shadow-sm h-12 flex items-center">
+        <div className="flex items-center justify-between w-full">
           <button
             onClick={() => navigate(-1)}
             className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex bg-gray-100 rounded-xl p-1">
+          <div className="flex bg-gray-100 rounded-xl p-0.5">
             <button
               onClick={() => setActiveTab('expense')}
-              className={`py-1.5 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-1 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'expense'
                   ? 'bg-red-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -152,7 +152,7 @@ export default function CategoryManage() {
             </button>
             <button
               onClick={() => setActiveTab('income')}
-              className={`py-1.5 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
+              className={`py-1 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'income'
                   ? 'bg-green-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'

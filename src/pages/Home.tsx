@@ -11,7 +11,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white px-4 py-3 shadow-sm">
+      <header className="bg-white px-4 shadow-sm h-12 flex items-center">
         <h1 className="text-base font-bold text-gray-800">账单记录</h1>
       </header>
 
