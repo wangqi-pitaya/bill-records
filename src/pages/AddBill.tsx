@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Settings } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { CategoryGrid } from '../components/CategoryGrid';
-import { CategoryManager } from '../components/CategoryManager';
 import { Category, BillType } from '../types';
 
 export default function AddBill() {
@@ -21,7 +20,6 @@ export default function AddBill() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
-  const [showCategoryManager, setShowCategoryManager] = useState(false);
 
   // 默认选中第一个分类
   useEffect(() => {
@@ -74,7 +72,6 @@ export default function AddBill() {
 
   const handleTabChange = (type: BillType) => {
     setActiveTab(type);
-    // 切换Tab时选中该类型的第一个分类
     const categories = getCategoriesByType(type);
     setSelectedCategory(categories.length > 0 ? categories[0] : null);
   };
@@ -121,13 +118,20 @@ export default function AddBill() {
           </div>
 
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">选择分类</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-700">选择分类</h3>
+              <button
+                onClick={() => navigate('/categories')}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                <Settings className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
             <CategoryGrid
               categories={currentCategories}
               selectedCategory={selectedCategory}
               onSelect={setSelectedCategory}
               type={activeTab}
-              onManage={() => setShowCategoryManager(true)}
             />
           </div>
 
@@ -169,12 +173,6 @@ export default function AddBill() {
           </button>
         </div>
       </main>
-
-      <CategoryManager
-        isOpen={showCategoryManager}
-        type={activeTab}
-        onClose={() => setShowCategoryManager(false)}
-      />
     </div>
   );
 }

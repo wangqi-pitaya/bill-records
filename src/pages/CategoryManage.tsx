@@ -1,28 +1,25 @@
 import { useState } from 'react';
-import { X, Plus, GripVertical, Trash2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Plus, MinusCircle } from 'lucide-react';
 import * as Icons from 'lucide-react';
-import { Category, BillType } from '../types';
 import { useCategoryStore } from '../store/useCategoryStore';
-import { ConfirmModal } from './ConfirmModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { availableIcons } from '../data/categories';
+import { Category, BillType } from '../types';
 
-interface CategoryManagerProps {
-  isOpen: boolean;
-  type: BillType;
-  onClose: () => void;
-}
-
-export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps) => {
-  const { getCategoriesByType, addCategory, deleteCategory, reorderCategories, isCategoryUsed } = useCategoryStore();
+export default function CategoryManage() {
+  const navigate = useNavigate();
+  const { getCategoriesByType, addCategory, deleteCategory, isCategoryUsed } = useCategoryStore();
   
+  const [activeTab, setActiveTab] = useState<BillType>('expense');
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Circle');
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   
-  const categories = getCategoriesByType(type);
+  const categories = getCategoriesByType(activeTab);
+  const typeColor = activeTab === 'income' ? 'green' : 'red';
 
   const handleAdd = () => {
     if (!newName.trim()) return;
@@ -30,7 +27,7 @@ export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps)
     addCategory({
       name: newName.trim(),
       icon: newIcon,
-      type,
+      type: activeTab,
     });
     
     setNewName('');
@@ -53,82 +50,78 @@ export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps)
     }
   };
 
-  const handleDragStart = (index: number) => {
-    setDraggedIndex(index);
-  };
-
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
-    
-    const newCategories = [...categories];
-    const draggedItem = newCategories[draggedIndex];
-    newCategories.splice(draggedIndex, 1);
-    newCategories.splice(index, 0, draggedItem);
-    
-    reorderCategories(type, newCategories);
-    setDraggedIndex(index);
-  };
-
-  const handleDragEnd = () => {
-    setDraggedIndex(null);
-  };
-
-  if (!isOpen) return null;
-
-  const typeColor = type === 'income' ? 'green' : 'red';
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      
-      <div className="relative bg-white w-full max-h-[80vh] rounded-t-2xl shadow-xl overflow-hidden animate-slide-up">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold text-gray-800">
-            管理{type === 'income' ? '收入' : '支出'}分类
-          </h2>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-4">
           <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+            onClick={() => navigate(-1)}
+            className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
           >
-            <X className="w-4 h-4 text-gray-600" />
+            <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
+          <h1 className="text-lg font-bold text-gray-800">管理分类</h1>
         </div>
+      </header>
 
-        <div className="p-4 overflow-y-auto max-h-[60vh]">
-          <div className="space-y-2">
-            {categories.map((category, index) => {
+      <main className="max-w-lg mx-auto px-4 py-6">
+        <div className="bg-white rounded-2xl shadow-sm p-6">
+          <div className="flex mb-6 bg-gray-100 rounded-xl p-1">
+            <button
+              onClick={() => setActiveTab('expense')}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === 'expense'
+                  ? 'bg-red-500 text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              支出
+            </button>
+            <button
+              onClick={() => setActiveTab('income')}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === 'income'
+                  ? 'bg-green-500 text-white shadow-md'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              收入
+            </button>
+          </div>
+
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            {categories.map((category) => {
               const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
               
               return (
-                <div
-                  key={category.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-3 p-3 bg-gray-50 rounded-xl ${
-                    draggedIndex === index ? 'opacity-50' : ''
-                  }`}
-                >
-                  <GripVertical className="w-5 h-5 text-gray-400 cursor-grab" />
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-${typeColor}-100`}>
-                    <IconComponent className={`w-5 h-5 text-${typeColor}-600`} />
-                  </div>
-                  <span className="flex-1 font-medium text-gray-800">{category.name}</span>
+                <div key={category.id} className="relative">
+                  <button
+                    className="w-full flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                  >
+                    <IconComponent className="w-6 h-6" />
+                    <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
+                  </button>
                   <button
                     onClick={() => handleDeleteRequest(category)}
-                    className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center hover:bg-red-200 transition-colors"
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-red-100 transition-colors"
                   >
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                    <MinusCircle className="w-4 h-4 text-gray-400 hover:text-red-500" />
                   </button>
                 </div>
               );
             })}
+            
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
+            >
+              <Plus className="w-6 h-6" />
+              <span className="text-sm font-medium whitespace-nowrap">添加</span>
+            </button>
           </div>
 
-          {showAddForm ? (
-            <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+          {showAddForm && (
+            <div className="p-4 bg-gray-50 rounded-xl">
               <div className="mb-3">
                 <label className="text-sm text-gray-600 mb-1 block">分类名称</label>
                 <input
@@ -151,7 +144,9 @@ export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps)
                         onClick={() => setNewIcon(icon)}
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           newIcon === icon
-                            ? `bg-${typeColor}-500 text-white`
+                            ? activeTab === 'income'
+                              ? 'bg-green-500 text-white'
+                              : 'bg-red-500 text-white'
                             : 'bg-white hover:bg-gray-100'
                         }`}
                       >
@@ -174,7 +169,9 @@ export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps)
                   disabled={!newName.trim()}
                   className={`flex-1 py-2 rounded-lg font-medium ${
                     newName.trim()
-                      ? `bg-${typeColor}-500 text-white hover:bg-${typeColor}-600`
+                      ? activeTab === 'income'
+                        ? 'bg-green-500 text-white hover:bg-green-600'
+                        : 'bg-red-500 text-white hover:bg-red-600'
                       : 'bg-gray-300 text-gray-400 cursor-not-allowed'
                   }`}
                 >
@@ -182,17 +179,9 @@ export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps)
                 </button>
               </div>
             </div>
-          ) : (
-            <button
-              onClick={() => setShowAddForm(true)}
-              className={`mt-4 w-full py-3 rounded-xl bg-${typeColor}-50 text-${typeColor}-600 font-medium flex items-center justify-center gap-2 hover:bg-${typeColor}-100 transition-colors`}
-            >
-              <Plus className="w-5 h-5" />
-              添加新分类
-            </button>
           )}
         </div>
-      </div>
+      </main>
 
       <ConfirmModal
         isOpen={!!deleteConfirm}
@@ -216,4 +205,4 @@ export const CategoryManager = ({ isOpen, type, onClose }: CategoryManagerProps)
       />
     </div>
   );
-};
+}
