@@ -1,24 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Settings, Plus } from 'lucide-react';
+import { ArrowLeft, Settings, Calendar } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { CategoryGrid } from '../components/CategoryGrid';
+import { DatePicker } from '../components/DatePicker';
 import { Category, BillType } from '../types';
 
-const formatDate = (d: Date) => d.toISOString().split('T')[0];
-
-const getQuickDates = () => {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const dayBefore = new Date(today);
-  dayBefore.setDate(today.getDate() - 2);
-  return {
-    today: formatDate(today),
-    yesterday: formatDate(yesterday),
-    dayBefore: formatDate(dayBefore),
-  };
+const formatDate = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const getDateLabel = (dateStr: string) => {
@@ -49,6 +42,7 @@ export default function AddBill() {
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(formatDate(new Date()));
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     const categories = getCategoriesByType(activeTab);
@@ -114,7 +108,6 @@ export default function AddBill() {
     
     addBill(billData);
     
-    // 重置金额和备注，保留分类和日期
     setAmount('');
     setNote('');
   };
@@ -126,12 +119,6 @@ export default function AddBill() {
   };
 
   const currentCategories = getCategoriesByType(activeTab);
-  const quickDates = getQuickDates();
-  const quickDateOptions = [
-    { label: '今天', value: quickDates.today },
-    { label: '昨天', value: quickDates.yesterday },
-    { label: '前天', value: quickDates.dayBefore },
-  ];
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
@@ -176,7 +163,7 @@ export default function AddBill() {
 
       <main className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-sm p-4 h-full flex flex-col">
-          <div className="flex-1 mb-4">
+          <div className="flex-1">
             <CategoryGrid
               categories={currentCategories}
               selectedCategory={selectedCategory}
@@ -184,80 +171,56 @@ export default function AddBill() {
               type={activeTab}
             />
           </div>
+        </div>
+      </main>
 
-          <div className="mb-3">
+      <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center gap-3 mb-3">
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="添加备注..."
-              className="w-full px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+              className="flex-1 px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
-          </div>
-
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">¥</span>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="w-full pl-10 pr-4 py-3 text-xl font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-            />
-          </div>
-        </div>
-      </main>
-
-      <div className="bg-white border-t border-gray-100 px-4 py-3 shrink-0">
-        <div className="max-w-lg mx-auto space-y-3">
-          <div className="flex items-center gap-2">
-            {quickDateOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setDate(opt.value)}
-                className={`flex-1 py-1.5 text-xs rounded-lg font-medium transition-colors ${
-                  date === opt.value
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-            <div className="flex-1">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base">¥</span>
               <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className={`w-full py-1.5 px-2 text-xs rounded-lg border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-center ${
-                  quickDateOptions.some(opt => opt.value === date)
-                    ? 'bg-gray-100 text-gray-400'
-                    : 'bg-emerald-500 text-white'
-                }`}
-                title={getDateLabel(date)}
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                className="w-24 pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDatePicker(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>{getDateLabel(date)}</span>
+            </button>
             {!isEdit && (
               <button
                 onClick={handleSaveAndContinue}
                 disabled={!selectedCategory || !amount}
-                className={`p-3 rounded-xl font-medium transition-all duration-200 ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   selectedCategory && amount
                     ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
-                title="保存并继续"
               >
-                <Plus className="w-5 h-5" />
+                再记
               </button>
             )}
             <button
               onClick={handleSave}
               disabled={!selectedCategory || !amount}
-              className={`flex-1 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
+              className={`flex-1 py-2 rounded-lg font-semibold text-white whitespace-nowrap transition-all duration-200 ${
                 selectedCategory && amount
                   ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
                   : 'bg-gray-300 cursor-not-allowed'
@@ -268,6 +231,13 @@ export default function AddBill() {
           </div>
         </div>
       </div>
+
+      <DatePicker
+        isOpen={showDatePicker}
+        value={date}
+        onConfirm={setDate}
+        onClose={() => setShowDatePicker(false)}
+      />
     </div>
   );
 }
