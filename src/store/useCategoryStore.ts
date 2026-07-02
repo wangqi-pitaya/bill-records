@@ -6,6 +6,7 @@ interface CategoryStore {
   categories: Category[];
   addCategory: (category: Omit<Category, 'id'>) => void;
   deleteCategory: (id: string) => boolean;
+  reorderCategories: (type: BillType, newOrder: Category[]) => void;
   getCategoriesByType: (type: BillType) => Category[];
   isCategoryUsed: (categoryName: string) => boolean;
 }
@@ -36,6 +37,13 @@ export const useCategoryStore = create<CategoryStore>((set, get) => ({
     set({ categories: updatedCategories });
     saveCategories(updatedCategories);
     return true;
+  },
+
+  reorderCategories: (type, newOrder) => {
+    const otherCategories = get().categories.filter(c => c.type !== type);
+    const updatedCategories = [...otherCategories, ...newOrder];
+    set({ categories: updatedCategories });
+    saveCategories(updatedCategories);
   },
 
   getCategoriesByType: (type) => {

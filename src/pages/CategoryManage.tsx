@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, MinusCircle } from 'lucide-react';
+import { ArrowLeft, Plus, MinusCircle, GripVertical } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -9,7 +9,7 @@ import { Category, BillType } from '../types';
 
 export default function CategoryManage() {
   const navigate = useNavigate();
-  const { getCategoriesByType, addCategory, deleteCategory, isCategoryUsed } = useCategoryStore();
+  const { getCategoriesByType, addCategory, deleteCategory, reorderCategories, isCategoryUsed } = useCategoryStore();
   
   const [activeTab, setActiveTab] = useState<BillType>('expense');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -17,6 +17,7 @@ export default function CategoryManage() {
   const [newIcon, setNewIcon] = useState('Circle');
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   
   const categories = getCategoriesByType(activeTab);
 
@@ -49,26 +50,47 @@ export default function CategoryManage() {
     }
   };
 
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    
+    const newCategories = [...categories];
+    const draggedItem = newCategories[draggedIndex];
+    newCategories.splice(draggedIndex, 1);
+    newCategories.splice(index, 0, draggedItem);
+    
+    reorderCategories(activeTab, newCategories);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-4">
+      <header className="bg-white px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-4">
           <button
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
-          <h1 className="text-lg font-bold text-gray-800">管理分类</h1>
+          <h1 className="text-base font-bold text-gray-800">管理分类</h1>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl shadow-sm p-6">
-          <div className="flex mb-6 bg-gray-100 rounded-xl p-1">
+      <main className="max-w-lg mx-auto px-4 py-4">
+        <div className="bg-white rounded-2xl shadow-sm p-4">
+          <div className="flex mb-4 bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => setActiveTab('expense')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'expense'
                   ? 'bg-red-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -78,7 +100,7 @@ export default function CategoryManage() {
             </button>
             <button
               onClick={() => setActiveTab('income')}
-              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+              className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeTab === 'income'
                   ? 'bg-green-500 text-white shadow-md'
                   : 'text-gray-600 hover:text-gray-800'
@@ -89,11 +111,18 @@ export default function CategoryManage() {
           </div>
 
           <div className="grid grid-cols-4 gap-3">
-            {categories.map((category) => {
+            {categories.map((category, index) => {
               const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
               
               return (
-                <div key={category.id} className="relative">
+                <div
+                  key={category.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`relative cursor-grab ${draggedIndex === index ? 'opacity-50' : ''}`}
+                >
                   <button
                     className="w-full flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all duration-200"
                   >
@@ -106,6 +135,9 @@ export default function CategoryManage() {
                   >
                     <MinusCircle className="w-4 h-4 text-gray-400 hover:text-red-500" />
                   </button>
+                  <div className="absolute -left-1 top-1/2 -translate-y-1/2 opacity-0 hover:opacity-100 transition-opacity">
+                    <GripVertical className="w-4 h-4 text-gray-400" />
+                  </div>
                 </div>
               );
             })}
@@ -208,8 +240,6 @@ export default function CategoryManage() {
         isOpen={!!deleteError}
         title="无法删除"
         message={deleteError || ''}
-        confirmText="知道了"
-        type="default"
         onConfirm={() => setDeleteError(null)}
         onCancel={() => setDeleteError(null)}
       />
