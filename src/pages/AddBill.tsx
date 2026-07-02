@@ -197,18 +197,11 @@ export default function AddBill() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowDatePicker(true)}
-              className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>{getDateLabel(date)}</span>
-            </button>
             {!isEdit && (
               <button
                 onClick={handleSaveAndContinue}
                 disabled={!selectedCategory || !amount}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   selectedCategory && amount
                     ? 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -217,6 +210,15 @@ export default function AddBill() {
                 再记
               </button>
             )}
+            <button
+              onClick={() => setShowDatePicker(true)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isEdit ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span>{getDateLabel(date)}</span>
+            </button>
             <button
               onClick={handleSave}
               disabled={!selectedCategory || !amount}
