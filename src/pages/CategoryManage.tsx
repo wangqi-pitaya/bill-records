@@ -166,10 +166,8 @@ export default function CategoryManage() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-4">
-        <div className="bg-white rounded-2xl shadow-sm p-4">
-          <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
-
-          <div className="grid grid-cols-4 gap-3">
+        <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
+        <div className="grid grid-cols-4 gap-3">
             {categories.map((category, index) => {
               const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
               const isDragging = draggedIndex === index;
@@ -193,7 +191,7 @@ export default function CategoryManage() {
                   } ${isDragOver ? 'scale-105' : ''} ${touchDragging && isDragging ? 'z-10' : ''}`}
                 >
                   <button
-                    className={`w-full flex flex-col items-center gap-2 p-3 rounded-xl transition-all duration-200 ${
+                    className={`w-full flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 ${
                       isDragOver
                         ? activeTab === 'income'
                           ? 'bg-green-100 ring-2 ring-green-400'
@@ -201,7 +199,7 @@ export default function CategoryManage() {
                         : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                     }`}
                   >
-                    <IconComponent className="w-6 h-6" />
+                    <IconComponent className="w-5 h-5" />
                     <span className="text-sm font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
                   </button>
                   <button
@@ -216,13 +214,12 @@ export default function CategoryManage() {
             
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
+              className="flex flex-col items-center gap-1 p-2 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
             >
-              <Plus className="w-6 h-6" />
+              <Plus className="w-5 h-5" />
               <span className="text-sm font-medium whitespace-nowrap">添加</span>
             </button>
           </div>
-        </div>
       </main>
 
       {/* 添加分类弹窗 */}

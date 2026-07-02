@@ -44,7 +44,37 @@ export default function AddBill() {
   const [date, setDate] = useState(formatDate(new Date()));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [amountWidth, setAmountWidth] = useState(120);
+  const [maxAmountWidth, setMaxAmountWidth] = useState(240);
   const amountMeasureRef = useRef<HTMLSpanElement | null>(null);
+  const amountInputRef = useRef<HTMLInputElement | null>(null);
+
+  const validateAmount = (value: string): string => {
+    let val = value.replace(/[^0-9.]/g, '');
+    
+    if (val.startsWith('.')) {
+      val = '0' + val;
+    }
+    
+    const parts = val.split('.');
+    if (parts.length > 2) {
+      val = parts[0] + '.' + parts[1];
+    }
+    
+    if (parts[0] && parts[0].length > 1 && parts[0].startsWith('0')) {
+      val = val.replace(/^0+/, '0');
+      if (val === '0') {
+        val = '0';
+      } else if (val.startsWith('0.')) {
+        val = '0.' + (parts[1] || '');
+      }
+    }
+    
+    if (parts[1] && parts[1].length > 2) {
+      val = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+    
+    return val;
+  };
 
   useEffect(() => {
     const categories = getCategoriesByType(activeTab);
@@ -54,10 +84,23 @@ export default function AddBill() {
   }, [activeTab, selectedCategory, getCategoriesByType]);
 
   useEffect(() => {
+    const updateMaxWidth = () => {
+      if (amountInputRef.current) {
+        const parentWidth = amountInputRef.current.parentElement?.parentElement?.offsetWidth || 400;
+        setMaxAmountWidth(Math.floor(parentWidth * 0.8));
+      }
+    };
+    updateMaxWidth();
+    window.addEventListener('resize', updateMaxWidth);
+    return () => window.removeEventListener('resize', updateMaxWidth);
+  }, []);
+
+  useEffect(() => {
     if (amountMeasureRef.current) {
-      setAmountWidth(Math.max(amountMeasureRef.current.offsetWidth + 48, 120));
+      const measuredWidth = amountMeasureRef.current.offsetWidth + 48;
+      setAmountWidth(Math.min(Math.max(measuredWidth, 120), maxAmountWidth));
     }
-  }, [amount]);
+  }, [amount, maxAmountWidth]);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -170,15 +213,13 @@ export default function AddBill() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-lg mx-auto p-4 h-full flex flex-col">
-          <div className="flex-1">
-            <CategoryGrid
-              categories={currentCategories}
-              selectedCategory={selectedCategory}
-              onSelect={setSelectedCategory}
-              type={activeTab}
-            />
-          </div>
+        <div className="max-w-lg mx-auto h-full">
+          <CategoryGrid
+            categories={currentCategories}
+            selectedCategory={selectedCategory}
+            onSelect={setSelectedCategory}
+            type={activeTab}
+          />
         </div>
       </main>
 
@@ -202,11 +243,12 @@ export default function AddBill() {
                 {amount || '0.00'}
               </span>
               <input
+                ref={amountInputRef}
                 type="text"
                 inputMode="decimal"
                 value={amount}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  const val = validateAmount(e.target.value);
                   setAmount(val);
                 }}
                 placeholder="0.00"
