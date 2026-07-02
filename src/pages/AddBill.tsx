@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Settings, Calendar } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
@@ -43,6 +43,8 @@ export default function AddBill() {
   const [note, setNote] = useState('');
   const [date, setDate] = useState(formatDate(new Date()));
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [amountWidth, setAmountWidth] = useState(96);
+  const amountMeasureRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
     const categories = getCategoriesByType(activeTab);
@@ -50,6 +52,12 @@ export default function AddBill() {
       setSelectedCategory(categories[0]);
     }
   }, [activeTab, selectedCategory, getCategoriesByType]);
+
+  useEffect(() => {
+    if (amountMeasureRef.current) {
+      setAmountWidth(amountMeasureRef.current.offsetWidth + 36);
+    }
+  }, [amount]);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -182,16 +190,28 @@ export default function AddBill() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="添加备注..."
-              className="flex-1 px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+              className="flex-1 min-w-0 px-4 py-3 text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
             />
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base">¥</span>
+            <div className="relative inline-flex items-center">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none">¥</span>
+              <span
+                ref={amountMeasureRef}
+                className="invisible absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold"
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {amount || '0.00'}
+              </span>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  setAmount(val);
+                }}
                 placeholder="0.00"
-                className="w-24 pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                style={{ width: `${amountWidth}px` }}
+                className="pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
               />
             </div>
           </div>
