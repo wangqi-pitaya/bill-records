@@ -12,14 +12,13 @@ export default function CategoryManage() {
   const { getCategoriesByType, addCategory, deleteCategory, isCategoryUsed } = useCategoryStore();
   
   const [activeTab, setActiveTab] = useState<BillType>('expense');
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Circle');
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   
   const categories = getCategoriesByType(activeTab);
-  const typeColor = activeTab === 'income' ? 'green' : 'red';
 
   const handleAdd = () => {
     if (!newName.trim()) return;
@@ -32,7 +31,7 @@ export default function CategoryManage() {
     
     setNewName('');
     setNewIcon('Circle');
-    setShowAddForm(false);
+    setShowAddModal(false);
   };
 
   const handleDeleteRequest = (category: Category) => {
@@ -89,7 +88,7 @@ export default function CategoryManage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3">
             {categories.map((category) => {
               const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
               
@@ -112,29 +111,40 @@ export default function CategoryManage() {
             })}
             
             <button
-              onClick={() => setShowAddForm(true)}
+              onClick={() => setShowAddModal(true)}
               className="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all duration-200"
             >
               <Plus className="w-6 h-6" />
               <span className="text-sm font-medium whitespace-nowrap">添加</span>
             </button>
           </div>
+        </div>
+      </main>
 
-          {showAddForm && (
-            <div className="p-4 bg-gray-50 rounded-xl">
-              <div className="mb-3">
+      {/* 添加分类弹窗 */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowAddModal(false)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">添加新分类</h3>
+              
+              <div className="mb-4">
                 <label className="text-sm text-gray-600 mb-1 block">分类名称</label>
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="输入分类名称"
-                  className="w-full px-3 py-2 bg-white rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
               
-              <div className="mb-3">
-                <label className="text-sm text-gray-600 mb-1 block">选择图标</label>
+              <div className="mb-4">
+                <label className="text-sm text-gray-600 mb-2 block">选择图标</label>
                 <div className="grid grid-cols-8 gap-2">
                   {availableIcons.map((icon) => {
                     const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[icon] || Icons.Circle;
@@ -147,7 +157,7 @@ export default function CategoryManage() {
                             ? activeTab === 'income'
                               ? 'bg-green-500 text-white'
                               : 'bg-red-500 text-white'
-                            : 'bg-white hover:bg-gray-100'
+                            : 'bg-gray-50 hover:bg-gray-100'
                         }`}
                       >
                         <IconComponent className="w-4 h-4" />
@@ -156,32 +166,32 @@ export default function CategoryManage() {
                   })}
                 </div>
               </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowAddForm(false)}
-                  className="flex-1 py-2 rounded-lg bg-gray-200 text-gray-600 font-medium hover:bg-gray-300"
-                >
-                  取消
-                </button>
-                <button
-                  onClick={handleAdd}
-                  disabled={!newName.trim()}
-                  className={`flex-1 py-2 rounded-lg font-medium ${
-                    newName.trim()
-                      ? activeTab === 'income'
-                        ? 'bg-green-500 text-white hover:bg-green-600'
-                        : 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-gray-300 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  添加
-                </button>
-              </div>
             </div>
-          )}
+            
+            <div className="flex border-t border-gray-100">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 py-4 text-gray-600 font-medium hover:bg-gray-50 transition-colors border-r border-gray-100"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleAdd}
+                disabled={!newName.trim()}
+                className={`flex-1 py-4 font-medium transition-colors ${
+                  newName.trim()
+                    ? activeTab === 'income'
+                      ? 'text-green-500 hover:bg-green-50'
+                      : 'text-red-500 hover:bg-red-50'
+                    : 'text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                添加
+              </button>
+            </div>
+          </div>
         </div>
-      </main>
+      )}
 
       <ConfirmModal
         isOpen={!!deleteConfirm}
