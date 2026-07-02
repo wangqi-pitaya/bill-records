@@ -1,4 +1,6 @@
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
@@ -53,22 +55,73 @@ const groupBillsByDate = (bills: Bill[]) => {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { bills, getStatistics, deleteBill } = useBillStore();
-  const { income, expense, balance } = getStatistics();
-  const groupedBills = groupBillsByDate(bills);
+  const { bills, deleteBill } = useBillStore();
+  
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  
+  const availableYears = useMemo(() => {
+    const years = new Set(bills.map(b => parseInt(b.date.split('-')[0])));
+    years.add(currentYear);
+    return Array.from(years).sort((a, b) => b - a);
+  }, [bills, currentYear]);
+  
+  const filteredBills = useMemo(() => {
+    return bills.filter(b => parseInt(b.date.split('-')[0]) === selectedYear);
+  }, [bills, selectedYear]);
+  
+  const yearStatistics = useMemo(() => {
+    const income = filteredBills.filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
+    const expense = filteredBills.filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0);
+    return { income, expense, balance: income - expense };
+  }, [filteredBills]);
+  
+  const groupedBills = groupBillsByDate(filteredBills);
+
+  const prevYear = () => {
+    const idx = availableYears.indexOf(selectedYear);
+    if (idx < availableYears.length - 1) {
+      setSelectedYear(availableYears[idx + 1]);
+    }
+  };
+  
+  const nextYear = () => {
+    const idx = availableYears.indexOf(selectedYear);
+    if (idx > 0) {
+      setSelectedYear(availableYears[idx - 1]);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white px-4 shadow-sm h-12 flex items-center">
-        <h1 className="text-base font-bold text-gray-800">账单记录</h1>
+      <header className="bg-white px-4 shadow-sm h-12 flex items-center justify-between">
+        <div></div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={prevYear}
+            disabled={availableYears.indexOf(selectedYear) === availableYears.length - 1}
+            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <span className="text-base font-bold text-gray-800">{selectedYear}年</span>
+          <button
+            onClick={nextYear}
+            disabled={availableYears.indexOf(selectedYear) === 0}
+            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+        <div></div>
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-4">
         <div className="mb-6">
-          <StatCard income={income} expense={expense} balance={balance} />
+          <StatCard income={yearStatistics.income} expense={yearStatistics.expense} balance={yearStatistics.balance} />
         </div>
 
-        {bills.length > 0 ? (
+        {filteredBills.length > 0 ? (
           <div className="space-y-4">
             {groupedBills.map((group) => (
               <div key={group.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -99,7 +152,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500">
-            <p>暂无账单记录</p>
+            <p>{selectedYear}年暂无账单记录</p>
             <p className="text-sm mt-2">点击右下角按钮添加第一笔账单</p>
           </div>
         )}
