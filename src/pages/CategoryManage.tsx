@@ -39,7 +39,6 @@ export default function CategoryManage() {
       type: activeTab,
     });
     
-    toast.success(`已添加分类"${newName.trim()}"`);
     setNewName('');
     setNewIcon('Circle');
     setShowAddModal(false);
@@ -56,7 +55,6 @@ export default function CategoryManage() {
   const handleDeleteConfirm = () => {
     if (deleteConfirm) {
       deleteCategory(deleteConfirm.id);
-      toast.success(`已删除分类"${deleteConfirm.name}"`);
       setDeleteConfirm(null);
     }
   };
@@ -84,7 +82,6 @@ export default function CategoryManage() {
     newCategories.splice(index, 0, draggedItem);
     
     reorderCategories(activeTab, newCategories);
-    toast.info('分类顺序已更新');
     setDraggedIndex(null);
     setDragOverIndex(null);
   };
@@ -125,7 +122,6 @@ export default function CategoryManage() {
       newCategories.splice(draggedIndex, 1);
       newCategories.splice(dragOverIndex, 0, draggedItem);
       reorderCategories(activeTab, newCategories);
-      toast.info('分类顺序已更新');
     }
     
     setDraggedIndex(null);

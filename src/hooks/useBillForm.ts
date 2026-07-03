@@ -117,10 +117,8 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
 
       if (isEdit && editBill) {
         updateBill(editBill.id, billData);
-        toast.success('账单已更新');
       } else {
         addBill(billData);
-        toast.success('账单已保存');
       }
       onSuccess?.();
     } finally {
@@ -136,7 +134,6 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     try {
       await new Promise((resolve) => setTimeout(resolve, 150));
       addBill(billData);
-      toast.success('账单已保存');
       setAmount('');
       setNote('');
     } finally {
