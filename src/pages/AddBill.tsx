@@ -236,45 +236,49 @@ export default function AddBill() {
           </div>
 
           <div className="flex items-center gap-3 mb-3 flex-nowrap">
-            <button
-              onClick={() => setShowDatePicker(true)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-medium transition-colors min-w-[120px] whitespace-nowrap ${
-                isEdit ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              <Calendar className="w-4 h-4" />
-              <span>{getDateLabel(date)}</span>
-            </button>
-            <div className="relative inline-flex items-center">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none">¥</span>
-              <span
-                ref={amountMeasureRef}
-                className="absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold pointer-events-none"
-                style={{ fontVariantNumeric: 'tabular-nums', opacity: 0 }}
+            <div className="flex-1 min-w-0">
+              <button
+                onClick={() => setShowDatePicker(true)}
+                className={`w-full flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
+                  isEdit ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
-                {amount || '0.00'}
-              </span>
-              <input
-                ref={amountInputRef}
-                type="text"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => {
-                  const val = validateAmount(e.target.value);
-                  setAmount(val);
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.currentTarget.focus();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  e.currentTarget.focus();
-                }}
-                placeholder="0.00"
-                style={{ width: `${amountWidth}px`, maxWidth: '200px', minWidth: '50%' }}
-                className="pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
-              />
+                <Calendar className="w-4 h-4" />
+                <span>{getDateLabel(date)}</span>
+              </button>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="relative w-full">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-base pointer-events-none">¥</span>
+                <span
+                  ref={amountMeasureRef}
+                  className="absolute left-7 top-1/2 -translate-y-1/2 whitespace-pre text-lg font-bold pointer-events-none"
+                  style={{ fontVariantNumeric: 'tabular-nums', opacity: 0 }}
+                >
+                  {amount || '0.00'}
+                </span>
+                <input
+                  ref={amountInputRef}
+                  type="text"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => {
+                    const val = validateAmount(e.target.value);
+                    setAmount(val);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.currentTarget.focus();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
+                    e.currentTarget.focus();
+                  }}
+                  placeholder="0.00"
+                  style={{ width: '100%' }}
+                  className="w-full pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                />
+              </div>
             </div>
           </div>
 
@@ -295,7 +299,7 @@ export default function AddBill() {
             <button
               onClick={handleSave}
               disabled={!selectedCategory || !amount}
-              className={`flex-1 py-3 rounded-xl font-semibold text-white whitespace-nowrap transition-all duration-200 ${
+              className={`flex-1 py-3 rounded-xl text-sm font-semibold text-white whitespace-nowrap transition-all duration-200 ${
                 selectedCategory && amount
                   ? 'bg-gradient-to-r from-emerald-400 to-emerald-600 hover:shadow-lg'
                   : 'bg-gray-300 cursor-not-allowed'
