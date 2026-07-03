@@ -74,11 +74,11 @@ export default function WalletManage() {
 
   const handleSelectWallet = (id: string) => {
     if (id === currentWalletId) {
-      navigate('/');
+      navigate('/', { replace: true });
       return;
     }
     setCurrentWallet(id);
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   const openSettingSheet = (e: React.MouseEvent, walletId: string) => {
@@ -90,7 +90,6 @@ export default function WalletManage() {
   const handleClearBills = () => {
     if (!activeWalletId) return;
     clearBillsByWalletId(activeWalletId);
-    showToast('账单已清除', 'success');
     setShowClearConfirm(false);
     setShowSettingSheet(false);
     setActiveWalletId(null);
@@ -110,7 +109,6 @@ export default function WalletManage() {
     }
     if (wallet) {
       deleteWallet(activeWalletId);
-      showToast(`已删除账本"${wallet.name}"`, 'success');
     }
     setShowDeleteConfirm(false);
     setShowSettingSheet(false);
