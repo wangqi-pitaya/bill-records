@@ -146,14 +146,6 @@ export const AddBillDrawer = ({ isOpen, onClose, editBill }: AddBillDrawerProps)
 
   return (
     <>
-      {/* 遮罩层 */}
-      <div
-        className={`fixed inset-0 bg-black z-50 transition-opacity duration-300 ${
-          isOpen ? 'opacity-50' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={onClose}
-      />
-
       {/* 抽屉 */}
       <div
         className={`fixed inset-0 z-50 bg-gray-50 flex flex-col transition-transform duration-300 ${
