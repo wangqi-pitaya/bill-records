@@ -1,33 +1,25 @@
-export type BillType = 'expense' | 'income';
+export type BillType = 'income' | 'expense';
 
 export interface Category {
   id: string;
   name: string;
   icon: string;
   type: BillType;
-  sort: number;
 }
 
 export interface Bill {
   id: string;
   type: BillType;
-  categoryId: string;
+  category: string;
+  icon: string;
   amount: number;
-  remark: string;
+  note: string;
   date: string;
-  createdAt: number;
+  timestamp: number;
 }
 
-export interface StatData {
-  expense: number;
-  income: number;
-  balance: number;
-}
-
-export interface DateGroup {
-  date: string;
-  displayDate: string;
+export interface BillStore {
   bills: Bill[];
-  totalExpense: number;
-  totalIncome: number;
+  addBill: (bill: Omit<Bill, 'id' | 'timestamp'>) => void;
+  getStatistics: () => { income: number; expense: number; balance: number };
 }
