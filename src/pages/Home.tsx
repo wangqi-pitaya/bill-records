@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
-import { ChevronDown, Moon, Sun } from 'lucide-react';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
+import { ChevronDown, Moon, Sun, Menu } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useTheme } from '../hooks/useTheme';
 import { StatCard } from '../components/StatCard';
@@ -57,6 +57,7 @@ const groupBillsByDate = (bills: Bill[]) => {
 
 export default function Home() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { bills, deleteBill, getBillById } = useBillStore();
   const { isDark, toggleTheme } = useTheme();
@@ -170,7 +171,12 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
           <div className="h-12 flex items-center justify-between">
-            <div className="w-8" />
+            <button
+              onClick={() => navigate('/wallets')}
+              className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <button
               onClick={() => setShowDatePicker(true)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
