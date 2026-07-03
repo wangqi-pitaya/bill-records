@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { useBillStore } from '../store/useBillStore';
+import { useWalletStore } from '../store/useWalletStore';
 import { useToast } from './useToast';
 import { Category, BillType, Bill } from '../types';
 
@@ -21,6 +22,7 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
   const addBill = useBillStore((state) => state.addBill);
   const updateBill = useBillStore((state) => state.updateBill);
   const getCategoriesByType = useCategoryStore((state) => state.getCategoriesByType);
+  const currentWalletId = useWalletStore((state) => state.currentWalletId);
 
   const isEdit = !!editBill;
 
@@ -101,8 +103,9 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
       amount: parseFloat(amount),
       note,
       date,
+      walletId: currentWalletId,
     };
-  }, [selectedCategory, amount, note, date]);
+  }, [selectedCategory, amount, note, date, currentWalletId]);
 
   const handleSave = useCallback(async () => {
     const billData = buildBillData();

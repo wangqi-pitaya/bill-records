@@ -68,6 +68,10 @@ export default function Home() {
     return wallets.find(w => w.id === currentWalletId);
   }, [wallets, currentWalletId]);
 
+  const walletBills = useMemo(() => {
+    return bills.filter(b => !b.walletId || b.walletId === currentWalletId);
+  }, [bills, currentWalletId]);
+
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
@@ -93,19 +97,19 @@ export default function Home() {
   }, []);
   
   const availableYears = useMemo(() => {
-    const years = new Set(bills.map(b => parseInt(b.date.split('-')[0])));
+    const years = new Set(walletBills.map(b => parseInt(b.date.split('-')[0])));
     years.add(currentYear);
     return Array.from(years).sort((a, b) => b - a);
-  }, [bills, currentYear]);
-  
+  }, [walletBills, currentYear]);
+
   const filteredBills = useMemo(() => {
-    return bills.filter(b => {
+    return walletBills.filter(b => {
       const [y, m] = b.date.split('-').map(Number);
       if (y !== selectedYear) return false;
       if (selectedMonth !== null && m !== selectedMonth) return false;
       return true;
     });
-  }, [bills, selectedYear, selectedMonth]);
+  }, [walletBills, selectedYear, selectedMonth]);
   
   const yearStatistics = useMemo(() => {
     const income = filteredBills.filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
@@ -141,9 +145,9 @@ export default function Home() {
   const prevScrollY = useRef(0);
 
   useEffect(() => {
-    const hasBillsInYear = bills.some(b => parseInt(b.date.split('-')[0]) === selectedYear);
+    const hasBillsInYear = walletBills.some(b => parseInt(b.date.split('-')[0]) === selectedYear);
     if (!hasBillsInYear) {
-      const yearsWithBills = Array.from(new Set(bills.map(b => parseInt(b.date.split('-')[0])))).sort((a, b) => b - a);
+      const yearsWithBills = Array.from(new Set(walletBills.map(b => parseInt(b.date.split('-')[0])))).sort((a, b) => b - a);
       const nextYearWithData = yearsWithBills.find(y => y > selectedYear);
       if (nextYearWithData) {
         setSelectedYear(nextYearWithData);
@@ -155,7 +159,7 @@ export default function Home() {
         }
       }
     }
-  }, [bills, selectedYear, currentYear]);
+  }, [walletBills, selectedYear, currentYear]);
 
   useEffect(() => {
     const handleScroll = () => {
