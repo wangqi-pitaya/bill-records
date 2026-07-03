@@ -12,7 +12,7 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
   return (
     <div className="grid grid-cols-5 gap-2">
       {categories.map((category) => {
-        const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
+        const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
         const isSelected = selectedCategory?.id === category.id;
         
         return (

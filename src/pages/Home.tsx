@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { StatCard } from '../components/StatCard';
@@ -56,6 +56,7 @@ const groupBillsByDate = (bills: Bill[]) => {
 
 export default function Home() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { bills, deleteBill, getBillById } = useBillStore();
   
@@ -64,7 +65,14 @@ export default function Home() {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   
-  const drawerOpen = searchParams.get('add') === 'true';
+  const [drawerOpen, setDrawerOpen] = useState(() => {
+    return location.search.includes('add=true');
+  });
+  
+  useEffect(() => {
+    setDrawerOpen(location.search.includes('add=true'));
+  }, [location.search]);
+  
   const editBillId = searchParams.get('edit');
   const editBill = useMemo(() => {
     if (!editBillId) return null;

@@ -22,7 +22,7 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
 
   const actionWidth = 140;
 
-  const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[bill.icon] || Icons.Circle;
+  const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[bill.icon] || Icons.Circle;
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     startXRef.current = e.touches[0].clientX;

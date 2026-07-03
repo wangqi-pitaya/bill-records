@@ -169,7 +169,7 @@ export default function CategoryManage() {
         <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
         <div className="grid grid-cols-5 gap-2">
             {categories.map((category, index) => {
-              const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
+              const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
               const isDragging = draggedIndex === index;
               const isDragOver = dragOverIndex === index && draggedIndex !== index;
               
@@ -248,7 +248,7 @@ export default function CategoryManage() {
                 <label className="text-sm text-gray-600 mb-2 block">选择图标</label>
                 <div className="grid grid-cols-8 gap-2">
                   {availableIcons.map((icon) => {
-                    const IconComponent = (Icons as Record<string, React.FC<{ className?: string }>>)[icon] || Icons.Circle;
+                    const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[icon] || Icons.Circle;
                     return (
                       <button
                         key={icon}
