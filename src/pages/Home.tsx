@@ -69,7 +69,10 @@ export default function Home() {
   }, [wallets, currentWalletId]);
 
   const walletBills = useMemo(() => {
-    return bills.filter(b => !b.walletId || b.walletId === currentWalletId);
+    if (currentWalletId === 'default') {
+      return bills.filter(b => !b.walletId || b.walletId === 'default');
+    }
+    return bills.filter(b => b.walletId === currentWalletId);
   }, [bills, currentWalletId]);
 
   const currentYear = new Date().getFullYear();
