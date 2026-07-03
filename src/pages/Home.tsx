@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Moon, Sun, Menu } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
+import { useWalletStore } from '../store/useWalletStore';
 import { useTheme } from '../hooks/useTheme';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
@@ -60,7 +61,12 @@ export default function Home() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { bills, deleteBill, getBillById } = useBillStore();
+  const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
+
+  const currentWallet = useMemo(() => {
+    return wallets.find(w => w.id === currentWalletId);
+  }, [wallets, currentWalletId]);
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -198,7 +204,12 @@ export default function Home() {
 
       <main className="max-w-4xl mx-auto px-4 pt-16 pb-4">
         <div className="mb-6">
-          <StatCard income={yearStatistics.income} expense={yearStatistics.expense} balance={yearStatistics.balance} />
+          <StatCard
+            income={yearStatistics.income}
+            expense={yearStatistics.expense}
+            balance={yearStatistics.balance}
+            color={currentWallet?.color}
+          />
         </div>
 
         {filteredBills.length > 0 ? (
@@ -251,6 +262,7 @@ export default function Home() {
           setSearchParams({ add: 'true' });
         }}
         visible={showFloatingButton}
+        color={currentWallet?.color}
       />
 
       {showDatePicker && (

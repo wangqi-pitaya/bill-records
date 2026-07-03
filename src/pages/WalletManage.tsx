@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, Check } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
 import { useToastStore } from '../store/useToastStore';
 
@@ -31,7 +31,6 @@ export default function WalletManage() {
       return;
     }
     setCurrentWallet(id);
-    showToast('已切换账本', 'success');
     navigate('/');
   };
 
@@ -74,45 +73,44 @@ export default function WalletManage() {
           {wallets.map((wallet) => (
             <div
               key={wallet.id}
-              className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden transition-all duration-300 hover:shadow-card-hover cursor-pointer"
+              className="rounded-card shadow-card overflow-hidden transition-all duration-300 hover:shadow-card-hover cursor-pointer"
+              style={{ backgroundColor: wallet.color }}
               onClick={() => handleSelectWallet(wallet.id)}
             >
-              <div
-                className="h-1"
-                style={{ backgroundColor: wallet.color }}
-              />
-              <div className="px-4 py-4 flex items-center justify-between">
+              <div className="px-4 py-5 flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                    <h3 className="text-lg font-semibold text-white">
                       {wallet.name}
                     </h3>
                     {wallet.isDefault && (
-                      <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400 rounded-full">
+                      <span className="px-2 py-0.5 text-xs font-medium bg-white/20 text-white rounded-full">
                         默认
                       </span>
                     )}
-                    {wallet.id === currentWalletId && (
-                      <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full">
-                        当前
-                      </span>
-                    )}
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-sm text-white/80 mt-1">
                     {wallet.description || '暂无描述'}
                   </p>
                 </div>
-                {!wallet.isDefault && wallets.length > 1 && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteWallet(wallet.id);
-                    }}
-                    className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {wallet.id === currentWalletId && (
+                    <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center">
+                      <Check className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+                  {!wallet.isDefault && wallets.length > 1 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteWallet(wallet.id);
+                      }}
+                      className="w-8 h-8 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
