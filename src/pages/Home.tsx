@@ -171,7 +171,9 @@ export default function Home() {
     };
 
     window.addEventListener('scroll', handleScroll);
-    window.scrollTo(0, savedScrollY);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, savedScrollY);
+    });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

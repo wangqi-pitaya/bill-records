@@ -140,7 +140,7 @@ export default function AddBill() {
       addBill(billData);
     }
     
-    navigate('/', { replace: true });
+    navigate(-1);
   };
 
   const handleSaveAndContinue = () => {
