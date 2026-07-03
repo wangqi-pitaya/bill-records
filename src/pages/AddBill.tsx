@@ -272,7 +272,7 @@ export default function AddBill() {
                   e.currentTarget.focus();
                 }}
                 placeholder="0.00"
-                style={{ width: `${amountWidth}px`, maxWidth: '200px' }}
+                style={{ width: `${amountWidth}px`, maxWidth: '200px', minWidth: '50%' }}
                 className="pl-7 pr-3 py-3 text-lg font-bold text-gray-800 bg-gray-50 rounded-xl border-none outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
               />
             </div>
