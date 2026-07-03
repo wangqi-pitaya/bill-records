@@ -63,6 +63,12 @@ export default function Home() {
   const currentMonth = new Date().getMonth() + 1;
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+
+  useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
   
   const availableYears = useMemo(() => {
     const years = new Set(bills.map(b => parseInt(b.date.split('-')[0])));
@@ -175,16 +181,17 @@ export default function Home() {
     };
 
     window.addEventListener('scroll', handleScroll);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        window.scrollTo(0, savedScrollY);
-      });
-    });
+
+    const timer = setTimeout(() => {
+      window.scrollTo(0, savedScrollY);
+    }, 100);
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       savedScrollY = window.scrollY;
+      clearTimeout(timer);
     };
-  }, []);
+  }, [bills]);
 
   return (
     <div className="min-h-screen bg-gray-50">
