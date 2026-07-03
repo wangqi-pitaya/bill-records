@@ -53,6 +53,8 @@ const groupBillsByDate = (bills: Bill[]) => {
   }));
 };
 
+let savedScrollY = 0;
+
 export default function Home() {
   const navigate = useNavigate();
   const { bills, deleteBill } = useBillStore();
@@ -165,9 +167,11 @@ export default function Home() {
         setShowFloatingButton(true);
       }
       prevScrollY.current = currentScrollY;
+      savedScrollY = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll);
+    window.scrollTo(0, savedScrollY);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
