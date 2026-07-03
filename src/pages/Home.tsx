@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { StatCard } from '../components/StatCard';
@@ -56,12 +56,20 @@ const groupBillsByDate = (bills: Bill[]) => {
 
 export default function Home() {
   const navigate = useNavigate();
-  const { bills, deleteBill } = useBillStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { bills, deleteBill, getBillById } = useBillStore();
   
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+  
+  const drawerOpen = searchParams.get('add') === 'true';
+  const editBillId = searchParams.get('edit');
+  const editBill = useMemo(() => {
+    if (!editBillId) return null;
+    return getBillById(editBillId) || null;
+  }, [editBillId, getBillById]);
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -145,8 +153,6 @@ export default function Home() {
 
   const [showFloatingButton, setShowFloatingButton] = useState(true);
   const prevScrollY = useRef(0);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editBill, setEditBill] = useState<Bill | null>(null);
 
   useEffect(() => {
     const hasBillsInYear = bills.some(b => parseInt(b.date.split('-')[0]) === selectedYear);
@@ -267,8 +273,7 @@ export default function Home() {
                       onDelete={deleteBill}
                       isLast={idx === group.bills.length - 1}
                       onEdit={(b) => {
-                        setEditBill(b);
-                        setDrawerOpen(true);
+                        setSearchParams({ add: 'true', edit: b.id });
                       }}
                     />
                   ))}
@@ -286,8 +291,7 @@ export default function Home() {
 
       <FloatingButton
         onClick={() => {
-          setEditBill(null);
-          setDrawerOpen(true);
+          setSearchParams({ add: 'true' });
         }}
         visible={showFloatingButton}
       />
@@ -295,8 +299,7 @@ export default function Home() {
       <AddBillDrawer
         isOpen={drawerOpen}
         onClose={() => {
-          setDrawerOpen(false);
-          setEditBill(null);
+          setSearchParams({});
         }}
         editBill={editBill}
       />
