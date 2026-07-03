@@ -140,6 +140,23 @@ export default function Home() {
   const prevScrollY = useRef(0);
 
   useEffect(() => {
+    const hasBillsInYear = bills.some(b => parseInt(b.date.split('-')[0]) === selectedYear);
+    if (!hasBillsInYear) {
+      const yearsWithBills = Array.from(new Set(bills.map(b => parseInt(b.date.split('-')[0])))).sort((a, b) => b - a);
+      const nextYearWithData = yearsWithBills.find(y => y > selectedYear);
+      if (nextYearWithData) {
+        setSelectedYear(nextYearWithData);
+        setSelectedMonth(null);
+      } else if (yearsWithBills.length === 0) {
+        if (selectedYear !== currentYear) {
+          setSelectedYear(currentYear);
+          setSelectedMonth(null);
+        }
+      }
+    }
+  }, [bills, selectedYear, currentYear]);
+
+  useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > prevScrollY.current && currentScrollY > 100) {
