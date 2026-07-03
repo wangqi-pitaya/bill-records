@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useSearchParams, useLocation } from 'react-router-dom';
+import { ChevronDown, X } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
@@ -55,13 +55,11 @@ const groupBillsByDate = (bills: Bill[]) => {
 };
 
 export default function Home() {
-  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { bills, deleteBill, getBillById } = useBillStore();
-  
+
   const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   
@@ -91,15 +89,6 @@ export default function Home() {
     return Array.from(years).sort((a, b) => b - a);
   }, [bills, currentYear]);
   
-  const availableMonths = useMemo(() => {
-    const months = new Set<number>();
-    bills.filter(b => parseInt(b.date.split('-')[0]) === selectedYear).forEach(b => {
-      months.add(parseInt(b.date.split('-')[1]));
-    });
-    for (let m = 1; m <= 12; m++) months.add(m);
-    return Array.from(months).sort((a, b) => a - b);
-  }, [bills, selectedYear]);
-  
   const filteredBills = useMemo(() => {
     return bills.filter(b => {
       const [y, m] = b.date.split('-').map(Number);
@@ -117,47 +106,14 @@ export default function Home() {
   
   const groupedBills = groupBillsByDate(filteredBills);
 
-  const prevYear = () => {
-    const idx = availableYears.indexOf(selectedYear);
-    if (idx < availableYears.length - 1) {
-      setSelectedYear(availableYears[idx + 1]);
-    }
-  };
-  
-  const nextYear = () => {
-    const idx = availableYears.indexOf(selectedYear);
-    if (idx > 0) {
-      setSelectedYear(availableYears[idx - 1]);
-    }
-  };
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerYear, setPickerYear] = useState(selectedYear);
+  const [pickerMonth, setPickerMonth] = useState<number | null>(selectedMonth);
 
-  const prevMonth = () => {
-    if (selectedMonth === null) {
-      setSelectedMonth(12);
-    } else if (selectedMonth > 1) {
-      setSelectedMonth(selectedMonth - 1);
-    } else {
-      const idx = availableYears.indexOf(selectedYear);
-      if (idx < availableYears.length - 1) {
-        setSelectedYear(availableYears[idx + 1]);
-        setSelectedMonth(12);
-      }
-    }
-  };
-  
-  const nextMonth = () => {
-    if (selectedMonth === null) {
-      setSelectedMonth(1);
-    } else if (selectedMonth < 12) {
-      setSelectedMonth(selectedMonth + 1);
-    } else {
-      const idx = availableYears.indexOf(selectedYear);
-      if (idx > 0) {
-        setSelectedYear(availableYears[idx - 1]);
-        setSelectedMonth(1);
-      }
-    }
-  };
+  useEffect(() => {
+    setPickerYear(selectedYear);
+    setPickerMonth(selectedMonth);
+  }, [showDatePicker, selectedYear, selectedMonth]);
 
   const [showFloatingButton, setShowFloatingButton] = useState(true);
   const prevScrollY = useRef(0);
@@ -198,56 +154,21 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <header className="fixed top-0 left-0 right-0 z-50 bg-white px-4 shadow-sm">
         <div className="max-w-4xl mx-auto">
-          <div className="h-12 flex items-center justify-between">
-            <div></div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={prevYear}
-                disabled={availableYears.indexOf(selectedYear) === availableYears.length - 1}
-                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <span className="text-base font-bold text-gray-800">{selectedYear}年</span>
-              <button
-                onClick={nextYear}
-                disabled={availableYears.indexOf(selectedYear) === 0}
-                className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-            <div></div>
-          </div>
-          <div className="h-10 flex items-center gap-2 overflow-x-auto">
+          <div className="h-12 flex items-center justify-center">
             <button
-              onClick={() => setSelectedMonth(null)}
-              className={`shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                selectedMonth === null
-                  ? 'bg-emerald-500 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              onClick={() => setShowDatePicker(true)}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              全部
+              <span className="text-base font-bold text-gray-800">
+                {selectedYear}年{selectedMonth !== null ? `${selectedMonth}月` : ''}
+              </span>
+              <ChevronDown className="w-4 h-4 text-gray-500" />
             </button>
-            {availableMonths.map(month => (
-              <button
-                key={month}
-                onClick={() => setSelectedMonth(month)}
-                className={`shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                  selectedMonth === month
-                    ? 'bg-emerald-500 text-white'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {month}月
-              </button>
-            ))}
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 pt-24 pb-4">
+      <main className="max-w-4xl mx-auto px-4 pt-16 pb-4">
         <div className="mb-6">
           <StatCard income={yearStatistics.income} expense={yearStatistics.expense} balance={yearStatistics.balance} />
         </div>
@@ -303,6 +224,97 @@ export default function Home() {
         }}
         visible={showFloatingButton}
       />
+
+      {showDatePicker && (
+        <div
+          className="fixed inset-0 z-[60] flex items-end"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDatePicker(false);
+          }}
+        >
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="relative w-full bg-white rounded-t-2xl max-h-[70vh] overflow-auto animate-slide-up">
+            <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10">
+              <span className="text-base font-bold text-gray-800">选择日期</span>
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="px-4 py-4">
+              <div className="mb-4">
+                <span className="text-sm font-medium text-gray-500 mb-2 block">年份</span>
+                <div className="flex flex-wrap gap-2">
+                  {availableYears.map(year => (
+                    <button
+                      key={year}
+                      onClick={() => setPickerYear(year)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        pickerYear === year
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {year}年
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <span className="text-sm font-medium text-gray-500 mb-2 block">月份</span>
+                <div className="grid grid-cols-4 gap-2">
+                  <button
+                    onClick={() => setPickerMonth(null)}
+                    className={`px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      pickerMonth === null
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    全部
+                  </button>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                    <button
+                      key={month}
+                      onClick={() => setPickerMonth(month)}
+                      className={`px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        pickerMonth === month
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {month}月
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-white px-4 py-3 border-t border-gray-100 flex gap-3">
+              <button
+                onClick={() => setShowDatePicker(false)}
+                className="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedYear(pickerYear);
+                  setSelectedMonth(pickerMonth);
+                  setShowDatePicker(false);
+                }}
+                className="flex-1 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition-colors"
+              >
+                确定
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AddBillDrawer
         isOpen={drawerOpen}
