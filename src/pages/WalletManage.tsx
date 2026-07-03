@@ -98,11 +98,16 @@ export default function WalletManage() {
 
   const handleDeleteWallet = () => {
     if (!activeWalletId) return;
+    const wallet = wallets.find(w => w.id === activeWalletId);
+    if (wallet?.isDefault) {
+      showToast('默认账本不可删除', 'warning');
+      setShowDeleteConfirm(false);
+      return;
+    }
     if (wallets.length <= 1) {
       showToast('至少保留一个账本', 'warning');
       return;
     }
-    const wallet = wallets.find(w => w.id === activeWalletId);
     if (wallet) {
       deleteWallet(activeWalletId);
       showToast(`已删除账本"${wallet.name}"`, 'success');
@@ -343,13 +348,15 @@ export default function WalletManage() {
                 <Eraser className="w-5 h-5 text-orange-500" />
                 <span className="text-base text-gray-800 dark:text-gray-100">清除账单</span>
               </button>
-              <button
-                onClick={() => { setShowDeleteConfirm(true); setShowSettingSheet(false); }}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                <Trash2 className="w-5 h-5 text-red-500" />
-                <span className="text-base text-red-600 dark:text-red-400">删除账本</span>
-              </button>
+              {!activeWallet.isDefault && (
+                <button
+                  onClick={() => { setShowDeleteConfirm(true); setShowSettingSheet(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <Trash2 className="w-5 h-5 text-red-500" />
+                  <span className="text-base text-red-600 dark:text-red-400">删除账本</span>
+                </button>
+              )}
             </div>
             <div className="h-6" />
           </div>
