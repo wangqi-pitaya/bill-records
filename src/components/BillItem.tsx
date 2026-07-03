@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Bill } from '../types';
@@ -8,11 +7,11 @@ import { ConfirmModal } from './ConfirmModal';
 interface BillItemProps {
   bill: Bill;
   onDelete: (id: string) => void;
+  onEdit?: (bill: Bill) => void;
   isLast?: boolean;
 }
 
-export const BillItem = ({ bill, onDelete, isLast = false }: BillItemProps) => {
-  const navigate = useNavigate();
+export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemProps) => {
   const [translateX, setTranslateX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -101,7 +100,7 @@ export const BillItem = ({ bill, onDelete, isLast = false }: BillItemProps) => {
   }, [isDragging, translateX]);
 
   const handleEdit = () => {
-    navigate(`/edit/${bill.id}`);
+    onEdit?.(bill);
   };
 
   const handleDeleteClick = () => {

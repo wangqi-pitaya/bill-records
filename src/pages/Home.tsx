@@ -5,6 +5,7 @@ import { useBillStore } from '../store/useBillStore';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
+import { AddBillDrawer } from '../components/AddBillDrawer';
 import { Bill } from '../types';
 
 const formatDate = (d: Date) => {
@@ -52,8 +53,6 @@ const groupBillsByDate = (bills: Bill[]) => {
     totalExpense: groups[date].filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0),
   }));
 };
-
-let savedScrollY = 0;
 
 export default function Home() {
   const navigate = useNavigate();
@@ -146,6 +145,8 @@ export default function Home() {
 
   const [showFloatingButton, setShowFloatingButton] = useState(true);
   const prevScrollY = useRef(0);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editBill, setEditBill] = useState<Bill | null>(null);
 
   useEffect(() => {
     const hasBillsInYear = bills.some(b => parseInt(b.date.split('-')[0]) === selectedYear);
@@ -165,10 +166,6 @@ export default function Home() {
   }, [bills, selectedYear, currentYear]);
 
   useEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > prevScrollY.current && currentScrollY > 100) {
@@ -177,21 +174,11 @@ export default function Home() {
         setShowFloatingButton(true);
       }
       prevScrollY.current = currentScrollY;
-      savedScrollY = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll);
-
-    const timer = setTimeout(() => {
-      window.scrollTo(0, savedScrollY);
-    }, 100);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      savedScrollY = window.scrollY;
-      clearTimeout(timer);
-    };
-  }, [bills]);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -274,7 +261,16 @@ export default function Home() {
                 </div>
                 <div className="divide-y divide-gray-50">
                   {group.bills.map((bill, idx) => (
-                    <BillItem key={bill.id} bill={bill} onDelete={deleteBill} isLast={idx === group.bills.length - 1} />
+                    <BillItem
+                      key={bill.id}
+                      bill={bill}
+                      onDelete={deleteBill}
+                      isLast={idx === group.bills.length - 1}
+                      onEdit={(b) => {
+                        setEditBill(b);
+                        setDrawerOpen(true);
+                      }}
+                    />
                   ))}
                 </div>
               </div>
@@ -288,7 +284,22 @@ export default function Home() {
         )}
       </main>
 
-      <FloatingButton onClick={() => navigate('/add')} visible={showFloatingButton} />
+      <FloatingButton
+        onClick={() => {
+          setEditBill(null);
+          setDrawerOpen(true);
+        }}
+        visible={showFloatingButton}
+      />
+
+      <AddBillDrawer
+        isOpen={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+          setEditBill(null);
+        }}
+        editBill={editBill}
+      />
     </div>
   );
 }
