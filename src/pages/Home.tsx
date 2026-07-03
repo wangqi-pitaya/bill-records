@@ -117,6 +117,17 @@ export default function Home() {
     setPickerMode(selectedMonth === null ? 'year' : 'month');
   }, [showDatePicker, selectedYear, selectedMonth]);
 
+  useEffect(() => {
+    if (showDatePicker) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showDatePicker]);
+
   const [showFloatingButton, setShowFloatingButton] = useState(true);
   const prevScrollY = useRef(0);
 
