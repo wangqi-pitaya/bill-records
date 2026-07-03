@@ -118,20 +118,20 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
         <div className="absolute top-0 right-0 bottom-0 flex">
           <button
             onClick={handleEdit}
-            className="w-16 h-full bg-emerald-500 text-white flex items-center justify-center"
+            className="w-16 h-full bg-primary-500 text-white flex items-center justify-center"
           >
             <Pencil className="w-5 h-5" />
           </button>
           <button
             onClick={handleDeleteClick}
-            className="w-16 h-full bg-red-500 text-white flex items-center justify-center"
+            className="w-16 h-full bg-expense-500 text-white flex items-center justify-center"
           >
             <Trash2 className="w-5 h-5" />
           </button>
         </div>
 
         <div
-          className={`bg-white p-4 shadow-sm cursor-grab active:cursor-grabbing relative ${isLast ? 'rounded-br-xl' : ''}`}
+          className={`bg-white dark:bg-gray-800 p-4 shadow-sm cursor-grab active:cursor-grabbing relative transition-colors duration-300 ${isLast ? 'rounded-br-xl' : ''}`}
           style={{ transform: `translateX(${translateX}px)` }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -143,27 +143,27 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
         >
           <div className="flex items-center gap-4 select-none">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-              bill.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+              bill.type === 'income' ? 'bg-income-100 dark:bg-income-900/30' : 'bg-expense-100 dark:bg-expense-900/30'
             }`}>
               <IconComponent className={`w-6 h-6 ${
-                bill.type === 'income' ? 'text-green-600' : 'text-red-600'
+                bill.type === 'income' ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'
               }`} />
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-gray-800 truncate">{bill.category}</div>
+              <div className="font-semibold text-gray-800 dark:text-gray-100 truncate">{bill.category}</div>
               {bill.note && (
-                <div className="text-sm text-gray-500 truncate mt-0.5">{bill.note}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5">{bill.note}</div>
               )}
             </div>
             
             <div className="text-right shrink-0">
               <div className={`text-lg font-bold ${
-                bill.type === 'income' ? 'text-green-600' : 'text-red-600'
+                bill.type === 'income' ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'
               }`}>
                 {bill.type === 'income' ? '+' : '-'}¥{bill.amount.toFixed(2)}
               </div>
-              <div className="text-xs text-gray-400 mt-0.5">{bill.date}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{bill.date}</div>
             </div>
           </div>
         </div>

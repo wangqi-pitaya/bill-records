@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useLocation } from 'react-router-dom';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
+import { useTheme } from '../hooks/useTheme';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
@@ -58,6 +59,7 @@ export default function Home() {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { bills, deleteBill, getBillById } = useBillStore();
+  const { isDark, toggleTheme } = useTheme();
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -164,18 +166,25 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white px-4 shadow-sm">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
-          <div className="h-12 flex items-center justify-center">
+          <div className="h-12 flex items-center justify-between">
+            <div className="w-8" />
             <button
               onClick={() => setShowDatePicker(true)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <span className="text-base font-bold text-gray-800">
+              <span className="text-base font-bold text-gray-800 dark:text-gray-100">
                 {selectedYear}年{selectedMonth !== null ? `${selectedMonth}月` : ''}
               </span>
-              <ChevronDown className="w-4 h-4 text-gray-500" />
+              <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+            </button>
+            <button
+              onClick={toggleTheme}
+              className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
           </div>
         </div>
@@ -189,25 +198,25 @@ export default function Home() {
         {filteredBills.length > 0 ? (
           <div className="space-y-4">
             {groupedBills.map((group) => (
-              <div key={group.date} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">{getDateLabel(group.date)}</span>
+              <div key={group.date} className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden transition-colors duration-300">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between transition-colors duration-300">
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{getDateLabel(group.date)}</span>
                   <div className="flex items-center gap-4">
                     {group.totalExpense > 0 && (
-                      <span className="text-sm text-red-500">
-                        <span className="text-gray-400 mr-1">支出</span>
+                      <span className="text-sm text-expense-500">
+                        <span className="text-gray-400 dark:text-gray-500 mr-1">支出</span>
                         <span className="font-semibold">-{group.totalExpense.toFixed(2)}</span>
                       </span>
                     )}
                     {group.totalIncome > 0 && (
-                      <span className="text-sm text-green-500">
-                        <span className="text-gray-400 mr-1">收入</span>
+                      <span className="text-sm text-income-500">
+                        <span className="text-gray-400 dark:text-gray-500 mr-1">收入</span>
                         <span className="font-semibold">+{group.totalIncome.toFixed(2)}</span>
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-gray-50 dark:divide-gray-700">
                   {group.bills.map((bill, idx) => (
                     <BillItem
                       key={bill.id}
@@ -224,7 +233,7 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
             <p>{selectedYear}年{selectedMonth !== null ? `${selectedMonth}月` : ''}暂无账单记录</p>
             <p className="text-sm mt-2">点击右下角按钮添加第一笔账单</p>
           </div>
@@ -240,15 +249,15 @@ export default function Home() {
 
       {showDatePicker && (
         <div
-          className="fixed inset-0 z-[60] flex items-start"
+          className="fixed inset-0 z-[60] flex items-start animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowDatePicker(false);
           }}
         >
           <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full bg-white rounded-b-2xl max-h-[80vh] overflow-auto animate-slide-down">
-            <div className="px-4 py-3 border-b border-gray-100">
-              <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="relative w-full bg-white dark:bg-gray-800 rounded-b-2xl max-h-[80vh] overflow-auto animate-slide-down transition-colors duration-300">
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 transition-colors duration-300">
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                 <button
                   onClick={() => {
                     setPickerMode('year');
@@ -256,8 +265,8 @@ export default function Home() {
                   }}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
                     pickerMode === 'year'
-                      ? 'bg-white text-emerald-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
                 >
                   按年
@@ -266,8 +275,8 @@ export default function Home() {
                   onClick={() => setPickerMode('month')}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
                     pickerMode === 'month'
-                      ? 'bg-white text-emerald-600 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-800'
+                      ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
                 >
                   按月
@@ -277,7 +286,7 @@ export default function Home() {
 
             <div className="px-4 py-4">
               <div className="mb-4">
-                <span className="text-sm font-medium text-gray-500 mb-2 block">年份</span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">年份</span>
                 <div className="flex flex-wrap gap-2">
                   {availableYears.map(year => (
                     <button
@@ -285,8 +294,8 @@ export default function Home() {
                       onClick={() => setPickerYear(year)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                         pickerYear === year
-                          ? 'bg-emerald-500 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       {year}年
@@ -297,7 +306,7 @@ export default function Home() {
 
               {pickerMode === 'month' && (
                 <div>
-                  <span className="text-sm font-medium text-gray-500 mb-2 block">月份</span>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">月份</span>
                   <div className="grid grid-cols-4 gap-2">
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
                       <button
@@ -305,8 +314,8 @@ export default function Home() {
                         onClick={() => setPickerMonth(month)}
                         className={`px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                           pickerMonth === month
-                            ? 'bg-emerald-500 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-primary-500 text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
                       >
                         {month}月
@@ -317,10 +326,10 @@ export default function Home() {
               )}
             </div>
 
-            <div className="sticky bottom-0 bg-white px-4 py-3 border-t border-gray-100 flex gap-3">
+            <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3 transition-colors duration-300">
               <button
                 onClick={() => setShowDatePicker(false)}
-                className="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200 transition-colors"
+                className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 取消
               </button>
@@ -330,7 +339,7 @@ export default function Home() {
                   setSelectedMonth(pickerMode === 'year' ? null : pickerMonth);
                   setShowDatePicker(false);
                 }}
-                className="flex-1 py-2.5 rounded-lg bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition-colors"
+                className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
               >
                 确定
               </button>
