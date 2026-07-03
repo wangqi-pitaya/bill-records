@@ -247,16 +247,6 @@ export default function Home() {
         >
           <div className="absolute inset-0 bg-black/30" />
           <div className="relative w-full bg-white rounded-b-2xl max-h-[80vh] overflow-auto animate-slide-down">
-            <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-100 flex items-center justify-between z-10">
-              <span className="text-base font-bold text-gray-800">选择日期</span>
-              <button
-                onClick={() => setShowDatePicker(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
             <div className="px-4 py-3 border-b border-gray-100">
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
