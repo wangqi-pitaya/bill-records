@@ -98,6 +98,17 @@ export const AddBillDrawer = ({ isOpen, onClose, editBill }: AddBillDrawerProps)
     }
   }, [isOpen, editBill, getCategoriesByType]);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const handleSave = () => {
     if (!selectedCategory || !amount) return;
     
