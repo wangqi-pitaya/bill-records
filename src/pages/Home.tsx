@@ -307,7 +307,7 @@ export default function Home() {
       <AddBillDrawer
         isOpen={drawerOpen}
         onClose={() => {
-          setSearchParams({});
+          window.history.back();
         }}
         editBill={editBill}
       />
