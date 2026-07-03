@@ -12,7 +12,7 @@ interface WalletStore {
   wallets: Wallet[];
   currentWalletId: string;
   setCurrentWallet: (id: string) => void;
-  addWallet: (name: string, description?: string) => void;
+  addWallet: (name: string, description?: string, color?: string) => void;
   updateWallet: (id: string, data: Partial<Omit<Wallet, 'id'>>) => void;
   deleteWallet: (id: string) => void;
 }
@@ -62,13 +62,14 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
     set(data);
   },
 
-  addWallet: (name, description = '') => {
+  addWallet: (name, description = '', color) => {
     const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    const walletColor = color || colors[get().wallets.length % colors.length];
     const newWallet: Wallet = {
       id: Date.now().toString(),
       name,
       description,
-      color: colors[get().wallets.length % colors.length],
+      color: walletColor,
       isDefault: false,
     };
     const wallets = [...get().wallets, newWallet];

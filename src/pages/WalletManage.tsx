@@ -4,6 +4,17 @@ import { ArrowLeft, Plus, X, Check } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
 import { useToastStore } from '../store/useToastStore';
 
+const presetColors = [
+  '#10b981',
+  '#3b82f6',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#ec4899',
+  '#14b8a6',
+  '#f97316',
+];
+
 export default function WalletManage() {
   const navigate = useNavigate();
   const { wallets, currentWalletId, setCurrentWallet, addWallet, deleteWallet } = useWalletStore();
@@ -12,16 +23,18 @@ export default function WalletManage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [selectedColor, setSelectedColor] = useState(presetColors[0]);
 
   const handleAddWallet = () => {
     if (!newName.trim()) {
       showToast('请输入账本名称', 'warning');
       return;
     }
-    addWallet(newName.trim(), newDescription.trim());
+    addWallet(newName.trim(), newDescription.trim(), selectedColor);
     showToast(`已添加账本"${newName.trim()}"`, 'success');
     setNewName('');
     setNewDescription('');
+    setSelectedColor(presetColors[0]);
     setShowAddModal(false);
   };
 
@@ -164,6 +177,30 @@ export default function WalletManage() {
                   className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                   maxLength={50}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  主题颜色
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {presetColors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ${
+                        selectedColor === color
+                          ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110'
+                          : 'hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    >
+                      {selectedColor === color && (
+                        <Check className="w-5 h-5 text-white" />
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
