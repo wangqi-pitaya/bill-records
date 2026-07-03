@@ -159,6 +159,10 @@ export default function Home() {
   }, [bills, selectedYear, currentYear]);
 
   useEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > prevScrollY.current && currentScrollY > 100) {
@@ -172,9 +176,14 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll);
     requestAnimationFrame(() => {
-      window.scrollTo(0, savedScrollY);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, savedScrollY);
+      });
     });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      savedScrollY = window.scrollY;
+    };
   }, []);
 
   return (
