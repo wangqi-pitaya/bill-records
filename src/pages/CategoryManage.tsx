@@ -20,7 +20,6 @@ export default function CategoryManage() {
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Circle');
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [touchDragging, setTouchDragging] = useState(false);
@@ -31,14 +30,18 @@ export default function CategoryManage() {
   const categories = getCategoriesByType(activeTab);
 
   const handleAdd = () => {
-    if (!newName.trim()) return;
-    
+    if (!newName.trim()) {
+      toast.warning('请输入分类名称');
+      return;
+    }
+
     addCategory({
       name: newName.trim(),
       icon: newIcon,
       type: activeTab,
     });
-    
+
+    toast.success('分类已添加');
     setNewName('');
     setNewIcon('Circle');
     setShowAddModal(false);
@@ -46,7 +49,7 @@ export default function CategoryManage() {
 
   const handleDeleteRequest = (category: Category) => {
     if (isCategoryUsed(category.name)) {
-      setDeleteError(`"${category.name}"分类已有账单记录，无法删除`);
+      toast.warning(`"${category.name}"已有账单记录，无法删除`);
       return;
     }
     setDeleteConfirm(category);
@@ -55,6 +58,7 @@ export default function CategoryManage() {
   const handleDeleteConfirm = () => {
     if (deleteConfirm) {
       deleteCategory(deleteConfirm.id);
+      toast.success('分类已删除');
       setDeleteConfirm(null);
     }
   };
@@ -300,14 +304,6 @@ export default function CategoryManage() {
         type="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteConfirm(null)}
-      />
-
-      <ConfirmModal
-        isOpen={!!deleteError}
-        title="无法删除"
-        message={deleteError || ''}
-        onConfirm={() => setDeleteError(null)}
-        onCancel={() => setDeleteError(null)}
       />
     </div>
   );

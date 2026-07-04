@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Check, Settings, Pencil, BarChart3, ArrowRightLeft, Trash2, Eraser, X, AlertCircle } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
 import { useBillStore } from '../store/useBillStore';
-import { useToastStore } from '../store/useToastStore';
+import { useToast } from '../hooks/useToast';
 
 const presetColors = [
   '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
@@ -14,7 +14,7 @@ export default function WalletManage() {
   const navigate = useNavigate();
   const { wallets, currentWalletId, setCurrentWallet, addWallet, deleteWallet, updateWallet } = useWalletStore();
   const { clearBillsByWalletId, migrateBills } = useBillStore();
-  const { showToast } = useToastStore();
+  const toast = useToast();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -41,10 +41,11 @@ export default function WalletManage() {
 
   const handleAddWallet = () => {
     if (!newName.trim()) {
-      showToast('请输入账本名称', 'warning');
+      toast.warning('请输入账本名称');
       return;
     }
     addWallet(newName.trim(), newDescription.trim(), selectedColor);
+    toast.success('账本已创建');
     setShowAddModal(false);
   };
 
@@ -61,7 +62,7 @@ export default function WalletManage() {
 
   const handleEditWallet = () => {
     if (!activeWalletId || !newName.trim()) {
-      showToast('请输入账本名称', 'warning');
+      toast.warning('请输入账本名称');
       return;
     }
     updateWallet(activeWalletId, {
@@ -69,7 +70,7 @@ export default function WalletManage() {
       description: newDescription.trim(),
       color: selectedColor,
     });
-    showToast('账本信息已更新', 'success');
+    toast.success('账本信息已更新');
     setShowEditModal(false);
     setActiveWalletId(null);
   };
@@ -80,6 +81,8 @@ export default function WalletManage() {
       return;
     }
     setCurrentWallet(id);
+    const walletName = wallets.find(w => w.id === id)?.name;
+    toast.info(`已切换至「${walletName}」`);
     navigate('/', { replace: true });
   };
 
@@ -92,6 +95,7 @@ export default function WalletManage() {
   const handleClearBills = () => {
     if (!activeWalletId) return;
     clearBillsByWalletId(activeWalletId);
+    toast.success('账单已清除');
     setShowClearConfirm(false);
     setShowSettingSheet(false);
     setActiveWalletId(null);
@@ -107,13 +111,13 @@ export default function WalletManage() {
   const handleMigrate = () => {
     if (!fromWalletId || !toWalletId) return;
     if (fromWalletId === toWalletId) {
-      showToast('原账本和目标账本不能相同', 'warning');
+      toast.warning('原账本和目标账本不能相同');
       return;
     }
     migrateBills(fromWalletId, toWalletId);
     const fromName = wallets.find(w => w.id === fromWalletId)?.name;
     const toName = wallets.find(w => w.id === toWalletId)?.name;
-    showToast(`已将"${fromName}"的账单迁移至"${toName}"`, 'success');
+    toast.success(`已将「${fromName}」的账单迁移至「${toName}」`);
     setShowMigrateModal(false);
     setFromWalletId(null);
     setToWalletId(null);
@@ -123,16 +127,17 @@ export default function WalletManage() {
     if (!activeWalletId) return;
     const wallet = wallets.find(w => w.id === activeWalletId);
     if (wallet?.isDefault) {
-      showToast('默认账本不可删除', 'warning');
+      toast.warning('默认账本不可删除');
       setShowDeleteConfirm(false);
       return;
     }
     if (wallets.length <= 1) {
-      showToast('至少保留一个账本', 'warning');
+      toast.warning('至少保留一个账本');
       return;
     }
     if (wallet) {
       deleteWallet(activeWalletId);
+      toast.success('账本已删除');
     }
     setShowDeleteConfirm(false);
     setShowSettingSheet(false);

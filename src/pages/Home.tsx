@@ -4,6 +4,7 @@ import { ChevronDown, Moon, Sun, Menu } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { useTheme } from '../hooks/useTheme';
+import { useToast } from '../hooks/useToast';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
@@ -63,6 +64,7 @@ export default function Home() {
   const { bills, deleteBill, getBillById } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
+  const toast = useToast();
 
   const currentWallet = useMemo(() => {
     return wallets.find(w => w.id === currentWalletId);
@@ -245,7 +247,10 @@ export default function Home() {
                     <BillItem
                       key={bill.id}
                       bill={bill}
-                      onDelete={deleteBill}
+                      onDelete={(id) => {
+                        deleteBill(id);
+                        toast.success('账单已删除');
+                      }}
                       isLast={idx === group.bills.length - 1}
                       onEdit={(b) => {
                         setSearchParams({ add: 'true', edit: b.id });
