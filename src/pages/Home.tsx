@@ -1,67 +1,28 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronDown, Moon, Sun, Menu } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { useTheme } from '../hooks/useTheme';
 import { useToast } from '../hooks/useToast';
+import { useDateFilter } from '../hooks/useDateFilter';
+import { useScrollFloatingButton } from '../hooks/useScrollFloatingButton';
 import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
 import { AddBillDrawer } from '../components/AddBillDrawer';
-import { Bill } from '../types';
-
-const formatDate = (d: Date) => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const getDateLabel = (dateStr: string) => {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const dayBefore = new Date(today);
-  dayBefore.setDate(today.getDate() - 2);
-  
-  const date = new Date(dateStr);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-  const weekday = weekdays[date.getDay()];
-  
-  if (dateStr === formatDate(today)) return `${month}月${day}日 今天`;
-  if (dateStr === formatDate(yesterday)) return `${month}月${day}日 昨天`;
-  if (dateStr === formatDate(dayBefore)) return `${month}月${day}日 前天`;
-  
-  return `${month}月${day}日 ${weekday}`;
-};
-
-const groupBillsByDate = (bills: Bill[]) => {
-  const groups: Record<string, Bill[]> = {};
-  bills.forEach(bill => {
-    if (!groups[bill.date]) {
-      groups[bill.date] = [];
-    }
-    groups[bill.date].push(bill);
-  });
-  
-  const sortedDates = Object.keys(groups).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-  
-  return sortedDates.map(date => ({
-    date,
-    bills: groups[date],
-    totalIncome: groups[date].filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0),
-    totalExpense: groups[date].filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0),
-  }));
-};
+import {
+  getDateLabel,
+  groupBillsByDate,
+  filterBillsByDate,
+  filterBillsByWallet,
+} from '../lib/utils';
 
 export default function Home() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bills, deleteBill, getBillById } = useBillStore();
+  const { bills, deleteBill, getBillById, getStatistics } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
@@ -70,25 +31,22 @@ export default function Home() {
     return wallets.find(w => w.id === currentWalletId);
   }, [wallets, currentWalletId]);
 
-  const walletBills = useMemo(() => {
-    if (currentWalletId === 'default') {
-      return bills.filter(b => !b.walletId || b.walletId === 'default');
-    }
-    return bills.filter(b => b.walletId === currentWalletId);
-  }, [bills, currentWalletId]);
+  const walletBills = useMemo(
+    () => filterBillsByWallet(bills, currentWalletId),
+    [bills, currentWalletId]
+  );
 
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-  
+  const dateFilter = useDateFilter(walletBills);
+  const { visible: floatingButtonVisible } = useScrollFloatingButton();
+
   const [drawerOpen, setDrawerOpen] = useState(() => {
     return location.search.includes('add=true');
   });
-  
+
   useEffect(() => {
     setDrawerOpen(location.search.includes('add=true'));
   }, [location.search]);
-  
+
   const editBillId = searchParams.get('edit');
   const editBill = useMemo(() => {
     if (!editBillId) return null;
@@ -100,86 +58,19 @@ export default function Home() {
       window.history.scrollRestoration = 'manual';
     }
   }, []);
-  
-  const availableYears = useMemo(() => {
-    const years = new Set(walletBills.map(b => parseInt(b.date.split('-')[0])));
-    years.add(currentYear);
-    return Array.from(years).sort((a, b) => b - a);
-  }, [walletBills, currentYear]);
 
-  const filteredBills = useMemo(() => {
-    return walletBills.filter(b => {
-      const [y, m] = b.date.split('-').map(Number);
-      if (y !== selectedYear) return false;
-      if (selectedMonth !== null && m !== selectedMonth) return false;
-      return true;
-    });
-  }, [walletBills, selectedYear, selectedMonth]);
-  
+  const filteredBills = useMemo(
+    () => filterBillsByDate(walletBills, dateFilter.selectedYear, dateFilter.selectedMonth),
+    [walletBills, dateFilter.selectedYear, dateFilter.selectedMonth]
+  );
+
   const yearStatistics = useMemo(() => {
     const income = filteredBills.filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
     const expense = filteredBills.filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0);
     return { income, expense, balance: income - expense };
   }, [filteredBills]);
-  
+
   const groupedBills = groupBillsByDate(filteredBills);
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [pickerMode, setPickerMode] = useState<'year' | 'month'>('year');
-  const [pickerYear, setPickerYear] = useState(selectedYear);
-  const [pickerMonth, setPickerMonth] = useState<number | null>(selectedMonth);
-
-  useEffect(() => {
-    setPickerYear(selectedYear);
-    setPickerMonth(selectedMonth);
-    setPickerMode(selectedMonth === null ? 'year' : 'month');
-  }, [showDatePicker, selectedYear, selectedMonth]);
-
-  useEffect(() => {
-    if (showDatePicker) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showDatePicker]);
-
-  const [showFloatingButton, setShowFloatingButton] = useState(true);
-  const prevScrollY = useRef(0);
-
-  useEffect(() => {
-    const hasBillsInYear = walletBills.some(b => parseInt(b.date.split('-')[0]) === selectedYear);
-    if (!hasBillsInYear) {
-      const yearsWithBills = Array.from(new Set(walletBills.map(b => parseInt(b.date.split('-')[0])))).sort((a, b) => b - a);
-      const nextYearWithData = yearsWithBills.find(y => y > selectedYear);
-      if (nextYearWithData) {
-        setSelectedYear(nextYearWithData);
-        setSelectedMonth(null);
-      } else if (yearsWithBills.length === 0) {
-        if (selectedYear !== currentYear) {
-          setSelectedYear(currentYear);
-          setSelectedMonth(null);
-        }
-      }
-    }
-  }, [walletBills, selectedYear, currentYear]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > prevScrollY.current && currentScrollY > 100) {
-        setShowFloatingButton(false);
-      } else {
-        setShowFloatingButton(true);
-      }
-      prevScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -193,11 +84,11 @@ export default function Home() {
               <Menu className="w-5 h-5" />
             </button>
             <button
-              onClick={() => setShowDatePicker(true)}
+              onClick={() => dateFilter.setShowDatePicker(true)}
               className="flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <span className="text-base font-bold text-gray-800 dark:text-gray-100">
-                {selectedYear}年{selectedMonth !== null ? `${selectedMonth}月` : ''}
+                {dateFilter.selectedYear}年{dateFilter.selectedMonth !== null ? `${dateFilter.selectedMonth}月` : ''}
               </span>
               <ChevronDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </button>
@@ -263,7 +154,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <p>{selectedYear}年{selectedMonth !== null ? `${selectedMonth}月` : ''}暂无账单记录</p>
+            <p>{dateFilter.selectedYear}年{dateFilter.selectedMonth !== null ? `${dateFilter.selectedMonth}月` : ''}暂无账单记录</p>
             <p className="text-sm mt-2">点击右下角按钮添加第一笔账单</p>
           </div>
         )}
@@ -273,15 +164,15 @@ export default function Home() {
         onClick={() => {
           setSearchParams({ add: 'true' });
         }}
-        visible={showFloatingButton}
+        visible={floatingButtonVisible}
         color={currentWallet?.color}
       />
 
-      {showDatePicker && (
+      {dateFilter.showDatePicker && (
         <div
           className="fixed inset-0 z-[60] flex items-start animate-fade-in"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setShowDatePicker(false);
+            if (e.target === e.currentTarget) dateFilter.setShowDatePicker(false);
           }}
         >
           <div className="absolute inset-0 bg-black/30" />
@@ -290,11 +181,11 @@ export default function Home() {
               <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                 <button
                   onClick={() => {
-                    setPickerMode('year');
-                    setPickerMonth(null);
+                    dateFilter.setPickerMode('year');
+                    dateFilter.setPickerMonth(null);
                   }}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                    pickerMode === 'year'
+                    dateFilter.pickerMode === 'year'
                       ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
@@ -302,9 +193,9 @@ export default function Home() {
                   按年
                 </button>
                 <button
-                  onClick={() => setPickerMode('month')}
+                  onClick={() => dateFilter.setPickerMode('month')}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                    pickerMode === 'month'
+                    dateFilter.pickerMode === 'month'
                       ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
@@ -318,12 +209,12 @@ export default function Home() {
               <div className="mb-4">
                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">年份</span>
                 <div className="flex flex-wrap gap-2">
-                  {availableYears.map(year => (
+                  {dateFilter.availableYears.map(year => (
                     <button
                       key={year}
-                      onClick={() => setPickerYear(year)}
+                      onClick={() => dateFilter.setPickerYear(year)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        pickerYear === year
+                        dateFilter.pickerYear === year
                           ? 'bg-primary-500 text-white'
                           : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
@@ -334,16 +225,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {pickerMode === 'month' && (
+              {dateFilter.pickerMode === 'month' && (
                 <div>
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">月份</span>
                   <div className="grid grid-cols-4 gap-2">
                     {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
                       <button
                         key={month}
-                        onClick={() => setPickerMonth(month)}
+                        onClick={() => dateFilter.setPickerMonth(month)}
                         className={`px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          pickerMonth === month
+                          dateFilter.pickerMonth === month
                             ? 'bg-primary-500 text-white'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
@@ -358,17 +249,13 @@ export default function Home() {
 
             <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3 transition-colors duration-300">
               <button
-                onClick={() => setShowDatePicker(false)}
+                onClick={() => dateFilter.setShowDatePicker(false)}
                 className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 取消
               </button>
               <button
-                onClick={() => {
-                  setSelectedYear(pickerYear);
-                  setSelectedMonth(pickerMode === 'year' ? null : pickerMonth);
-                  setShowDatePicker(false);
-                }}
+                onClick={dateFilter.confirmSelection}
                 className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
               >
                 确定

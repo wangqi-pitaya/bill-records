@@ -6,26 +6,7 @@ import { CategoryGrid } from './CategoryGrid';
 import { DatePicker } from './DatePicker';
 import { LoadingSpinner } from './Loading';
 import { Bill } from '../types';
-
-const formatDate = (d: Date) => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const getDateLabel = (dateStr: string) => {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const dayBefore = new Date(today);
-  dayBefore.setDate(today.getDate() - 2);
-
-  if (dateStr === formatDate(today)) return '今天';
-  if (dateStr === formatDate(yesterday)) return '昨天';
-  if (dateStr === formatDate(dayBefore)) return '前天';
-  return dateStr;
-};
+import { getShortDateLabel } from '../lib/utils';
 
 interface AddBillDrawerProps {
   isOpen: boolean;
@@ -121,7 +102,7 @@ export const AddBillDrawer = ({ isOpen, onClose, editBill }: AddBillDrawerProps)
                 className="w-full flex items-center justify-center gap-1.5 py-3 rounded-btn text-sm font-medium transition-colors whitespace-nowrap bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
               >
                 <Calendar className="w-4 h-4" />
-                <span>{getDateLabel(form.date)}</span>
+                <span>{getShortDateLabel(form.date)}</span>
               </button>
             </div>
             <div className="flex-1 min-w-0">
