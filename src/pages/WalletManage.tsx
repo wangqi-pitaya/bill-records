@@ -111,6 +111,9 @@ export default function WalletManage() {
       return;
     }
     migrateBills(fromWalletId, toWalletId);
+    const fromName = wallets.find(w => w.id === fromWalletId)?.name;
+    const toName = wallets.find(w => w.id === toWalletId)?.name;
+    showToast(`已将"${fromName}"的账单迁移至"${toName}"`, 'success');
     setShowMigrateModal(false);
     setFromWalletId(null);
     setToWalletId(null);
