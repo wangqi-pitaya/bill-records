@@ -49,6 +49,11 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
       }
     }
 
+    if (parts[0] && parts[0].length > 9) {
+      parts[0] = parts[0].slice(0, 9);
+      val = parts[0] + (parts[1] !== undefined ? '.' + parts[1] : '');
+    }
+
     if (parts[1] && parts[1].length > 2) {
       val = parts[0] + '.' + parts[1].slice(0, 2);
     }
@@ -115,12 +120,13 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
       } else {
         addBill(billData);
         toast.success('账单已保存');
+        resetForm();
       }
       onSuccess?.();
     } finally {
       setIsSubmitting(false);
     }
-  }, [buildBillData, isEdit, editBill, updateBill, addBill, toast, onSuccess]);
+  }, [buildBillData, isEdit, editBill, updateBill, addBill, toast, onSuccess, resetForm]);
 
   const handleSaveAndContinue = useCallback(async () => {
     const billData = buildBillData();

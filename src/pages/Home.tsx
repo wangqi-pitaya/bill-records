@@ -116,18 +116,18 @@ export default function Home() {
           <div className="space-y-4">
             {groupedBills.map((group) => (
               <div key={group.date} className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden transition-colors duration-300">
-                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-4 transition-colors duration-300">
+                <div className="px-4 py-2.5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between gap-4 transition-colors duration-300">
                   <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap flex-shrink-0">{getDateLabel(group.date)}</span>
-                  <div className="flex items-center gap-4 flex-shrink-0">
+                  <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
                     {group.totalExpense > 0 && (
-                      <span className="text-sm text-expense-500 whitespace-nowrap text-right">
-                        <span className="text-gray-400 dark:text-gray-500 mr-1">支出</span>
+                      <span className="text-xs text-expense-500 whitespace-nowrap text-right leading-none">
+                        <span className="text-gray-400 dark:text-gray-500 mr-0.5">支出</span>
                         <span className="font-semibold">-{group.totalExpense.toFixed(2)}</span>
                       </span>
                     )}
                     {group.totalIncome > 0 && (
-                      <span className="text-sm text-income-500 whitespace-nowrap text-right">
-                        <span className="text-gray-400 dark:text-gray-500 mr-1">收入</span>
+                      <span className="text-xs text-income-500 whitespace-nowrap text-right leading-none">
+                        <span className="text-gray-400 dark:text-gray-500 mr-0.5">收入</span>
                         <span className="font-semibold">+{group.totalIncome.toFixed(2)}</span>
                       </span>
                     )}
