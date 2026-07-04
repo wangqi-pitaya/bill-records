@@ -1,4 +1,4 @@
-import { Bill, Category } from '../types';
+import { Category } from '../types';
 
 export const defaultCategories: Category[] = [
   { id: 'food', name: '餐饮', icon: 'UtensilsCrossed', type: 'expense' },

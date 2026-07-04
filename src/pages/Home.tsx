@@ -22,7 +22,7 @@ export default function Home() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bills, deleteBill, getBillById, getStatistics } = useBillStore();
+  const { bills, deleteBill, getBillById } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
