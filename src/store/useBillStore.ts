@@ -63,9 +63,18 @@ export const useBillStore = create<BillStore>((set, get) => ({
   },
 
   migrateBills: (fromWalletId: string, toWalletId: string) => {
-    const updatedBills = get().bills.map(b =>
-      b.walletId === fromWalletId ? { ...b, walletId: toWalletId } : b
-    );
+    const updatedBills = get().bills.map(b => {
+      if (fromWalletId === 'default') {
+        if (!b.walletId || b.walletId === 'default') {
+          return { ...b, walletId: toWalletId };
+        }
+      } else {
+        if (b.walletId === fromWalletId) {
+          return { ...b, walletId: toWalletId };
+        }
+      }
+      return b;
+    });
     set({ bills: updatedBills });
     saveBills(updatedBills);
   },

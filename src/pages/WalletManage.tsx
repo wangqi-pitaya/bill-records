@@ -45,7 +45,6 @@ export default function WalletManage() {
       return;
     }
     addWallet(newName.trim(), newDescription.trim(), selectedColor);
-    showToast(`已添加账本"${newName.trim()}"`, 'success');
     setShowAddModal(false);
   };
 
@@ -464,7 +463,7 @@ export default function WalletManage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">目标账本</label>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                   {wallets
                     .filter(w => w.id !== fromWalletId)
                     .map((wallet) => (
