@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Check, Settings, Pencil, BarChart3, ArrowRightLeft, Trash2, Eraser, X } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Settings, Pencil, BarChart3, ArrowRightLeft, Trash2, Eraser, X, AlertCircle } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
 import { useBillStore } from '../store/useBillStore';
 import { useToastStore } from '../store/useToastStore';
@@ -13,7 +13,7 @@ const presetColors = [
 export default function WalletManage() {
   const navigate = useNavigate();
   const { wallets, currentWalletId, setCurrentWallet, addWallet, deleteWallet, updateWallet } = useWalletStore();
-  const { clearBillsByWalletId } = useBillStore();
+  const { clearBillsByWalletId, migrateBills } = useBillStore();
   const { showToast } = useToastStore();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -21,7 +21,10 @@ export default function WalletManage() {
   const [showSettingSheet, setShowSettingSheet] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showMigrateModal, setShowMigrateModal] = useState(false);
   const [activeWalletId, setActiveWalletId] = useState<string | null>(null);
+  const [fromWalletId, setFromWalletId] = useState<string | null>(null);
+  const [toWalletId, setToWalletId] = useState<string | null>(null);
 
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
@@ -93,6 +96,25 @@ export default function WalletManage() {
     setShowClearConfirm(false);
     setShowSettingSheet(false);
     setActiveWalletId(null);
+  };
+
+  const openMigrateModal = (walletId: string) => {
+    setFromWalletId(walletId);
+    setToWalletId(null);
+    setShowMigrateModal(true);
+    setShowSettingSheet(false);
+  };
+
+  const handleMigrate = () => {
+    if (!fromWalletId || !toWalletId) return;
+    if (fromWalletId === toWalletId) {
+      showToast('原账本和目标账本不能相同', 'warning');
+      return;
+    }
+    migrateBills(fromWalletId, toWalletId);
+    setShowMigrateModal(false);
+    setFromWalletId(null);
+    setToWalletId(null);
   };
 
   const handleDeleteWallet = () => {
@@ -333,10 +355,10 @@ export default function WalletManage() {
                 <span className="text-base text-gray-800 dark:text-gray-100">报表统计</span>
               </button>
               <button
-                disabled
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg opacity-40 cursor-not-allowed"
+                onClick={() => openMigrateModal(activeWallet.id)}
+                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowRightLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <ArrowRightLeft className="w-5 h-5 text-blue-500" />
                 <span className="text-base text-gray-800 dark:text-gray-100">迁移账本</span>
               </button>
               <button
@@ -406,6 +428,91 @@ export default function WalletManage() {
             <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
               <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
               <button onClick={handleDeleteWallet} className="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors">删除</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 迁移账本弹窗 */}
+      {showMigrateModal && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowMigrateModal(false); }}
+        >
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden animate-scale-in transition-colors duration-300">
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">迁移账本</h2>
+            </div>
+            <div className="px-4 py-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">原账本</label>
+                <div className="rounded-lg bg-gray-50 dark:bg-gray-700 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: wallets.find(w => w.id === fromWalletId)?.color || '#10b981' }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                        {wallets.find(w => w.id === fromWalletId)?.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">将从该账本迁移账单</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <ArrowRightLeft className="w-5 h-5 text-gray-400" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">目标账本</label>
+                <div className="space-y-2">
+                  {wallets
+                    .filter(w => w.id !== fromWalletId)
+                    .map((wallet) => (
+                      <button
+                        key={wallet.id}
+                        onClick={() => setToWalletId(wallet.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all ${
+                          toWalletId === wallet.id
+                            ? 'bg-primary-50 dark:bg-primary-900/30 ring-2 ring-primary-500/50'
+                            : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: wallet.color }} />
+                        <div className="flex-1 min-w-0 text-left">
+                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                            {wallet.name}
+                          </p>
+                          {wallet.isDefault && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400">默认账本</p>
+                          )}
+                        </div>
+                        {toWalletId === wallet.id && (
+                          <Check className="w-5 h-5 text-primary-500 shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                </div>
+              </div>
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5">
+                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                  <AlertCircle className="w-4 h-4 inline mr-1.5" />
+                  迁移账本后，原账本中的账单将会全部迁移至目标账本中，该操作不可逆，谨慎操作。
+                </p>
+              </div>
+            </div>
+            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+              <button onClick={() => setShowMigrateModal(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
+              <button
+                onClick={handleMigrate}
+                disabled={!toWalletId}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  toWalletId
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-gray-200 dark:bg-gray-600 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                迁移
+              </button>
             </div>
           </div>
         </div>
