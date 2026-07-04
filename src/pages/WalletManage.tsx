@@ -466,30 +466,45 @@ export default function WalletManage() {
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                   {wallets
                     .filter(w => w.id !== fromWalletId)
-                    .map((wallet) => (
-                      <button
-                        key={wallet.id}
-                        onClick={() => setToWalletId(wallet.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all ${
-                          toWalletId === wallet.id
-                            ? 'bg-primary-50 dark:bg-primary-900/30 ring-2 ring-primary-500/50'
-                            : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: wallet.color }} />
-                        <div className="flex-1 min-w-0 text-left">
-                          <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
-                            {wallet.name}
-                          </p>
-                          {wallet.isDefault && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400">默认账本</p>
+                    .map((wallet) => {
+                      const isSelected = toWalletId === wallet.id;
+                      return (
+                        <button
+                          key={wallet.id}
+                          onClick={() => setToWalletId(wallet.id)}
+                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                            isSelected
+                              ? 'bg-white dark:bg-gray-800 border-2'
+                              : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                          }`}
+                          style={isSelected ? { borderColor: wallet.color } : undefined}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-full shrink-0 transition-transform duration-200"
+                            style={{
+                              backgroundColor: wallet.color,
+                              transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                            }}
+                          />
+                          <div className="flex-1 min-w-0 text-left">
+                            <p className={`text-sm font-medium truncate ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                              {wallet.name}
+                            </p>
+                            {wallet.isDefault && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400">默认账本</p>
+                            )}
+                          </div>
+                          {isSelected && (
+                            <div
+                              className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                              style={{ backgroundColor: wallet.color }}
+                            >
+                              <Check className="w-4 h-4 text-white" />
+                            </div>
                           )}
-                        </div>
-                        {toWalletId === wallet.id && (
-                          <Check className="w-5 h-5 text-primary-500 shrink-0" />
-                        )}
-                      </button>
-                    ))}
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5">
