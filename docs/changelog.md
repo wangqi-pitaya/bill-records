@@ -1,8 +1,99 @@
 # 变更日志
 
-> **版本**: v0.1.0  
+> **版本**: v0.2.0  
 > **项目名称**: 简易记账本  
-> **发布日期**: 2026-07-03
+> **发布日期**: 2026-07-04
+
+---
+
+## [0.2.0] - 2026-07-04
+
+### 新增功能
+
+#### 多账本（钱包）管理
+- 新增独立的账本管理页面 `/wallets`，支持创建、编辑、删除账本
+- 账本支持自定义名称、描述与主题颜色（8 种预设色）
+- 首页可通过左上角菜单进入账本管理，点击账本即可切换当前账本
+- 首页账单列表、统计卡片、悬浮按钮均随当前账本主题色联动
+- 支持账单迁移：将某账本的全部账单迁移至另一账本，操作不可逆并有二次确认
+- 支持清空账本账单：一键清除指定账本下的所有账单（含二次确认）
+- 默认账本不可删除，至少保留一个账本
+- 账单数据新增 `walletId` 字段，按当前账本过滤展示
+- 账本数据通过 localStorage 持久化（键名 `wallet-storage`）
+
+#### 深色模式
+- 新增深色模式主题切换，首页与分类管理页右上角提供切换按钮（月亮/太阳图标）
+- 首次进入自动跟随系统偏好（`prefers-color-scheme`）
+- 主题选择保存在 localStorage（键名 `theme`），下次进入自动应用
+- 全量组件适配深色模式：账单列表、抽屉、弹窗、日期选择、统计卡片等
+
+#### Toast 全局通知系统
+- 新增全局 Toast 通知组件，支持 success / error / info / warning 四种类型
+- 通知自动消失（默认 2500ms），支持手动关闭
+- 提供 `useToast` Hook 封装快捷调用方法
+
+#### 新增组件与 Hook
+- `Loading` - 新增 `LoadingSpinner` 与 `LoadingOverlay` 加载组件
+- `Empty` - 重写为可复用空状态组件，支持 default / bills / search 变体及自定义内容
+- `Toast` - 新增 Toast 容器组件
+- `useBillForm` - 新增账单表单可复用 Hook，封装状态管理、金额校验与提交逻辑
+- `useToast` - 新增 Toast 便捷 Hook
+- `useTheme` - 新增主题管理 Hook
+
+#### 新增页面与路由
+- 新增独立的新建/编辑账单页面 `/add/:id?`，替代原纯抽屉式交互
+- 新增账本管理页面 `/wallets`
+
+### 优化改进
+
+#### 设计体系统一
+- 统一设计令牌：新增 primary / expense / income 语义化颜色调色板，替代原 emerald / red / green
+- 新增 card / modal / btn / input 圆角令牌与 card / modal / floating 语义化阴影
+- 新增 slide-up / fade-in / scale-in / toast-in / toast-out 等动画与关键帧
+- 新增语义化 CSS 组件类：card-base、btn-primary、btn-secondary、input-base、tab-container 等
+- 全量组件迁移至语义化类名，统一视觉风格
+
+#### 架构重构
+- 抽取 `useBillForm` Hook 复用账单表单逻辑，消除 `AddBill` 与 `AddBillDrawer` 间重复代码
+- 表单提交新增 `isSubmitting` 加载状态与 `canSubmit` 校验，保存按钮集成加载动画
+- 优化 `Empty` 组件，支持多种空状态场景
+- `StatCard` 与 `FloatingButton` 支持自定义主题色
+
+#### 数据与存储
+- `useBillStore` 新增 `clearBillsByWalletId` 与 `migrateBills` 方法
+- 新增 `useWalletStore` 钱包状态管理（增删改查 + 切换 + localStorage 持久化）
+- 新增 `useToastStore` 通知状态管理（消息队列 + 自动消失）
+- `Bill` 类型新增可选 `walletId` 字段
+
+### 修复问题
+
+- 新建账单抽屉关闭时添加 `pointer-events-none`，避免误触
+- 移除新增账单页金额输入框的宽度自适应测量逻辑，简化实现
+
+### 技术实现
+
+#### 新增核心组件
+- `WalletManage` - 账本管理页
+- `AddBill` - 独立新建/编辑账单页
+- `Loading` - 加载组件
+- `Toast` - 全局通知组件
+
+#### 新增状态管理
+- `useWalletStore` - 账本数据（增删改查 + 切换）
+- `useToastStore` - Toast 通知（消息队列 + 自动消失）
+
+#### 新增 Hook
+- `useBillForm` - 账单表单逻辑复用
+- `useToast` - Toast 通知便捷调用
+- `useTheme` - 深色模式主题管理
+
+### 已知限制
+
+- 数据仅保存在当前浏览器 localStorage 中，无法跨设备同步
+- 不支持数据导入/导出功能
+- 不支持多币种
+- 不支持账单搜索功能
+- 统计仅支持按年月筛选，不支持自定义时间段
 
 ---
 
@@ -122,12 +213,12 @@
 
 ## 版本规划
 
-###  upcoming
+### upcoming
 
 - [ ] 数据导入/导出（JSON/CSV）
 - [ ] 账单搜索功能
 - [ ] 自定义时间段统计
 - [ ] 月度/年度图表统计
 - [ ] 预算设置与提醒
-- [ ] 多账本支持
+- [x] 多账本支持（v0.2.0 已实现）
 - [ ] 数据备份到云端
