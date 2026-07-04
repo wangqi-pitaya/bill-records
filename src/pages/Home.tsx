@@ -78,7 +78,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="h-12 flex items-center justify-between">
             <button
-              onClick={() => navigate('/wallets', { replace: true })}
+              onClick={() => navigate('/wallets')}
               className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <Menu className="w-5 h-5" />
