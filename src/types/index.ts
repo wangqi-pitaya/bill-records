@@ -16,6 +16,7 @@ export interface Bill {
   note: string;
   date: string;
   timestamp: number;
+  walletId?: string;
 }
 
 export interface BillStore {

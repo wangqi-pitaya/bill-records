@@ -22,9 +22,9 @@ export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: C
             className={`flex flex-col items-center justify-center gap-1 p-0.5 rounded-md aspect-square transition-all duration-200 ${
               isSelected
                 ? type === 'income'
-                  ? 'bg-green-500 text-white shadow-lg scale-105'
-                  : 'bg-red-500 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-income-500 text-white shadow-lg scale-105'
+                  : 'bg-expense-500 text-white shadow-lg scale-105'
+                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
             }`}
           >
             <IconComponent className="w-6 h-6" />

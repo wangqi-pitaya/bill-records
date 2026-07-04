@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, MinusCircle } from 'lucide-react';
+import { ArrowLeft, Plus, MinusCircle, Moon, Sun } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useCategoryStore } from '../store/useCategoryStore';
+import { useTheme } from '../hooks/useTheme';
+import { useToast } from '../hooks/useToast';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { availableIcons } from '../data/categories';
 import { Category, BillType } from '../types';
@@ -10,13 +12,14 @@ import { Category, BillType } from '../types';
 export default function CategoryManage() {
   const navigate = useNavigate();
   const { getCategoriesByType, addCategory, deleteCategory, reorderCategories, isCategoryUsed } = useCategoryStore();
+  const { isDark, toggleTheme } = useTheme();
+  const toast = useToast();
   
   const [activeTab, setActiveTab] = useState<BillType>('expense');
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('Circle');
   const [deleteConfirm, setDeleteConfirm] = useState<Category | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [touchDragging, setTouchDragging] = useState(false);
@@ -27,14 +30,18 @@ export default function CategoryManage() {
   const categories = getCategoriesByType(activeTab);
 
   const handleAdd = () => {
-    if (!newName.trim()) return;
-    
+    if (!newName.trim()) {
+      toast.warning('请输入分类名称');
+      return;
+    }
+
     addCategory({
       name: newName.trim(),
       icon: newIcon,
       type: activeTab,
     });
-    
+
+    toast.success('分类已添加');
     setNewName('');
     setNewIcon('Circle');
     setShowAddModal(false);
@@ -42,7 +49,7 @@ export default function CategoryManage() {
 
   const handleDeleteRequest = (category: Category) => {
     if (isCategoryUsed(category.name)) {
-      setDeleteError(`"${category.name}"分类已有账单记录，无法删除`);
+      toast.warning(`"${category.name}"已有账单记录，无法删除`);
       return;
     }
     setDeleteConfirm(category);
@@ -51,11 +58,11 @@ export default function CategoryManage() {
   const handleDeleteConfirm = () => {
     if (deleteConfirm) {
       deleteCategory(deleteConfirm.id);
+      toast.success('分类已删除');
       setDeleteConfirm(null);
     }
   };
 
-  // HTML5 拖拽（桌面端）
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
   };
@@ -88,7 +95,6 @@ export default function CategoryManage() {
     setDragOverIndex(null);
   };
 
-  // 触摸拖拽（移动端）
   const handleTouchStart = (e: React.TouchEvent, index: number) => {
     const touch = e.touches[0];
     touchStartPos.current = { x: touch.clientX, y: touch.clientY };
@@ -102,7 +108,6 @@ export default function CategoryManage() {
     const touch = e.touches[0];
     setTouchDragging(true);
     
-    // 找到当前手指下的元素
     const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
     const categoryItem = elementBelow?.closest('[data-category-index]') as HTMLElement | null;
     
@@ -130,43 +135,40 @@ export default function CategoryManage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white px-4 shadow-sm h-12 flex items-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <header className="bg-white dark:bg-gray-800 px-4 shadow-sm h-12 flex items-center transition-colors duration-300">
         <div className="flex items-center justify-between w-full">
           <button
             onClick={() => navigate(-1)}
-            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex bg-gray-100 rounded-xl p-0.5">
+          <div className="tab-container">
             <button
               onClick={() => setActiveTab('expense')}
-              className={`py-1 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === 'expense'
-                  ? 'bg-red-500 text-white shadow-md'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
+              className={`tab-item ${activeTab === 'expense' ? 'tab-item-active-expense' : ''}`}
             >
               支出
             </button>
             <button
               onClick={() => setActiveTab('income')}
-              className={`py-1 px-6 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeTab === 'income'
-                  ? 'bg-green-500 text-white shadow-md'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
+              className={`tab-item ${activeTab === 'income' ? 'tab-item-active-income' : ''}`}
             >
               收入
             </button>
           </div>
-          <div className="w-8 h-8" />
+          <button
+            onClick={toggleTheme}
+            className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-4">
-        <p className="text-xs text-gray-400 mb-3">长按分类卡片可拖拽排序</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">长按分类卡片可拖拽排序</p>
         <div className="grid grid-cols-5 gap-2">
             {categories.map((category, index) => {
               const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
@@ -194,9 +196,9 @@ export default function CategoryManage() {
                     className={`w-full flex flex-col items-center justify-center gap-1 p-0.5 rounded-md aspect-square transition-all duration-200 ${
                       isDragOver
                         ? activeTab === 'income'
-                          ? 'bg-green-100 ring-2 ring-green-400'
-                          : 'bg-red-100 ring-2 ring-red-400'
-                        : 'bg-white text-gray-700 hover:bg-gray-50'
+                          ? 'bg-income-100 dark:bg-income-900/30 ring-2 ring-income-400'
+                          : 'bg-expense-100 dark:bg-expense-900/30 ring-2 ring-expense-400'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
                     }`}
                   >
                     <IconComponent className="w-6 h-6" />
@@ -204,9 +206,9 @@ export default function CategoryManage() {
                   </button>
                   <button
                     onClick={() => handleDeleteRequest(category)}
-                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-red-100 transition-colors z-20"
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center hover:bg-expense-100 dark:hover:bg-expense-900/30 transition-colors z-20"
                   >
-                    <MinusCircle className="w-4 h-4 text-gray-400 hover:text-red-500" />
+                    <MinusCircle className="w-4 h-4 text-gray-400 dark:text-gray-500 hover:text-expense-500 dark:hover:text-expense-400" />
                   </button>
                 </div>
               );
@@ -214,7 +216,7 @@ export default function CategoryManage() {
             
             <button
               onClick={() => setShowAddModal(true)}
-              className="flex flex-col items-center justify-center gap-1 p-0.5 rounded-md bg-gray-50 text-gray-500 hover:bg-gray-100 transition-all duration-200"
+              className="flex flex-col items-center justify-center gap-1 p-0.5 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200"
             >
               <Plus className="w-6 h-6" />
               <span className="text-xs font-medium whitespace-nowrap">添加</span>
@@ -222,30 +224,29 @@ export default function CategoryManage() {
           </div>
       </main>
 
-      {/* 添加分类弹窗 */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in">
           <div
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowAddModal(false)}
           />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+          <div className="relative bg-white dark:bg-gray-800 rounded-modal shadow-modal w-full max-w-sm overflow-hidden animate-scale-in">
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">添加新分类</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">添加新分类</h3>
               
               <div className="mb-4">
-                <label className="text-sm text-gray-600 mb-1 block">分类名称</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400 mb-1 block">分类名称</label>
                 <input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="输入分类名称"
-                  className="w-full px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-primary-500 outline-none text-gray-800 dark:text-gray-200"
                 />
               </div>
               
               <div className="mb-4">
-                <label className="text-sm text-gray-600 mb-2 block">选择图标</label>
+                <label className="text-sm text-gray-600 dark:text-gray-400 mb-2 block">选择图标</label>
                 <div className="grid grid-cols-8 gap-2">
                   {availableIcons.map((icon) => {
                     const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[icon] || Icons.Circle;
@@ -256,9 +257,9 @@ export default function CategoryManage() {
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                           newIcon === icon
                             ? activeTab === 'income'
-                              ? 'bg-green-500 text-white'
-                              : 'bg-red-500 text-white'
-                            : 'bg-gray-50 hover:bg-gray-100'
+                              ? 'bg-income-500 text-white'
+                              : 'bg-expense-500 text-white'
+                            : 'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
                         }`}
                       >
                         <IconComponent className="w-5 h-5" />
@@ -269,10 +270,10 @@ export default function CategoryManage() {
               </div>
             </div>
             
-            <div className="flex border-t border-gray-100">
+            <div className="flex border-t border-gray-100 dark:border-gray-700">
               <button
                 onClick={() => setShowAddModal(false)}
-                className="flex-1 py-4 text-gray-600 font-medium hover:bg-gray-50 transition-colors border-r border-gray-100"
+                className="flex-1 py-4 text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-r border-gray-100 dark:border-gray-700"
               >
                 取消
               </button>
@@ -282,9 +283,9 @@ export default function CategoryManage() {
                 className={`flex-1 py-4 font-medium transition-colors ${
                   newName.trim()
                     ? activeTab === 'income'
-                      ? 'text-green-500 hover:bg-green-50'
-                      : 'text-red-500 hover:bg-red-50'
-                    : 'text-gray-400 cursor-not-allowed'
+                      ? 'text-income-500 hover:bg-income-50 dark:hover:bg-income-900/20'
+                      : 'text-expense-500 hover:bg-expense-50 dark:hover:bg-expense-900/20'
+                    : 'text-gray-400 dark:text-gray-500 cursor-not-allowed'
                 }`}
               >
                 添加
@@ -303,14 +304,6 @@ export default function CategoryManage() {
         type="danger"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteConfirm(null)}
-      />
-
-      <ConfirmModal
-        isOpen={!!deleteError}
-        title="无法删除"
-        message={deleteError || ''}
-        onConfirm={() => setDeleteError(null)}
-        onCancel={() => setDeleteError(null)}
       />
     </div>
   );

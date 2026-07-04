@@ -9,6 +9,8 @@ interface BillStore {
   updateBill: (id: string, bill: Omit<Bill, 'id' | 'timestamp'>) => void;
   getBillById: (id: string) => Bill | undefined;
   getStatistics: () => { income: number; expense: number; balance: number };
+  clearBillsByWalletId: (walletId: string) => void;
+  migrateBills: (fromWalletId: string, toWalletId: string) => void;
 }
 
 export const useBillStore = create<BillStore>((set, get) => ({
@@ -52,5 +54,28 @@ export const useBillStore = create<BillStore>((set, get) => ({
       .filter(b => b.type === 'expense')
       .reduce((sum, b) => sum + b.amount, 0);
     return { income, expense, balance: income - expense };
+  },
+
+  clearBillsByWalletId: (walletId: string) => {
+    const updatedBills = get().bills.filter(b => b.walletId !== walletId);
+    set({ bills: updatedBills });
+    saveBills(updatedBills);
+  },
+
+  migrateBills: (fromWalletId: string, toWalletId: string) => {
+    const updatedBills = get().bills.map(b => {
+      if (fromWalletId === 'default') {
+        if (!b.walletId || b.walletId === 'default') {
+          return { ...b, walletId: toWalletId };
+        }
+      } else {
+        if (b.walletId === fromWalletId) {
+          return { ...b, walletId: toWalletId };
+        }
+      }
+      return b;
+    });
+    set({ bills: updatedBills });
+    saveBills(updatedBills);
   },
 }));
