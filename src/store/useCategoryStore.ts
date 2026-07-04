@@ -1,6 +1,8 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { Category, BillType } from '../types';
-import { loadCategories, saveCategories } from '../utils/storage';
+import { defaultCategories } from '../data/defaults';
+import { useBillStore } from './useBillStore';
 
 interface CategoryStore {
   categories: Category[];
@@ -11,47 +13,51 @@ interface CategoryStore {
   isCategoryUsed: (categoryName: string) => boolean;
 }
 
-export const useCategoryStore = create<CategoryStore>((set, get) => ({
-  categories: loadCategories(),
+export const useCategoryStore = create<CategoryStore>()(
+  persist(
+    (set, get) => ({
+      categories: defaultCategories,
 
-  addCategory: (category) => {
-    const newCategory: Category = {
-      ...category,
-      id: Date.now().toString(),
-    };
-    const updatedCategories = [...get().categories, newCategory];
-    set({ categories: updatedCategories });
-    saveCategories(updatedCategories);
-  },
+      addCategory: (category) => {
+        const newCategory: Category = {
+          ...category,
+          id: crypto.randomUUID(),
+        };
+        const updatedCategories = [...get().categories, newCategory];
+        set({ categories: updatedCategories });
+      },
 
-  deleteCategory: (id) => {
-    const category = get().categories.find(c => c.id === id);
-    if (!category) return false;
-    
-    const bills = JSON.parse(localStorage.getItem('bill_records') || '[]');
-    const isUsed = bills.some((b: { category: string }) => b.category === category.name);
-    
-    if (isUsed) return false;
-    
-    const updatedCategories = get().categories.filter(c => c.id !== id);
-    set({ categories: updatedCategories });
-    saveCategories(updatedCategories);
-    return true;
-  },
+      deleteCategory: (id) => {
+        const category = get().categories.find(c => c.id === id);
+        if (!category) return false;
 
-  reorderCategories: (type, newOrder) => {
-    const otherCategories = get().categories.filter(c => c.type !== type);
-    const updatedCategories = [...otherCategories, ...newOrder];
-    set({ categories: updatedCategories });
-    saveCategories(updatedCategories);
-  },
+        const bills = useBillStore.getState().bills;
+        const isUsed = bills.some((b) => b.category === category.name);
 
-  getCategoriesByType: (type) => {
-    return get().categories.filter(c => c.type === type);
-  },
+        if (isUsed) return false;
 
-  isCategoryUsed: (categoryName) => {
-    const bills = JSON.parse(localStorage.getItem('bill_records') || '[]');
-    return bills.some((b: { category: string }) => b.category === categoryName);
-  },
-}));
+        const updatedCategories = get().categories.filter(c => c.id !== id);
+        set({ categories: updatedCategories });
+        return true;
+      },
+
+      reorderCategories: (type, newOrder) => {
+        const otherCategories = get().categories.filter(c => c.type !== type);
+        const updatedCategories = [...otherCategories, ...newOrder];
+        set({ categories: updatedCategories });
+      },
+
+      getCategoriesByType: (type) => {
+        return get().categories.filter(c => c.type === type);
+      },
+
+      isCategoryUsed: (categoryName) => {
+        const bills = useBillStore.getState().bills;
+        return bills.some((b) => b.category === categoryName);
+      },
+    }),
+    {
+      name: 'categories',
+    }
+  )
+);

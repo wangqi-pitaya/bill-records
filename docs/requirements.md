@@ -186,3 +186,37 @@ interface Category {
 ### 6.3 默认图标库
 
 UtensilsCrossed, Car, ShoppingBag, Gamepad2, Home, Heart, GraduationCap, MoreHorizontal, Briefcase, Gift, TrendingUp, Clock, PlusCircle, Plane, Coffee, Book, Music, Smartphone, Wifi, CreditCard, DollarSign, Wallet, PiggyBank, Receipt, ShoppingCart, GiftCard, Beer, Wine, Pizza, IceCream, Cake, Apple
+
+---
+
+## 7. 版本规划
+
+### 7.1 v0.3.0 版本规划（upcoming）
+
+#### 数据导入/导出
+- 支持 JSON 格式数据导入导出，方便备份与迁移
+- 支持 CSV 格式导出，便于表格软件分析
+- 导入时提供数据预览与冲突处理（覆盖/合并/跳过）
+
+#### 账单搜索
+- 首页新增搜索入口，支持按备注关键词搜索账单
+- 搜索结果按日期倒序排列，高亮匹配内容
+- 支持按分类、收支类型、金额范围等高级筛选
+- 搜索历史记录，快速复用常用搜索词
+
+#### 自定义时间段统计
+- 统计卡片支持切换时间范围：本周/本月/本年/自定义
+- 自定义时间段通过日期范围选择器设置
+- 统计数据随时间范围实时更新
+
+#### 月度/年度图表统计
+- 新增统计页面 `/statistics`，提供图表化数据展示
+- 支出分类占比饼图，直观展示消费结构
+- 收支趋势折线图，按月或按年展示收支变化
+- 分类排行榜，展示支出/收入 Top 分类
+
+#### 预算设置与提醒
+- 支持按分类设置月度预算
+- 首页显示预算进度条，实时展示已用比例
+- 预算超支时红色警示提示
+- 支持预算周期重置与历史预算记录查看

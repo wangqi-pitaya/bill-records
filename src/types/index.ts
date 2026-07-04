@@ -22,5 +22,10 @@ export interface Bill {
 export interface BillStore {
   bills: Bill[];
   addBill: (bill: Omit<Bill, 'id' | 'timestamp'>) => void;
-  getStatistics: () => { income: number; expense: number; balance: number };
+  deleteBill: (id: string) => void;
+  updateBill: (id: string, bill: Omit<Bill, 'id' | 'timestamp'>) => void;
+  getBillById: (id: string) => Bill | undefined;
+  getStatistics: (walletId?: string) => { income: number; expense: number; balance: number };
+  clearBillsByWalletId: (walletId: string) => void;
+  migrateBills: (fromWalletId: string, toWalletId: string) => void;
 }

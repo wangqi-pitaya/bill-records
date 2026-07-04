@@ -19,7 +19,7 @@ export const useToastStore = create<ToastStore>((set, get) => ({
   toasts: [],
 
   showToast: (message, type = 'info', duration = 2000) => {
-    const id = Date.now().toString() + Math.random().toString(36).slice(2, 6);
+    const id = crypto.randomUUID();
     const newToast: ToastItem = { id, message, type, duration };
     set({ toasts: [...get().toasts, newToast] });
 
