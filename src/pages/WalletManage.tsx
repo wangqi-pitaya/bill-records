@@ -77,13 +77,13 @@ export default function WalletManage() {
 
   const handleSelectWallet = (id: string) => {
     if (id === currentWalletId) {
-      navigate('/', { replace: true });
+      navigate(-1);
       return;
     }
     setCurrentWallet(id);
     const walletName = wallets.find(w => w.id === id)?.name;
     toast.info(`已切换至「${walletName}」`);
-    navigate('/', { replace: true });
+    navigate(-1);
   };
 
   const openSettingSheet = (e: React.MouseEvent, walletId: string) => {
