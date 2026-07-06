@@ -392,7 +392,7 @@ function TrendChart({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 pb-5 transition-colors duration-300">
       <div className="flex items-center justify-center mb-3 relative">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{title}</h3>
         <button
@@ -413,7 +413,7 @@ function TrendChart({
         </ResponsiveContainer>
       </div>
 
-      <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 px-2 mb-3">
+      <div className="flex justify-center mt-4 pt-2 px-2">
         <div className="tab-container">
           {options.map((opt) => (
             <button
@@ -539,7 +539,7 @@ function CategoryPieChart({
             </ResponsiveContainer>
           </div>
 
-          <div className="flex justify-center pt-3 border-t border-gray-100 dark:border-gray-700">
+          <div className="flex justify-center pt-3">
             <div className="tab-container">
               <button
                 onClick={() => onChangePieType('expense')}
@@ -635,13 +635,24 @@ function DetailTable({
 
       {filteredData.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[320px]" style={{ tableLayout: 'fixed' }}>
             <thead>
               <tr className="border-b border-gray-100 dark:border-gray-700">
-                <th className="py-2 px-3 text-left font-medium text-gray-600 dark:text-gray-400">日期</th>
-                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400">收入</th>
-                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400">支出</th>
-                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400">结余</th>
+                <th
+                  className="py-2 px-3 text-left font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 z-10"
+                  style={{ width: '80px' }}
+                >
+                  日期
+                </th>
+                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap" style={{ width: '100px' }}>
+                  收入
+                </th>
+                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap" style={{ width: '100px' }}>
+                  支出
+                </th>
+                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap" style={{ width: '100px' }}>
+                  结余
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -650,14 +661,16 @@ function DetailTable({
                   key={index}
                   className="border-b border-gray-50 dark:border-gray-750 last:border-b-0"
                 >
-                  <td className="py-2 px-3 text-gray-700 dark:text-gray-300">{item.label}</td>
-                  <td className="py-2 px-3 text-right text-income-500">
+                  <td className="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 z-10">
+                    {item.label}
+                  </td>
+                  <td className="py-2 px-3 text-right text-income-500 whitespace-nowrap">
                     {item.income > 0 ? `¥${item.income.toFixed(2)}` : '-'}
                   </td>
-                  <td className="py-2 px-3 text-right text-expense-500">
+                  <td className="py-2 px-3 text-right text-expense-500 whitespace-nowrap">
                     {item.expense > 0 ? `¥${item.expense.toFixed(2)}` : '-'}
                   </td>
-                  <td className={`py-2 px-3 text-right font-medium ${
+                  <td className={`py-2 px-3 text-right font-medium whitespace-nowrap ${
                     item.balance >= 0 ? 'text-income-500' : 'text-expense-500'
                   }`}>
                     ¥{item.balance.toFixed(2)}
