@@ -333,11 +333,12 @@ function TrendChart({
               fontSize: 12,
               color: isDark ? '#f3f4f6' : '#1f2937',
             }}
+            cursor={{ fill: 'transparent' }}
           />
           <ReferenceLine y={0} stroke={gridColor} />
-          {showIncome && <Bar {...barOrLineProps.income} radius={[2, 2, 0, 0]} />}
-          {showExpense && <Bar {...barOrLineProps.expense} radius={[2, 2, 0, 0]} />}
-          {showBalance && <Bar {...barOrLineProps.balance} radius={[2, 2, 0, 0]} />}
+          {showIncome && <Bar {...barOrLineProps.income} radius={[2, 2, 0, 0]} stroke="none" />}
+          {showExpense && <Bar {...barOrLineProps.expense} radius={[2, 2, 0, 0]} stroke="none" />}
+          {showBalance && <Bar {...barOrLineProps.balance} radius={[2, 2, 0, 0]} stroke="none" />}
         </BarChart>
       );
     }
@@ -367,16 +368,17 @@ function TrendChart({
             fontSize: 12,
             color: isDark ? '#f3f4f6' : '#1f2937',
           }}
+          cursor={{ stroke: gridColor, strokeWidth: 1 }}
         />
         <ReferenceLine y={0} stroke={gridColor} />
         {showIncome && (
-          <Line {...barOrLineProps.income} type="monotone" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+          <Line {...barOrLineProps.income} type="monotone" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
         )}
         {showExpense && (
-          <Line {...barOrLineProps.expense} type="monotone" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+          <Line {...barOrLineProps.expense} type="monotone" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
         )}
         {showBalance && (
-          <Line {...barOrLineProps.balance} type="monotone" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+          <Line {...barOrLineProps.balance} type="monotone" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
         )}
       </LineChart>
     );
@@ -410,7 +412,7 @@ function TrendChart({
             <button
               key={opt.key}
               onClick={() => onChangeMode(opt.key)}
-              className={`tab-item ${trendMode === opt.key ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
+              className={`tab-item whitespace-nowrap ${trendMode === opt.key ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
             >
               {opt.label}
             </button>
@@ -481,7 +483,24 @@ function CategoryPieChart({
                   innerRadius={45}
                   outerRadius={65}
                   paddingAngle={paddingAngle}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={(props: { name?: string; percent?: number; cx?: number; cy?: number; midAngle?: number; outerRadius?: number }) => {
+                    const { name = '', percent = 0, cx = 0, cy = 0, midAngle = 0, outerRadius = 0 } = props;
+                    const RADIAN = Math.PI / 180;
+                    const radius = outerRadius + 12;
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                    const textColor = isDark ? '#d1d5db' : '#4b5563';
+                    return (
+                      <g>
+                        <text x={x} y={y - 6} fill={textColor} textAnchor={x > cx ? 'start' : 'end'} fontSize={9}>
+                          {name}
+                        </text>
+                        <text x={x} y={y + 6} fill={textColor} textAnchor={x > cx ? 'start' : 'end'} fontSize={9} fontWeight="600">
+                          {(percent * 100).toFixed(0)}%
+                        </text>
+                      </g>
+                    );
+                  }}
                   labelLine={{ stroke: isDark ? '#6b7280' : '#9ca3af', strokeWidth: 1 }}
                 >
                   {pieData.map((entry, index) => (
@@ -533,13 +552,13 @@ function CategoryPieChart({
             <div className="tab-container">
               <button
                 onClick={() => onChangePieType('expense')}
-                className={`tab-item ${pieType === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
+                className={`tab-item whitespace-nowrap ${pieType === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
               >
                 支出
               </button>
               <button
                 onClick={() => onChangePieType('income')}
-                className={`tab-item ${pieType === 'income' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
+                className={`tab-item whitespace-nowrap ${pieType === 'income' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
               >
                 收入
               </button>
