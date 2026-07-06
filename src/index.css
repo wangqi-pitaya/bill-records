@@ -57,11 +57,11 @@
   }
 
   .tab-container {
-    @apply flex w-full max-w-full bg-gray-100 rounded-xl p-0.5 dark:bg-gray-700;
+    @apply flex bg-gray-100 rounded-xl p-0.5 dark:bg-gray-700;
   }
 
   .tab-item {
-    @apply flex-1 py-1 px-2 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 whitespace-nowrap text-center;
+    @apply py-1 px-6 rounded-lg text-sm font-medium transition-all duration-200 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200;
   }
 
   .tab-item-active-expense {

@@ -42,10 +42,12 @@ export default function Statistics() {
   const [showPicker, setShowPicker] = useState(false);
   const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense' | 'balance'>('expense');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
+  const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
 
   const handleTabChange = (newTab: 'month' | 'year') => {
     setTab(newTab);
     setTrendMode('expense');
+    setPieType('expense');
   };
 
   const { bills } = useBillStore();
@@ -239,6 +241,8 @@ export default function Statistics() {
           <CategoryPieChart
             data={tab === 'month' ? monthStats : yearStats}
             renderIcon={renderIcon}
+            pieType={pieType}
+            onChangePieType={setPieType}
           />
         )}
       </main>
@@ -420,6 +424,8 @@ function TrendChart({
 function CategoryPieChart({
   data,
   renderIcon,
+  pieType,
+  onChangePieType,
 }: {
   data: {
     expenseCategories: CategoryStat[];
@@ -428,8 +434,9 @@ function CategoryPieChart({
     income: number;
   };
   renderIcon: (name: string, className?: string) => React.ReactNode;
+  pieType: 'expense' | 'income';
+  onChangePieType: (type: 'expense' | 'income') => void;
 }) {
-  const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
 
   const pieColors = [
     '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
@@ -474,7 +481,7 @@ function CategoryPieChart({
                   innerRadius={45}
                   outerRadius={65}
                   paddingAngle={paddingAngle}
-                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   labelLine={{ stroke: isDark ? '#6b7280' : '#9ca3af', strokeWidth: 1 }}
                 >
                   {pieData.map((entry, index) => (
@@ -525,13 +532,13 @@ function CategoryPieChart({
           <div className="flex justify-center pt-3 border-t border-gray-100 dark:border-gray-700">
             <div className="tab-container">
               <button
-                onClick={() => setPieType('expense')}
+                onClick={() => onChangePieType('expense')}
                 className={`tab-item ${pieType === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
               >
                 支出
               </button>
               <button
-                onClick={() => setPieType('income')}
+                onClick={() => onChangePieType('income')}
                 className={`tab-item ${pieType === 'income' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
               >
                 收入
