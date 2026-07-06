@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, BarChart3, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, TrendingUp, TrendingDown, Wallet, X } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
@@ -116,27 +116,14 @@ export default function Statistics() {
     };
   }, [walletBills, year, categories]);
 
-  const changeYear = (delta: number) => {
-    const newYear = year + delta;
-    if (newYear >= minYear && newYear <= maxYear) {
-      setYear(newYear);
-    }
-  };
+  const [showPicker, setShowPicker] = useState(false);
 
-  const changeMonth = (delta: number) => {
-    let newMonth = month + delta;
-    let newYear = year;
-    if (newMonth > 12) {
-      newMonth = 1;
-      newYear = year + 1;
-    } else if (newMonth < 1) {
-      newMonth = 12;
-      newYear = year - 1;
-    }
-    if (newYear >= minYear && newYear <= maxYear) {
-      setYear(newYear);
-      setMonth(newMonth);
-    }
+  const currentLabel = tab === 'month' ? `${year}年${month}月` : `${year}年`;
+
+  const handleConfirmPicker = (y: number, m?: number) => {
+    setYear(y);
+    if (m !== undefined) setMonth(m);
+    setShowPicker(false);
   };
 
   const renderIcon = (iconName: string, className?: string) => {
@@ -149,71 +136,58 @@ export default function Statistics() {
       <header className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 px-4 shadow-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
           <div className="h-12 flex items-center justify-center">
-            <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">统计</h1>
-          </div>
-          <div className="flex border-b border-gray-100 dark:border-gray-700">
-            <button
-              onClick={() => setTab('month')}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-                tab === 'month'
-                  ? 'text-primary-600 dark:text-primary-400'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              月度统计
-              {tab === 'month' && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-500 rounded-full" />
-              )}
-            </button>
-            <button
-              onClick={() => setTab('year')}
-              className={`flex-1 py-2.5 text-sm font-medium transition-colors relative ${
-                tab === 'year'
-                  ? 'text-primary-600 dark:text-primary-400'
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}
-            >
-              年度统计
-              {tab === 'year' && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary-500 rounded-full" />
-              )}
-            </button>
+            <div className="tab-container">
+              <button
+                onClick={() => setTab('month')}
+                className={`tab-item ${tab === 'month' ? 'tab-item-active-income' : ''}`}
+              >
+                月
+              </button>
+              <button
+                onClick={() => setTab('year')}
+                className={`tab-item ${tab === 'year' ? 'tab-item-active-income' : ''}`}
+              >
+                年
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 pt-[88px] pb-4">
+      <main className="max-w-4xl mx-auto px-4 pt-16 pb-4">
+        <div className="flex justify-center mb-4 pt-2">
+          <button
+            onClick={() => setShowPicker(true)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-card hover:shadow-card-hover transition-all"
+          >
+            <Calendar className="w-4 h-4" />
+            <span>{currentLabel}</span>
+            <ChevronDown className="w-4 h-4" />
+          </button>
+        </div>
+
         {tab === 'month' ? (
-          <MonthView
-            year={year}
-            month={month}
-            onChangeYear={changeYear}
-            onChangeMonth={changeMonth}
-            stats={monthStats}
-            renderIcon={renderIcon}
-            minYear={minYear}
-            maxYear={maxYear}
-          />
+          <MonthView stats={monthStats} renderIcon={renderIcon} />
         ) : (
-          <YearView
-            year={year}
-            onChangeYear={changeYear}
-            stats={yearStats}
-            renderIcon={renderIcon}
-            minYear={minYear}
-            maxYear={maxYear}
-          />
+          <YearView stats={yearStats} renderIcon={renderIcon} />
         )}
       </main>
+
+      <YearMonthPicker
+        isOpen={showPicker}
+        mode={tab}
+        initialYear={year}
+        initialMonth={month}
+        onClose={() => setShowPicker(false)}
+        onConfirm={handleConfirmPicker}
+        minYear={minYear}
+        maxYear={maxYear}
+      />
     </div>
   );
 }
 
-function MonthView({ year, month, onChangeYear, onChangeMonth, stats, renderIcon, minYear, maxYear }: {
-  year: number;
-  month: number;
-  onChangeYear: (d: number) => void;
-  onChangeMonth: (d: number) => void;
+function MonthView({ stats, renderIcon }: {
   stats: {
     income: number;
     expense: number;
@@ -223,46 +197,9 @@ function MonthView({ year, month, onChangeYear, onChangeMonth, stats, renderIcon
     hasData: boolean;
   };
   renderIcon: (name: string, className?: string) => React.ReactNode;
-  minYear: number;
-  maxYear: number;
 }) {
   return (
     <div className="space-y-4">
-      <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-        <div className="flex items-center justify-between mb-3">
-          <button
-            onClick={() => onChangeYear(-1)}
-            disabled={year <= minYear}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-30 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-base font-bold text-gray-800 dark:text-gray-100">{year}年</span>
-          <button
-            onClick={() => onChangeYear(1)}
-            disabled={year >= maxYear}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-30 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => onChangeMonth(-1)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">{month}月</span>
-          <button
-            onClick={() => onChangeMonth(1)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
       <div className="grid grid-cols-3 gap-3">
         <OverviewCard
           icon={<TrendingUp className="w-5 h-5 text-income-500" />}
@@ -287,7 +224,7 @@ function MonthView({ year, month, onChangeYear, onChangeMonth, stats, renderIcon
       {!stats.hasData ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>{year}年{month}月暂无账单数据</p>
+          <p>暂无账单数据</p>
         </div>
       ) : (
         <>
@@ -318,9 +255,7 @@ function MonthView({ year, month, onChangeYear, onChangeMonth, stats, renderIcon
   );
 }
 
-function YearView({ year, onChangeYear, stats, renderIcon, minYear, maxYear }: {
-  year: number;
-  onChangeYear: (d: number) => void;
+function YearView({ stats, renderIcon }: {
   stats: {
     income: number;
     expense: number;
@@ -330,33 +265,11 @@ function YearView({ year, onChangeYear, stats, renderIcon, minYear, maxYear }: {
     hasData: boolean;
   };
   renderIcon: (name: string, className?: string) => React.ReactNode;
-  minYear: number;
-  maxYear: number;
 }) {
   const maxMonthly = Math.max(...stats.monthlyTrend.map(m => Math.max(m.income, m.expense)), 1);
 
   return (
     <div className="space-y-4">
-      <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => onChangeYear(-1)}
-            disabled={year <= minYear}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-30 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="text-lg font-bold text-primary-600 dark:text-primary-400">{year}年</span>
-          <button
-            onClick={() => onChangeYear(1)}
-            disabled={year >= maxYear}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 disabled:opacity-30 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
       <div className="grid grid-cols-3 gap-3">
         <OverviewCard
           icon={<TrendingUp className="w-5 h-5 text-income-500" />}
@@ -381,7 +294,7 @@ function YearView({ year, onChangeYear, stats, renderIcon, minYear, maxYear }: {
       {!stats.hasData ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>{year}年暂无账单数据</p>
+          <p>暂无账单数据</p>
         </div>
       ) : (
         <>
@@ -466,6 +379,178 @@ function CategoryBarItem({ stat, renderIcon, type }: {
           />
         </div>
         <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{stat.percentage.toFixed(1)}%</div>
+      </div>
+    </div>
+  );
+}
+
+function YearMonthPicker({
+  isOpen,
+  mode,
+  initialYear,
+  initialMonth,
+  onClose,
+  onConfirm,
+  minYear,
+  maxYear,
+}: {
+  isOpen: boolean;
+  mode: 'year' | 'month';
+  initialYear: number;
+  initialMonth: number;
+  onClose: () => void;
+  onConfirm: (year: number, month?: number) => void;
+  minYear: number;
+  maxYear: number;
+}) {
+  const [viewYear, setViewYear] = useState(initialYear);
+  const [viewMonth, setViewMonth] = useState(initialMonth);
+  const [pageStartYear, setPageStartYear] = useState(initialYear - 5);
+
+  useEffect(() => {
+    if (isOpen) {
+      setViewYear(initialYear);
+      setViewMonth(initialMonth);
+      setPageStartYear(initialYear - 5);
+    }
+  }, [isOpen, initialYear, initialMonth]);
+
+  if (!isOpen) return null;
+
+  const handlePrev = () => {
+    if (mode === 'year') {
+      const newStart = pageStartYear - 12;
+      setPageStartYear(newStart);
+    } else {
+      if (viewYear > minYear) setViewYear(viewYear - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (mode === 'year') {
+      const newStart = pageStartYear + 12;
+      setPageStartYear(newStart);
+    } else {
+      if (viewYear < maxYear) setViewYear(viewYear + 1);
+    }
+  };
+
+  const canGoPrev = mode === 'year' ? true : viewYear > minYear;
+  const canGoNext = mode === 'year' ? true : viewYear < maxYear;
+
+  const handleConfirm = () => {
+    if (mode === 'year') {
+      onConfirm(viewYear);
+    } else {
+      onConfirm(viewYear, viewMonth);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-modal w-full max-w-[280px] overflow-hidden animate-scale-in">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">选择日期</h3>
+          <button
+            onClick={onClose}
+            className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            <X className="w-3 h-3 text-gray-600 dark:text-gray-400" />
+          </button>
+        </div>
+
+        <div className="p-3">
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={handlePrev}
+              disabled={!canGoPrev}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-sm transition-colors ${
+                canGoPrev
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-700 cursor-not-allowed'
+              }`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {mode === 'year'
+                ? `${pageStartYear} - ${pageStartYear + 11}`
+                : `${viewYear}年`}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-sm transition-colors ${
+                canGoNext
+                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  : 'bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-700 cursor-not-allowed'
+              }`}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          {mode === 'year' ? (
+            <div className="grid grid-cols-4 gap-2">
+              {Array.from({ length: 12 }, (_, i) => {
+                const y = pageStartYear + i;
+                const isDisabled = y < minYear || y > maxYear;
+                const isSelected = y === viewYear;
+                return (
+                  <button
+                    key={y}
+                    onClick={() => !isDisabled && setViewYear(y)}
+                    disabled={isDisabled}
+                    className={`py-2 text-xs font-medium rounded-md transition-colors ${
+                      isSelected
+                        ? 'bg-primary-500 text-white'
+                        : isDisabled
+                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-2">
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
+                const isSelected = m === viewMonth;
+                return (
+                  <button
+                    key={m}
+                    onClick={() => setViewMonth(m)}
+                    className={`py-2 text-xs font-medium rounded-md transition-colors ${
+                      isSelected
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {m}月
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="flex border-t border-gray-100 dark:border-gray-700">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 text-xs text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-r border-gray-100 dark:border-gray-700"
+          >
+            取消
+          </button>
+          <button
+            onClick={handleConfirm}
+            className="flex-1 py-2.5 text-xs text-primary-500 dark:text-primary-400 font-medium hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+          >
+            确定
+          </button>
+        </div>
       </div>
     </div>
   );
