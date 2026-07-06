@@ -509,7 +509,7 @@ function CategoryPieChart({
                       </g>
                     );
                   }}
-                  labelLine={{ stroke: isDark ? '#6b7280' : '#9ca3af', strokeWidth: 1 }}
+                  labelLine={false}
                 >
                   {pieData.map((entry, index) => (
                     <Cell
