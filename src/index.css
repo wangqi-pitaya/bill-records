@@ -65,11 +65,13 @@
   }
 
   .tab-item-active-expense {
-    @apply bg-expense-500 text-white shadow-md;
+    @apply bg-expense-500 text-white !important;
+    @apply shadow-md;
   }
 
   .tab-item-active-income {
-    @apply bg-income-500 text-white shadow-md;
+    @apply bg-income-500 text-white !important;
+    @apply shadow-md;
   }
 
   .modal-backdrop {

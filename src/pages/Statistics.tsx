@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, TrendingUp, TrendingDown, Wallet, X } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, X } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { filterBillsByWallet } from '../lib/utils';
+import { StatCard } from '../components/StatCard';
 
 interface CategoryStat {
   name: string;
@@ -13,13 +14,25 @@ interface CategoryStat {
   icon: string;
 }
 
+interface TrendItem {
+  label: string;
+  income: number;
+  expense: number;
+  balance: number;
+}
+
 export default function Statistics() {
   const [tab, setTab] = useState<'month' | 'year'>('month');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
+  const [showPicker, setShowPicker] = useState(false);
+  const [showIncome, setShowIncome] = useState(true);
+  const [showExpense, setShowExpense] = useState(true);
+  const [showBalance, setShowBalance] = useState(true);
 
   const { bills } = useBillStore();
-  const { currentWalletId } = useWalletStore();
+  const { currentWalletId, wallets } = useWalletStore();
+  const currentWallet = wallets.find(w => w.id === currentWalletId);
   const { categories } = useCategoryStore();
 
   const walletBills = useMemo(() => filterBillsByWallet(bills, currentWalletId), [bills, currentWalletId]);
@@ -63,6 +76,16 @@ export default function Statistics() {
         }))
         .sort((a, b) => b.amount - a.amount);
 
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const dailyTrend: TrendItem[] = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayBills = filtered.filter(b => b.date === dayStr);
+      const di = dayBills.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0);
+      const de = dayBills.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0);
+      return { label: `${day}日`, income: di, expense: de, balance: di - de };
+    });
+
     return {
       income,
       expense,
@@ -70,6 +93,7 @@ export default function Statistics() {
       expenseCategories: toArray(expenseCats, expense),
       incomeCategories: toArray(incomeCats, income),
       hasData: filtered.length > 0,
+      trend: dailyTrend,
     };
   }, [walletBills, year, month, categories]);
 
@@ -82,12 +106,12 @@ export default function Statistics() {
     const income = filtered.filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
     const expense = filtered.filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0);
 
-    const monthly = Array.from({ length: 12 }, (_, i) => {
+    const monthly: TrendItem[] = Array.from({ length: 12 }, (_, i) => {
       const m = i + 1;
       const monthBills = filtered.filter(b => Number(b.date.split('-')[1]) === m);
       const mi = monthBills.filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
       const me = monthBills.filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0);
-      return { month: m, income: mi, expense: me };
+      return { label: `${m}月`, income: mi, expense: me, balance: mi - me };
     });
 
     const expenseCats: Record<string, number> = {};
@@ -113,10 +137,9 @@ export default function Statistics() {
       monthlyTrend: monthly,
       expenseCategories,
       hasData: filtered.length > 0,
+      trend: monthly,
     };
   }, [walletBills, year, categories]);
-
-  const [showPicker, setShowPicker] = useState(false);
 
   const currentLabel = tab === 'month' ? `${year}年${month}月` : `${year}年`;
 
@@ -130,6 +153,8 @@ export default function Statistics() {
     const Icon = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[iconName] || Icons.Circle;
     return <Icon className={className} />;
   };
+
+  const stats = tab === 'month' ? monthStats : yearStats;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-20">
@@ -154,8 +179,8 @@ export default function Statistics() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 pt-16 pb-4">
-        <div className="flex justify-center mb-4 pt-2">
+      <main className="max-w-4xl mx-auto px-4 pt-16 pb-4 space-y-4">
+        <div className="flex justify-center pt-2">
           <button
             onClick={() => setShowPicker(true)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white dark:bg-gray-800 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-card hover:shadow-card-hover transition-all"
@@ -166,10 +191,67 @@ export default function Statistics() {
           </button>
         </div>
 
-        {tab === 'month' ? (
-          <MonthView stats={monthStats} renderIcon={renderIcon} />
+        <StatCard
+          income={stats.income}
+          expense={stats.expense}
+          balance={stats.balance}
+          color={currentWallet?.color}
+        />
+
+        <TrendChart
+          data={stats.trend}
+          showIncome={showIncome}
+          showExpense={showExpense}
+          showBalance={showBalance}
+          onToggleIncome={() => setShowIncome(!showIncome)}
+          onToggleExpense={() => setShowExpense(!showExpense)}
+          onToggleBalance={() => setShowBalance(!showBalance)}
+        />
+
+        {!stats.hasData ? (
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+            <p>暂无账单数据</p>
+          </div>
         ) : (
-          <YearView stats={yearStats} renderIcon={renderIcon} />
+          <>
+            {tab === 'month' && (monthStats.incomeCategories.length > 0 || monthStats.expenseCategories.length > 0) && (
+              <>
+                {monthStats.expenseCategories.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">支出分类</h3>
+                    <div className="space-y-3">
+                      {monthStats.expenseCategories.map((cat) => (
+                        <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="expense" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {monthStats.incomeCategories.length > 0 && (
+                  <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">收入分类</h3>
+                    <div className="space-y-3">
+                      {monthStats.incomeCategories.map((cat) => (
+                        <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="income" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {tab === 'year' && yearStats.expenseCategories.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">支出分类排行</h3>
+                <div className="space-y-3">
+                  {yearStats.expenseCategories.map((cat) => (
+                    <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="expense" />
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </main>
 
@@ -187,172 +269,107 @@ export default function Statistics() {
   );
 }
 
-function MonthView({ stats, renderIcon }: {
-  stats: {
-    income: number;
-    expense: number;
-    balance: number;
-    expenseCategories: CategoryStat[];
-    incomeCategories: CategoryStat[];
-    hasData: boolean;
-  };
-  renderIcon: (name: string, className?: string) => React.ReactNode;
+function TrendChart({
+  data,
+  showIncome,
+  showExpense,
+  showBalance,
+  onToggleIncome,
+  onToggleExpense,
+  onToggleBalance,
+}: {
+  data: TrendItem[];
+  showIncome: boolean;
+  showExpense: boolean;
+  showBalance: boolean;
+  onToggleIncome: () => void;
+  onToggleExpense: () => void;
+  onToggleBalance: () => void;
 }) {
+  const maxVal = useMemo(() => {
+    let max = 0;
+    data.forEach(d => {
+      if (showIncome && d.income > max) max = d.income;
+      if (showExpense && d.expense > max) max = d.expense;
+      if (showBalance && Math.abs(d.balance) > max) max = Math.abs(d.balance);
+    });
+    return max || 1;
+  }, [data, showIncome, showExpense, showBalance]);
+
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
-        <OverviewCard
-          icon={<TrendingUp className="w-5 h-5 text-income-500" />}
-          label="收入"
-          amount={stats.income}
-          color="text-income-600 dark:text-income-400"
-        />
-        <OverviewCard
-          icon={<TrendingDown className="w-5 h-5 text-expense-500" />}
-          label="支出"
-          amount={stats.expense}
-          color="text-expense-600 dark:text-expense-400"
-        />
-        <OverviewCard
-          icon={<Wallet className="w-5 h-5 text-primary-500" />}
-          label="结余"
-          amount={stats.balance}
-          color={stats.balance >= 0 ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'}
-        />
+    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">趋势</h3>
+
+      <div className="flex items-center gap-4 mb-4">
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showIncome}
+            onChange={onToggleIncome}
+            className="w-3.5 h-3.5 rounded border-gray-300 text-income-500 focus:ring-income-500"
+          />
+          <span className="text-xs text-income-500 font-medium">收入</span>
+        </label>
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showExpense}
+            onChange={onToggleExpense}
+            className="w-3.5 h-3.5 rounded border-gray-300 text-expense-500 focus:ring-expense-500"
+          />
+          <span className="text-xs text-expense-500 font-medium">支出</span>
+        </label>
+        <label className="flex items-center gap-1.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showBalance}
+            onChange={onToggleBalance}
+            className="w-3.5 h-3.5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+          />
+          <span className="text-xs text-primary-500 font-medium">结余</span>
+        </label>
       </div>
 
-      {!stats.hasData ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>暂无账单数据</p>
+      <div className="overflow-x-auto -mx-4 px-4">
+        <div className="flex items-end gap-0.5 min-w-max h-32">
+          {data.map((item, idx) => {
+            const bars = [];
+            if (showIncome) {
+              bars.push(
+                <div
+                  key="income"
+                  className="w-1.5 bg-income-500 rounded-t-sm"
+                  style={{ height: `${(item.income / maxVal) * 100}%` }}
+                />
+              );
+            }
+            if (showExpense) {
+              bars.push(
+                <div
+                  key="expense"
+                  className="w-1.5 bg-expense-500 rounded-t-sm"
+                  style={{ height: `${(item.expense / maxVal) * 100}%` }}
+                />
+              );
+            }
+            if (showBalance) {
+              bars.push(
+                <div
+                  key="balance"
+                  className={`w-1.5 rounded-t-sm ${item.balance >= 0 ? 'bg-primary-500' : 'bg-expense-400'}`}
+                  style={{ height: `${(Math.abs(item.balance) / maxVal) * 100}%` }}
+                />
+              );
+            }
+            return (
+              <div key={idx} className="flex flex-col items-center gap-1" style={{ minWidth: bars.length * 8 + 4 }}>
+                <div className="flex items-end gap-0.5 h-28">{bars.length > 0 ? bars : <div className="w-1.5 h-0.5" />}</div>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">{item.label.replace('月', '').replace('日', '')}</span>
+              </div>
+            );
+          })}
         </div>
-      ) : (
-        <>
-          {stats.expenseCategories.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">支出分类</h3>
-              <div className="space-y-3">
-                {stats.expenseCategories.map((cat) => (
-                  <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="expense" />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {stats.incomeCategories.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">收入分类</h3>
-              <div className="space-y-3">
-                {stats.incomeCategories.map((cat) => (
-                  <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="income" />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function YearView({ stats, renderIcon }: {
-  stats: {
-    income: number;
-    expense: number;
-    balance: number;
-    monthlyTrend: { month: number; income: number; expense: number }[];
-    expenseCategories: CategoryStat[];
-    hasData: boolean;
-  };
-  renderIcon: (name: string, className?: string) => React.ReactNode;
-}) {
-  const maxMonthly = Math.max(...stats.monthlyTrend.map(m => Math.max(m.income, m.expense)), 1);
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
-        <OverviewCard
-          icon={<TrendingUp className="w-5 h-5 text-income-500" />}
-          label="收入"
-          amount={stats.income}
-          color="text-income-600 dark:text-income-400"
-        />
-        <OverviewCard
-          icon={<TrendingDown className="w-5 h-5 text-expense-500" />}
-          label="支出"
-          amount={stats.expense}
-          color="text-expense-600 dark:text-expense-400"
-        />
-        <OverviewCard
-          icon={<Wallet className="w-5 h-5 text-primary-500" />}
-          label="结余"
-          amount={stats.balance}
-          color={stats.balance >= 0 ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'}
-        />
       </div>
-
-      {!stats.hasData ? (
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>暂无账单数据</p>
-        </div>
-      ) : (
-        <>
-          <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">月度趋势</h3>
-            <div className="space-y-2">
-              {stats.monthlyTrend.map((m) => (
-                <div key={m.month} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500 dark:text-gray-400 w-8 shrink-0">{m.month}月</span>
-                  <div className="flex-1 h-6 relative bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
-                    {m.expense > 0 && (
-                      <div
-                        className="absolute left-0 top-0 h-full bg-expense-500/80 rounded-r-md flex items-center justify-end pr-1"
-                        style={{ width: `${Math.min((m.expense / maxMonthly) * 100, 100)}%` }}
-                      >
-                        {m.expense > maxMonthly * 0.15 && (
-                          <span className="text-[10px] text-white font-medium">{m.expense.toFixed(0)}</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  {m.income > 0 && (
-                    <span className="text-xs text-income-500 w-14 text-right shrink-0">+{m.income.toFixed(0)}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {stats.expenseCategories.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">支出分类排行</h3>
-              <div className="space-y-3">
-                {stats.expenseCategories.map((cat) => (
-                  <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="expense" />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-function OverviewCard({ icon, label, amount, color }: {
-  icon: React.ReactNode;
-  label: string;
-  amount: number;
-  color: string;
-}) {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-3 transition-colors duration-300">
-      <div className="flex items-center gap-1.5 mb-1">
-        {icon}
-        <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
-      </div>
-      <div className={`text-base font-bold truncate ${color}`}>¥{amount.toFixed(2)}</div>
     </div>
   );
 }
