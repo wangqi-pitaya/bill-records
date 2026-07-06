@@ -528,17 +528,61 @@ function CategoryPieChart({
                 >
                   {pieType === 'expense' ? '支出' : '收入'}
                 </text>
-                <text
-                  x="50%"
-                  y="58%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fill={isDark ? '#f3f4f6' : '#1f2937'}
-                  fontSize={14}
-                  fontWeight="600"
-                >
-                  {total.toFixed(2)}
-                </text>
+                {(() => {
+                  const amountStr = total.toFixed(2);
+                  const len = amountStr.length;
+                  let fontSize = 14;
+                  if (len > 8) fontSize = 12;
+                  if (len > 10) fontSize = 10;
+                  if (len > 12) fontSize = 8;
+                  
+                  if (len <= 10) {
+                    return (
+                      <text
+                        x="50%"
+                        y="58%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill={isDark ? '#f3f4f6' : '#1f2937'}
+                        fontSize={fontSize}
+                        fontWeight="600"
+                      >
+                        {amountStr}
+                      </text>
+                    );
+                  }
+                  
+                  const intPart = amountStr.split('.')[0];
+                  const decPart = '.' + amountStr.split('.')[1];
+                  return (
+                    <>
+                      <text
+                        x="50%"
+                        y="55%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill={isDark ? '#f3f4f6' : '#1f2937'}
+                        fontSize={fontSize}
+                        fontWeight="600"
+                      >
+                        {intPart}
+                      </text>
+                      <text
+                        x="50%"
+                        y="55%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill={isDark ? '#f3f4f6' : '#1f2937'}
+                        fontSize={fontSize - 2}
+                        fontWeight="600"
+                      >
+                        <tspan x="50%" dy={fontSize + 2}>
+                          {decPart}
+                        </tspan>
+                      </text>
+                    </>
+                  );
+                })()}
               </PieChart>
             </ResponsiveContainer>
           </div>
