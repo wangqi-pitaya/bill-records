@@ -4,6 +4,8 @@ import * as Icons from 'lucide-react';
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -37,6 +39,11 @@ export default function Statistics() {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [showPicker, setShowPicker] = useState(false);
   const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense' | 'balance'>('all');
+  const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
+
+  useEffect(() => {
+    setTrendMode('all');
+  }, [tab]);
 
   const { bills } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
@@ -210,6 +217,9 @@ export default function Statistics() {
           data={stats.trend}
           trendMode={trendMode}
           onChangeMode={setTrendMode}
+          chartType={chartType}
+          onChangeChartType={setChartType}
+          title={tab === 'month' ? '每日统计' : '每月对比'}
         />
 
         {!stats.hasData ? (
@@ -277,14 +287,24 @@ function TrendChart({
   data,
   trendMode,
   onChangeMode,
+  chartType,
+  onChangeChartType,
+  title,
 }: {
   data: TrendItem[];
   trendMode: 'all' | 'income' | 'expense' | 'balance';
   onChangeMode: (mode: 'all' | 'income' | 'expense' | 'balance') => void;
+  chartType: 'bar' | 'line';
+  onChangeChartType: (type: 'bar' | 'line') => void;
+  title: string;
 }) {
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const axisColor = isDark ? '#9ca3af' : '#6b7280';
   const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+  const COLOR_INCOME = '#10b981';
+  const COLOR_EXPENSE = '#ef4444';
+  const COLOR_BALANCE = '#60a5fa';
 
   const showIncome = trendMode === 'all' || trendMode === 'income';
   const showExpense = trendMode === 'all' || trendMode === 'expense';
@@ -297,54 +317,112 @@ function TrendChart({
     { key: 'balance', label: '结余' },
   ];
 
+  const renderChart = () => {
+    const chartProps = {
+      data,
+      margin: { top: 8, right: 8, left: -20, bottom: 0 },
+    };
+
+    const barOrLineProps = {
+      income: { dataKey: 'income', name: '收入', stroke: COLOR_INCOME, fill: COLOR_INCOME },
+      expense: { dataKey: 'expense', name: '支出', stroke: COLOR_EXPENSE, fill: COLOR_EXPENSE },
+      balance: { dataKey: 'balance', name: '结余', stroke: COLOR_BALANCE, fill: COLOR_BALANCE },
+    };
+
+    if (chartType === 'bar') {
+      return (
+        <BarChart {...chartProps} barCategoryGap="20%">
+          <XAxis
+            dataKey="label"
+            tick={{ fill: axisColor, fontSize: 10 }}
+            axisLine={{ stroke: gridColor }}
+            tickLine={{ stroke: gridColor }}
+            interval="preserveStartEnd"
+            minTickGap={16}
+          />
+          <YAxis
+            tick={{ fill: axisColor, fontSize: 10 }}
+            axisLine={{ stroke: gridColor }}
+            tickLine={{ stroke: gridColor }}
+            tickFormatter={(v: number) => `¥${v}`}
+          />
+          <Tooltip
+            formatter={(value: number, name: string) => [`¥${value.toFixed(2)}`, name]}
+            contentStyle={{
+              backgroundColor: isDark ? '#1f2937' : '#ffffff',
+              borderColor: gridColor,
+              borderRadius: '0.5rem',
+              fontSize: 12,
+              color: isDark ? '#f3f4f6' : '#1f2937',
+            }}
+          />
+          <ReferenceLine y={0} stroke={gridColor} />
+          {showIncome && <Bar {...barOrLineProps.income} radius={[2, 2, 0, 0]} />}
+          {showExpense && <Bar {...barOrLineProps.expense} radius={[2, 2, 0, 0]} />}
+          {showBalance && <Bar {...barOrLineProps.balance} radius={[2, 2, 0, 0]} />}
+        </BarChart>
+      );
+    }
+
+    return (
+      <LineChart {...chartProps}>
+        <XAxis
+          dataKey="label"
+          tick={{ fill: axisColor, fontSize: 10 }}
+          axisLine={{ stroke: gridColor }}
+          tickLine={{ stroke: gridColor }}
+          interval="preserveStartEnd"
+          minTickGap={16}
+        />
+        <YAxis
+          tick={{ fill: axisColor, fontSize: 10 }}
+          axisLine={{ stroke: gridColor }}
+          tickLine={{ stroke: gridColor }}
+          tickFormatter={(v: number) => `¥${v}`}
+        />
+        <Tooltip
+          formatter={(value: number, name: string) => [`¥${value.toFixed(2)}`, name]}
+          contentStyle={{
+            backgroundColor: isDark ? '#1f2937' : '#ffffff',
+            borderColor: gridColor,
+            borderRadius: '0.5rem',
+            fontSize: 12,
+            color: isDark ? '#f3f4f6' : '#1f2937',
+          }}
+        />
+        <ReferenceLine y={0} stroke={gridColor} />
+        {showIncome && (
+          <Line {...barOrLineProps.income} type="monotone" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+        )}
+        {showExpense && (
+          <Line {...barOrLineProps.expense} type="monotone" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+        )}
+        {showBalance && (
+          <Line {...barOrLineProps.balance} type="monotone" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+        )}
+      </LineChart>
+    );
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+      <div className="flex items-center justify-center mb-3 relative">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{title}</h3>
+        <button
+          onClick={() => onChangeChartType(chartType === 'bar' ? 'line' : 'bar')}
+          className="absolute right-0 w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        >
+          {chartType === 'bar' ? (
+            <Icons.LineChart className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          ) : (
+            <Icons.BarChart3 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          )}
+        </button>
+      </div>
+
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} barCategoryGap="20%" margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-            <XAxis
-              dataKey="label"
-              tick={{ fill: axisColor, fontSize: 10 }}
-              axisLine={{ stroke: gridColor }}
-              tickLine={{ stroke: gridColor }}
-              interval="preserveStartEnd"
-              minTickGap={16}
-            />
-            <YAxis
-              tick={{ fill: axisColor, fontSize: 10 }}
-              axisLine={{ stroke: gridColor }}
-              tickLine={{ stroke: gridColor }}
-              tickFormatter={(v: number) => `¥${v}`}
-            />
-            <Tooltip
-              formatter={(value: number, name: string) => [`¥${value.toFixed(2)}`, name]}
-              contentStyle={{
-                backgroundColor: isDark ? '#1f2937' : '#ffffff',
-                borderColor: gridColor,
-                borderRadius: '0.5rem',
-                fontSize: 12,
-                color: isDark ? '#f3f4f6' : '#1f2937',
-              }}
-            />
-            <ReferenceLine y={0} stroke={gridColor} />
-            {showIncome && (
-              <Bar dataKey="income" name="收入" fill="#10b981" radius={[2, 2, 0, 0]}>
-                {data.map((entry, index) => (
-                  <Cell key={`income-${index}`} fill={entry.income >= 0 ? '#10b981' : '#ef4444'} />
-                ))}
-              </Bar>
-            )}
-            {showExpense && (
-              <Bar dataKey="expense" name="支出" fill="#ef4444" radius={[2, 2, 0, 0]} />
-            )}
-            {showBalance && (
-              <Bar dataKey="balance" name="结余" fill="#3b82f6" radius={[2, 2, 0, 0]}>
-                {data.map((entry, index) => (
-                  <Cell key={`balance-${index}`} fill={entry.balance >= 0 ? '#3b82f6' : '#f87171'} />
-                ))}
-              </Bar>
-            )}
-          </BarChart>
+          {renderChart()}
         </ResponsiveContainer>
       </div>
 
