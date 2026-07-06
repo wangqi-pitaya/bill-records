@@ -49,7 +49,7 @@ export const useWalletStore = create<WalletStore>()(
       },
 
       deleteWallet: (id) => {
-        let wallets = get().wallets.filter((w) => w.id !== id);
+        const wallets = get().wallets.filter((w) => w.id !== id);
         let currentWalletId = get().currentWalletId;
         if (get().currentWalletId === id) {
           currentWalletId = wallets[0]?.id || 'default';
