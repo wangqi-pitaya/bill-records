@@ -159,13 +159,11 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
             
             <div className="text-right shrink-0 flex flex-col items-end">
               <div
-                className={`font-bold ${
+                className={`font-bold whitespace-nowrap ${
                   bill.type === 'income' ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'
                 }`}
                 style={{
                   fontSize: bill.amount.toFixed(2).length > 8 ? '12px' : bill.amount.toFixed(2).length > 10 ? '10px' : '18px',
-                  maxWidth: '100px',
-                  wordBreak: 'break-all',
                 }}
               >
                 {bill.type === 'income' ? '+' : '-'}{bill.amount.toFixed(2)}

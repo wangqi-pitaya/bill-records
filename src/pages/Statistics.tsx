@@ -664,12 +664,8 @@ function DetailTable({
   data: TrendItem[];
   expense: number;
 }) {
-  // 计算日均/月均支出
   const count = data.length;
   const avgExpense = count > 0 ? expense / count : 0;
-
-  // 过滤有数据的行（至少有一项非零）
-  const filteredData = data.filter(item => item.income !== 0 || item.expense !== 0 || item.balance !== 0);
 
   const title = tab === 'month' ? '日明细' : '月明细';
   const avgLabel = tab === 'month' ? '日均支出' : '月均支出';
@@ -685,7 +681,7 @@ function DetailTable({
         <span className="text-sm font-semibold text-expense-500 ml-2">{avgExpense.toFixed(2)}</span>
       </div>
 
-      {filteredData.length > 0 ? (
+      {data.length > 0 ? (
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[320px]" style={{ tableLayout: 'fixed' }}>
             <thead>
@@ -708,7 +704,7 @@ function DetailTable({
               </tr>
             </thead>
             <tbody>
-              {filteredData.map((item, index) => (
+              {data.map((item, index) => (
                 <tr
                   key={index}
                   className="border-b border-gray-50 dark:border-gray-750 last:border-b-0"
