@@ -92,6 +92,13 @@ export default function WalletManage() {
     setShowSettingSheet(true);
   };
 
+  const handleGoStatistics = (walletId: string) => {
+    setCurrentWallet(walletId);
+    setShowSettingSheet(false);
+    setActiveWalletId(null);
+    navigate('/statistics');
+  };
+
   const handleClearBills = () => {
     if (!activeWalletId) return;
     clearBillsByWalletId(activeWalletId);
@@ -355,10 +362,10 @@ export default function WalletManage() {
                 <span className="text-base text-gray-800 dark:text-gray-100">修改</span>
               </button>
               <button
-                disabled
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg opacity-40 cursor-not-allowed"
+                onClick={() => handleGoStatistics(activeWallet.id)}
+                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <BarChart3 className="w-5 h-5 text-primary-500" />
                 <span className="text-base text-gray-800 dark:text-gray-100">报表统计</span>
               </button>
               <button
