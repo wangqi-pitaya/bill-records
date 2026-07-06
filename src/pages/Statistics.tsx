@@ -423,10 +423,13 @@ function CategoryPieChart({
   data: {
     expenseCategories: CategoryStat[];
     incomeCategories: CategoryStat[];
+    expense: number;
+    income: number;
   };
   renderIcon: (name: string, className?: string) => React.ReactNode;
 }) {
   const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const pieColors = [
     '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
@@ -435,17 +438,80 @@ function CategoryPieChart({
   ];
 
   const list = pieType === 'expense' ? data.expenseCategories : data.incomeCategories;
+  const total = pieType === 'expense' ? data.expense : data.income;
   const pieData = list.map((item) => ({
     name: item.name,
     value: item.amount,
     percentage: item.percentage,
     icon: item.icon,
+    color: pieColors[list.indexOf(item) % pieColors.length],
   }));
 
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
   const tooltipBg = isDark ? '#1f2937' : '#ffffff';
   const tooltipText = isDark ? '#f3f4f6' : '#1f2937';
   const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
+
+  const paddingAngle = pieData.length === 1 ? 0 : 2;
+  const selectedItem = selectedIndex !== null ? pieData[selectedIndex] : null;
+
+  const handleClick = (_: unknown, index: number) => {
+    setSelectedIndex(selectedIndex === index ? null : index);
+  };
+
+  const renderLabel = ({ name, percentage }: { name: string; percentage: number }) => {
+    return `${percentage.toFixed(0)}%`;
+  };
+
+  const renderActiveShape = (props: {
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    innerRadius?: number;
+    outerRadius?: number;
+    startAngle?: number;
+    endAngle?: number;
+    fill?: string;
+    payload?: { name?: string; value?: number; percentage?: number };
+    percent?: number;
+    index?: number;
+  }) => {
+    const { cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, startAngle = 0, endAngle = 0, fill = '#000' } = props;
+    const isSelected = selectedIndex === props.index;
+    const radius = isSelected ? outerRadius + 10 : outerRadius;
+
+    return (
+      <g>
+        <path
+          d={`M ${cx} ${cy} L ${cx + innerRadius * Math.cos(midAngle * Math.PI / 180)} ${cy + innerRadius * Math.sin(midAngle * Math.PI / 180)} L ${cx + radius * Math.cos(midAngle * Math.PI / 180)} ${cy + radius * Math.sin(midAngle * Math.PI / 180)} Z`}
+          fill="none"
+          stroke={fill}
+          strokeWidth={1.5}
+        />
+        <text
+          x={cx + (radius + 12) * Math.cos(midAngle * Math.PI / 180)}
+          y={cy + (radius + 12) * Math.sin(midAngle * Math.PI / 180)}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fill={isDark ? '#d1d5db' : '#4b5563'}
+          fontSize={10}
+        >
+          {props.payload?.percentage?.toFixed(0) ?? ((props.percent ?? 0) * 100).toFixed(0)}%
+        </text>
+        <path
+          d={`M ${cx} ${cy} L ${cx + innerRadius * Math.cos(startAngle * Math.PI / 180)} ${cy + innerRadius * Math.sin(startAngle * Math.PI / 180)} A ${innerRadius} ${innerRadius} 0 0 1 ${cx + innerRadius * Math.cos(endAngle * Math.PI / 180)} ${cy + innerRadius * Math.sin(endAngle * Math.PI / 180)} Z`}
+          fill={fill}
+          opacity={0.3}
+        />
+        <path
+          d={`M ${cx} ${cy} L ${cx + radius * Math.cos(startAngle * Math.PI / 180)} ${cy + radius * Math.sin(startAngle * Math.PI / 180)} A ${radius} ${radius} 0 0 1 ${cx + radius * Math.cos(endAngle * Math.PI / 180)} ${cy + radius * Math.sin(endAngle * Math.PI / 180)} Z`}
+          fill={fill}
+          stroke={isSelected ? '#fff' : 'none'}
+          strokeWidth={isSelected ? 3 : 0}
+        />
+      </g>
+    );
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300 space-y-4">
@@ -455,7 +521,7 @@ function CategoryPieChart({
 
       {pieData.length > 0 ? (
         <>
-          <div className="h-48">
+          <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -464,12 +530,19 @@ function CategoryPieChart({
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
-                  paddingAngle={2}
+                  innerRadius={45}
+                  outerRadius={75}
+                  paddingAngle={paddingAngle}
+                  onClick={handleClick}
+                  activeShape={renderActiveShape}
                 >
-                  {pieData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  {pieData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.color}
+                      stroke={selectedIndex === index ? '#fff' : 'none'}
+                      strokeWidth={selectedIndex === index ? 3 : 0}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
@@ -485,6 +558,27 @@ function CategoryPieChart({
                     color: tooltipText,
                   }}
                 />
+                <text
+                  x="50%"
+                  y="45%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill={isDark ? '#9ca3af' : '#6b7280'}
+                  fontSize={11}
+                >
+                  {selectedItem ? selectedItem.name : (pieType === 'expense' ? '支出' : '收入')}
+                </text>
+                <text
+                  x="50%"
+                  y="58%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill={isDark ? '#f3f4f6' : '#1f2937'}
+                  fontSize={14}
+                  fontWeight="600"
+                >
+                  ¥{(selectedItem ? selectedItem.value : total).toFixed(2)}
+                </text>
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -492,13 +586,19 @@ function CategoryPieChart({
           <div className="flex justify-center pt-3 border-t border-gray-100 dark:border-gray-700">
             <div className="tab-container">
               <button
-                onClick={() => setPieType('expense')}
+                onClick={() => {
+                  setPieType('expense');
+                  setSelectedIndex(null);
+                }}
                 className={`tab-item ${pieType === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
               >
                 支出
               </button>
               <button
-                onClick={() => setPieType('income')}
+                onClick={() => {
+                  setPieType('income');
+                  setSelectedIndex(null);
+                }}
                 className={`tab-item ${pieType === 'income' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
               >
                 收入
@@ -507,8 +607,15 @@ function CategoryPieChart({
           </div>
 
           <div className="space-y-3">
-            {list.map((cat) => (
-              <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type={pieType} />
+            {list.map((cat, index) => (
+              <CategoryBarItem
+                key={cat.name}
+                stat={cat}
+                renderIcon={renderIcon}
+                type={pieType}
+                isSelected={selectedIndex === index}
+                onClick={() => setSelectedIndex(selectedIndex === index ? null : index)}
+              />
             ))}
           </div>
         </>
@@ -521,20 +628,27 @@ function CategoryPieChart({
   );
 }
 
-function CategoryBarItem({ stat, renderIcon, type }: {
+function CategoryBarItem({ stat, renderIcon, type, isSelected, onClick }: {
   stat: CategoryStat;
   renderIcon: (name: string, className?: string) => React.ReactNode;
   type: 'income' | 'expense';
+  isSelected?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div
+      onClick={onClick}
+      className={`flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer ${
+        isSelected ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-750'
+      }`}
+    >
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${type === 'income' ? 'bg-income-500/10' : 'bg-expense-500/10'}`}>
         {renderIcon(stat.icon, `w-4 h-4 ${type === 'income' ? 'text-income-500' : 'text-expense-500'}`)}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{stat.name}</span>
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">¥{stat.amount.toFixed(2)}</span>
+          <span className={`text-sm font-medium truncate ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}>{stat.name}</span>
+          <span className={`text-sm font-semibold ${isSelected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-800 dark:text-gray-100'}`}>¥{stat.amount.toFixed(2)}</span>
         </div>
         <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
