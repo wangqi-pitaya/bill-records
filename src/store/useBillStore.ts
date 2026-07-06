@@ -1,12 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Bill, BillStore } from '../types';
-import { defaultBills } from '../data/defaults';
 
 export const useBillStore = create<BillStore>()(
   persist(
     (set, get) => ({
-      bills: defaultBills,
+      bills: [],
 
       addBill: (bill) => {
         const newBill: Bill = {

@@ -77,13 +77,13 @@ export default function WalletManage() {
 
   const handleSelectWallet = (id: string) => {
     if (id === currentWalletId) {
-      navigate('/', { replace: true });
+      navigate(-1);
       return;
     }
     setCurrentWallet(id);
     const walletName = wallets.find(w => w.id === id)?.name;
     toast.info(`已切换至「${walletName}」`);
-    navigate('/', { replace: true });
+    navigate(-1);
   };
 
   const openSettingSheet = (e: React.MouseEvent, walletId: string) => {
@@ -150,7 +150,7 @@ export default function WalletManage() {
         <div className="max-w-4xl mx-auto">
           <div className="h-12 flex items-center justify-between">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate(-1)}
               className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
