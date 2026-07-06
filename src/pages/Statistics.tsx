@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, X } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, X, ArrowLeft } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import {
   BarChart,
@@ -36,6 +37,9 @@ interface TrendItem {
 }
 
 export default function Statistics() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isSecondary = (location.state as { isSecondary?: boolean })?.isSecondary;
   const [tab, setTab] = useState<'month' | 'year'>('month');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -185,21 +189,36 @@ export default function Statistics() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-20">
       <header className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 px-4 shadow-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto">
-          <div className="h-12 flex items-center justify-center">
-            <div className="tab-container">
-              <button
-                onClick={() => handleTabChange('month')}
-                className={`tab-item ${tab === 'month' ? 'tab-item-active-income' : ''}`}
-              >
-                月
-              </button>
-              <button
-                onClick={() => handleTabChange('year')}
-                className={`tab-item ${tab === 'year' ? 'tab-item-active-income' : ''}`}
-              >
-                年
-              </button>
-            </div>
+          <div className="h-12 flex items-center">
+            {isSecondary ? (
+              <>
+                <button
+                  onClick={() => navigate(-1)}
+                  className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+                <h1 className="flex-1 text-center text-base font-bold text-gray-800 dark:text-gray-100">统计</h1>
+                <div className="w-8" />
+              </>
+            ) : (
+              <div className="flex-1 flex justify-center">
+                <div className="tab-container">
+                  <button
+                    onClick={() => handleTabChange('month')}
+                    className={`tab-item ${tab === 'month' ? 'tab-item-active-income' : ''}`}
+                  >
+                    月
+                  </button>
+                  <button
+                    onClick={() => handleTabChange('year')}
+                    className={`tab-item ${tab === 'year' ? 'tab-item-active-income' : ''}`}
+                  >
+                    年
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

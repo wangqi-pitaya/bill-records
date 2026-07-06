@@ -96,7 +96,7 @@ export default function WalletManage() {
     setCurrentWallet(walletId);
     setShowSettingSheet(false);
     setActiveWalletId(null);
-    navigate('/statistics');
+    navigate('/statistics', { state: { isSecondary: true } });
   };
 
   const handleClearBills = () => {

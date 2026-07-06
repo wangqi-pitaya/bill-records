@@ -10,7 +10,9 @@ import { useTheme } from "@/hooks/useTheme";
 function AppContent() {
   useTheme();
   const location = useLocation();
-  const hideTabBar = ['/categories', '/wallets'].includes(location.pathname);
+  const hidePaths = ['/categories', '/wallets'];
+  const isSecondary = (location.state as { isSecondary?: boolean })?.isSecondary;
+  const hideTabBar = hidePaths.includes(location.pathname) || isSecondary;
 
   return (
     <>
