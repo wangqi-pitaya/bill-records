@@ -406,7 +406,7 @@ function TrendChart({
         </ResponsiveContainer>
       </div>
 
-      <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 px-2">
         <div className="tab-container">
           {options.map((opt) => (
             <button
@@ -457,9 +457,6 @@ function CategoryPieChart({
   }));
 
   const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
-  const tooltipBg = isDark ? '#1f2937' : '#ffffff';
-  const tooltipText = isDark ? '#f3f4f6' : '#1f2937';
-  const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
 
   const paddingAngle = pieData.length === 1 ? 0 : 2;
 
@@ -510,19 +507,6 @@ function CategoryPieChart({
                     />
                   ))}
                 </Pie>
-                <Tooltip
-                  formatter={(value: number, name: string, props: { payload?: { percentage?: number } }) => [
-                    `¥${value.toFixed(2)} (${props?.payload?.percentage?.toFixed(1) ?? 0}%)`,
-                    name,
-                  ]}
-                  contentStyle={{
-                    backgroundColor: tooltipBg,
-                    borderColor: tooltipBorder,
-                    borderRadius: '0.5rem',
-                    fontSize: 12,
-                    color: tooltipText,
-                  }}
-                />
                 <text
                   x="50%"
                   y="45%"
