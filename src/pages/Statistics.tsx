@@ -1,6 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, X } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  ReferenceLine,
+} from 'recharts';
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { useCategoryStore } from '../store/useCategoryStore';
@@ -26,9 +36,7 @@ export default function Statistics() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [showPicker, setShowPicker] = useState(false);
-  const [showIncome, setShowIncome] = useState(true);
-  const [showExpense, setShowExpense] = useState(true);
-  const [showBalance, setShowBalance] = useState(true);
+  const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense' | 'balance'>('all');
 
   const { bills } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
@@ -200,12 +208,8 @@ export default function Statistics() {
 
         <TrendChart
           data={stats.trend}
-          showIncome={showIncome}
-          showExpense={showExpense}
-          showBalance={showBalance}
-          onToggleIncome={() => setShowIncome(!showIncome)}
-          onToggleExpense={() => setShowExpense(!showExpense)}
-          onToggleBalance={() => setShowBalance(!showBalance)}
+          trendMode={trendMode}
+          onChangeMode={setTrendMode}
         />
 
         {!stats.hasData ? (
@@ -271,95 +275,90 @@ export default function Statistics() {
 
 function TrendChart({
   data,
-  showIncome,
-  showExpense,
-  showBalance,
-  onToggleIncome,
-  onToggleExpense,
-  onToggleBalance,
+  trendMode,
+  onChangeMode,
 }: {
   data: TrendItem[];
-  showIncome: boolean;
-  showExpense: boolean;
-  showBalance: boolean;
-  onToggleIncome: () => void;
-  onToggleExpense: () => void;
-  onToggleBalance: () => void;
+  trendMode: 'all' | 'income' | 'expense' | 'balance';
+  onChangeMode: (mode: 'all' | 'income' | 'expense' | 'balance') => void;
 }) {
-  const maxVal = useMemo(() => {
-    let max = 0;
-    data.forEach(d => {
-      if (showIncome && d.income > max) max = d.income;
-      if (showExpense && d.expense > max) max = d.expense;
-      if (showBalance && Math.abs(d.balance) > max) max = Math.abs(d.balance);
-    });
-    return max || 1;
-  }, [data, showIncome, showExpense, showBalance]);
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const axisColor = isDark ? '#9ca3af' : '#6b7280';
+  const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+  const showIncome = trendMode === 'all' || trendMode === 'income';
+  const showExpense = trendMode === 'all' || trendMode === 'expense';
+  const showBalance = trendMode === 'all' || trendMode === 'balance';
+
+  const options: { key: typeof trendMode; label: string }[] = [
+    { key: 'all', label: '全部' },
+    { key: 'income', label: '收入' },
+    { key: 'expense', label: '支出' },
+    { key: 'balance', label: '结余' },
+  ];
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-      <div className="flex items-end justify-between h-28 gap-0.5">
-        {data.map((item, idx) => {
-          const bars = [];
-          const barWidth = `${100 / data.length}%`;
-          if (showIncome) {
-            bars.push(
-              <div
-                key="income"
-                className="w-full bg-income-500 rounded-t-sm"
-                style={{ height: `${(item.income / maxVal) * 100}%` }}
-              />
-            );
-          }
-          if (showExpense) {
-            bars.push(
-              <div
-                key="expense"
-                className="w-full bg-expense-500 rounded-t-sm"
-                style={{ height: `${(item.expense / maxVal) * 100}%` }}
-              />
-            );
-          }
-          if (showBalance) {
-            bars.push(
-              <div
-                key="balance"
-                className={`w-full rounded-t-sm ${item.balance >= 0 ? 'bg-primary-500' : 'bg-expense-400'}`}
-                style={{ height: `${(Math.abs(item.balance) / maxVal) * 100}%` }}
-              />
-            );
-          }
-          return (
-            <div key={idx} className="flex flex-col items-center gap-1" style={{ width: barWidth }}>
-              <div className="flex flex-col-reverse w-full h-full gap-0.5">
-                {bars.length > 0 ? bars : <div className="w-full h-0.5" />}
-              </div>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">{item.label.replace('月', '').replace('日', '')}</span>
-            </div>
-          );
-        })}
+      <div className="h-48">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} barCategoryGap="20%" margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+            <XAxis
+              dataKey="label"
+              tick={{ fill: axisColor, fontSize: 10 }}
+              axisLine={{ stroke: gridColor }}
+              tickLine={{ stroke: gridColor }}
+              interval="preserveStartEnd"
+              minTickGap={16}
+            />
+            <YAxis
+              tick={{ fill: axisColor, fontSize: 10 }}
+              axisLine={{ stroke: gridColor }}
+              tickLine={{ stroke: gridColor }}
+              tickFormatter={(v: number) => `¥${v}`}
+            />
+            <Tooltip
+              formatter={(value: number, name: string) => [`¥${value.toFixed(2)}`, name]}
+              contentStyle={{
+                backgroundColor: isDark ? '#1f2937' : '#ffffff',
+                borderColor: gridColor,
+                borderRadius: '0.5rem',
+                fontSize: 12,
+                color: isDark ? '#f3f4f6' : '#1f2937',
+              }}
+            />
+            <ReferenceLine y={0} stroke={gridColor} />
+            {showIncome && (
+              <Bar dataKey="income" name="收入" fill="#10b981" radius={[2, 2, 0, 0]}>
+                {data.map((entry, index) => (
+                  <Cell key={`income-${index}`} fill={entry.income >= 0 ? '#10b981' : '#ef4444'} />
+                ))}
+              </Bar>
+            )}
+            {showExpense && (
+              <Bar dataKey="expense" name="支出" fill="#ef4444" radius={[2, 2, 0, 0]} />
+            )}
+            {showBalance && (
+              <Bar dataKey="balance" name="结余" fill="#3b82f6" radius={[2, 2, 0, 0]}>
+                {data.map((entry, index) => (
+                  <Cell key={`balance-${index}`} fill={entry.balance >= 0 ? '#3b82f6' : '#f87171'} />
+                ))}
+              </Bar>
+            )}
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
         <div className="tab-container">
-          <button
-            onClick={onToggleIncome}
-            className={`tab-item ${showIncome ? 'tab-item-active-income' : ''}`}
-          >
-            收入
-          </button>
-          <button
-            onClick={onToggleExpense}
-            className={`tab-item ${showExpense ? 'tab-item-active-expense' : ''}`}
-          >
-            支出
-          </button>
-          <button
-            onClick={onToggleBalance}
-            className={`tab-item ${showBalance ? 'tab-item-active-income' : ''}`}
-          >
-            结余
-          </button>
+          {options.map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => onChangeMode(opt.key)}
+              className={`tab-item ${trendMode === opt.key ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
     </div>
