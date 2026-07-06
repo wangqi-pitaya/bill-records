@@ -229,7 +229,7 @@ export default function Statistics() {
           onChangeMode={setTrendMode}
           chartType={chartType}
           onChangeChartType={setChartType}
-          title={tab === 'month' ? '每月统计' : '每年对比'}
+          title={tab === 'month' ? '按日统计' : '按月统计'}
         />
 
         {!stats.hasData ? (
@@ -238,12 +238,19 @@ export default function Statistics() {
             <p>暂无账单数据</p>
           </div>
         ) : (
-          <CategoryPieChart
-            data={tab === 'month' ? monthStats : yearStats}
-            renderIcon={renderIcon}
-            pieType={pieType}
-            onChangePieType={setPieType}
-          />
+          <>
+            <CategoryPieChart
+              data={tab === 'month' ? monthStats : yearStats}
+              renderIcon={renderIcon}
+              pieType={pieType}
+              onChangePieType={setPieType}
+            />
+            <DetailTable
+              tab={tab}
+              data={stats.trend}
+              expense={stats.expense}
+            />
+          </>
         )}
       </main>
 
@@ -406,7 +413,7 @@ function TrendChart({
         </ResponsiveContainer>
       </div>
 
-      <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 px-2">
+      <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 px-2 mb-3">
         <div className="tab-container">
           {options.map((opt) => (
             <button
@@ -592,6 +599,79 @@ function CategoryBarItem({ stat, renderIcon, type }: {
         </div>
         <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{stat.percentage.toFixed(1)}%</div>
       </div>
+    </div>
+  );
+}
+
+function DetailTable({
+  tab,
+  data,
+  expense,
+}: {
+  tab: 'month' | 'year';
+  data: TrendItem[];
+  expense: number;
+}) {
+  // 计算日均/月均支出
+  const count = data.length;
+  const avgExpense = count > 0 ? expense / count : 0;
+
+  // 过滤有数据的行（至少有一项非零）
+  const filteredData = data.filter(item => item.income !== 0 || item.expense !== 0 || item.balance !== 0);
+
+  const title = tab === 'month' ? '日明细' : '月明细';
+  const avgLabel = tab === 'month' ? '日均支出' : '月均支出';
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
+      <div className="flex items-center justify-center mb-3">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{title}</h3>
+      </div>
+
+      <div className="flex items-center justify-center mb-4">
+        <span className="text-xs text-gray-500 dark:text-gray-400">{avgLabel}</span>
+        <span className="text-sm font-semibold text-expense-500 ml-2">¥{avgExpense.toFixed(2)}</span>
+      </div>
+
+      {filteredData.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                <th className="py-2 px-3 text-left font-medium text-gray-600 dark:text-gray-400">日期</th>
+                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400">收入</th>
+                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400">支出</th>
+                <th className="py-2 px-3 text-right font-medium text-gray-600 dark:text-gray-400">结余</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredData.map((item, index) => (
+                <tr
+                  key={index}
+                  className="border-b border-gray-50 dark:border-gray-750 last:border-b-0"
+                >
+                  <td className="py-2 px-3 text-gray-700 dark:text-gray-300">{item.label}</td>
+                  <td className="py-2 px-3 text-right text-income-500">
+                    {item.income > 0 ? `¥${item.income.toFixed(2)}` : '-'}
+                  </td>
+                  <td className="py-2 px-3 text-right text-expense-500">
+                    {item.expense > 0 ? `¥${item.expense.toFixed(2)}` : '-'}
+                  </td>
+                  <td className={`py-2 px-3 text-right font-medium ${
+                    item.balance >= 0 ? 'text-income-500' : 'text-expense-500'
+                  }`}>
+                    ¥{item.balance.toFixed(2)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">
+          暂无明细数据
+        </div>
+      )}
     </div>
   );
 }
