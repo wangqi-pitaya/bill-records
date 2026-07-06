@@ -93,10 +93,9 @@ export default function WalletManage() {
   };
 
   const handleGoStatistics = (walletId: string) => {
-    setCurrentWallet(walletId);
     setShowSettingSheet(false);
     setActiveWalletId(null);
-    navigate('/statistics', { state: { isSecondary: true } });
+    navigate('/statistics', { state: { isSecondary: true, walletId } });
   };
 
   const handleClearBills = () => {

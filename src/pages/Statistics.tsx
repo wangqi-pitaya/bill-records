@@ -39,7 +39,7 @@ interface TrendItem {
 export default function Statistics() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isSecondary = (location.state as { isSecondary?: boolean })?.isSecondary;
+  const isSecondary = (location.state as { isSecondary?: boolean; walletId?: string })?.isSecondary;
   const [tab, setTab] = useState<'month' | 'year'>('month');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -56,10 +56,12 @@ export default function Statistics() {
 
   const { bills } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
-  const currentWallet = wallets.find(w => w.id === currentWalletId);
   const { categories } = useCategoryStore();
 
-  const walletBills = useMemo(() => filterBillsByWallet(bills, currentWalletId), [bills, currentWalletId]);
+  const statsWalletId = (location.state as { isSecondary?: boolean; walletId?: string })?.walletId || currentWalletId;
+  const statsWallet = wallets.find(w => w.id === statsWalletId);
+
+  const walletBills = useMemo(() => filterBillsByWallet(bills, statsWalletId), [bills, statsWalletId]);
 
   const availableYears = useMemo(() => {
     const years = new Set(walletBills.map(b => Number(b.date.split('-')[0])));
@@ -239,7 +241,7 @@ export default function Statistics() {
           income={stats.income}
           expense={stats.expense}
           balance={stats.balance}
-          color={currentWallet?.color}
+          color={statsWallet?.color}
         />
 
         <TrendChart
