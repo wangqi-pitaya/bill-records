@@ -220,8 +220,6 @@ export default function Statistics() {
           income={stats.income}
           expense={stats.expense}
           balance={stats.balance}
-          avgExpense={stats.expense / stats.trend.length}
-          avgLabel={tab === 'month' ? '日均支出' : '月均支出'}
           color={currentWallet?.color}
         />
 
@@ -489,9 +487,9 @@ function CategoryPieChart({
                   innerRadius={45}
                   outerRadius={65}
                   paddingAngle={paddingAngle}
-                  label={(props: { name?: string; percent?: number; cx?: number; cy?: number; midAngle?: number; outerRadius?: number }) => {
-                    const { name = '', percent = 0, cx = 0, cy = 0, midAngle = 0, outerRadius = 0 } = props;
-                    const percentage = percent * 100;
+                  label={(props: { payload?: { name?: string; percentage?: number }; cx?: number; cy?: number; midAngle?: number; outerRadius?: number }) => {
+                    const { payload, cx = 0, cy = 0, midAngle = 0, outerRadius = 0 } = props;
+                    const percentage = payload?.percentage || 0;
                     if (percentage < 2) {
                       return null;
                     }
@@ -503,10 +501,10 @@ function CategoryPieChart({
                     return (
                       <g>
                         <text x={x} y={y - 6} fill={textColor} textAnchor={x > cx ? 'start' : 'end'} fontSize={9}>
-                          {name}
+                          {payload?.name}
                         </text>
                         <text x={x} y={y + 6} fill={textColor} textAnchor={x > cx ? 'start' : 'end'} fontSize={9} fontWeight="600">
-                          {percentage.toFixed(0)}%
+                          {percentage.toFixed(1)}%
                         </text>
                       </g>
                     );
@@ -545,6 +543,10 @@ function CategoryPieChart({
             </ResponsiveContainer>
           </div>
 
+          <div className="text-xs text-gray-400 dark:text-gray-500 text-center pt-2">
+            占比小于2%的分类不显示标签
+          </div>
+
           <div className="flex justify-center pt-3">
             <div className="tab-container">
               <button
@@ -563,9 +565,6 @@ function CategoryPieChart({
           </div>
 
           <div className="space-y-3">
-            <div className="text-xs text-gray-400 dark:text-gray-500 text-center">
-              占比小于2%的分类不显示标签
-            </div>
             {list.map((cat) => (
               <CategoryBarItem
                 key={cat.name}
@@ -673,22 +672,16 @@ function DetailTable({
                   <td className="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 z-10">
                     {item.label}
                   </td>
-                  <td className="py-2 px-3 text-right text-income-500 whitespace-nowrap overflow-hidden">
-                    <span style={{ fontSize: item.income.toFixed(2).length > 8 ? '10px' : undefined }}>
-                      {item.income > 0 ? item.income.toFixed(2) : '-'}
-                    </span>
+                  <td className="py-2 px-3 text-right text-income-500 break-all">
+                    {item.income > 0 ? item.income.toFixed(2) : '-'}
                   </td>
-                  <td className="py-2 px-3 text-right text-expense-500 whitespace-nowrap overflow-hidden">
-                    <span style={{ fontSize: item.expense.toFixed(2).length > 8 ? '10px' : undefined }}>
-                      {item.expense > 0 ? item.expense.toFixed(2) : '-'}
-                    </span>
+                  <td className="py-2 px-3 text-right text-expense-500 break-all">
+                    {item.expense > 0 ? item.expense.toFixed(2) : '-'}
                   </td>
-                  <td className={`py-2 px-3 text-right font-medium whitespace-nowrap overflow-hidden ${
+                  <td className={`py-2 px-3 text-right font-medium break-all ${
                     item.balance >= 0 ? 'text-income-500' : 'text-expense-500'
                   }`}>
-                    <span style={{ fontSize: item.balance.toFixed(2).length > 8 ? '10px' : undefined }}>
-                      {item.balance.toFixed(2)}
-                    </span>
+                    {item.balance.toFixed(2)}
                   </td>
                 </tr>
               ))}

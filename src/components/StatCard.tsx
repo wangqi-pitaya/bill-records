@@ -2,12 +2,10 @@ interface StatCardProps {
   income: number;
   expense: number;
   balance: number;
-  avgExpense?: number;
-  avgLabel?: string;
   color?: string;
 }
 
-export const StatCard = ({ income, expense, balance, avgExpense, avgLabel, color }: StatCardProps) => {
+export const StatCard = ({ income, expense, balance, color }: StatCardProps) => {
   const cardStyle = color
     ? { background: `linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})` }
     : undefined;
@@ -15,7 +13,6 @@ export const StatCard = ({ income, expense, balance, avgExpense, avgLabel, color
   const balanceStr = balance.toFixed(2);
   const incomeStr = income.toFixed(2);
   const expenseStr = expense.toFixed(2);
-  const avgExpenseStr = avgExpense?.toFixed(2);
 
   return (
     <div
@@ -33,18 +30,6 @@ export const StatCard = ({ income, expense, balance, avgExpense, avgLabel, color
           {balanceStr}
         </span>
       </div>
-
-      {avgExpense !== undefined && avgLabel && (
-        <div className="flex items-center justify-between mb-3 pt-2 border-t border-white/20">
-          <span className="text-xs text-white/80 whitespace-nowrap">{avgLabel}</span>
-          <span
-            className="text-base font-semibold whitespace-nowrap"
-            style={{ fontSize: avgExpenseStr && avgExpenseStr.length > 10 ? '12px' : undefined }}
-          >
-            {avgExpenseStr}
-          </span>
-        </div>
-      )}
 
       <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/20">
         <div>
