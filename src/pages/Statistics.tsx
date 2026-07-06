@@ -6,6 +6,8 @@ import {
   Bar,
   LineChart,
   Line,
+  PieChart,
+  Pie,
   XAxis,
   YAxis,
   Tooltip,
@@ -38,11 +40,11 @@ export default function Statistics() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [showPicker, setShowPicker] = useState(false);
-  const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense' | 'balance'>('all');
+  const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense' | 'balance'>('expense');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
 
   useEffect(() => {
-    setTrendMode('all');
+    setTrendMode('expense');
   }, [tab]);
 
   const { bills } = useBillStore();
@@ -130,27 +132,32 @@ export default function Statistics() {
     });
 
     const expenseCats: Record<string, number> = {};
+    const incomeCats: Record<string, number> = {};
     filtered.forEach(b => {
       if (b.type === 'expense') {
         expenseCats[b.category] = (expenseCats[b.category] || 0) + b.amount;
+      } else {
+        incomeCats[b.category] = (incomeCats[b.category] || 0) + b.amount;
       }
     });
 
-    const expenseCategories: CategoryStat[] = Object.entries(expenseCats)
-      .map(([name, amount]) => ({
-        name,
-        amount,
-        percentage: expense > 0 ? (amount / expense) * 100 : 0,
-        icon: categories.find(c => c.name === name)?.icon || 'MoreHorizontal',
-      }))
-      .sort((a, b) => b.amount - a.amount);
+    const toArray = (obj: Record<string, number>, total: number): CategoryStat[] =>
+      Object.entries(obj)
+        .map(([name, amount]) => ({
+          name,
+          amount,
+          percentage: total > 0 ? (amount / total) * 100 : 0,
+          icon: categories.find(c => c.name === name)?.icon || 'MoreHorizontal',
+        }))
+        .sort((a, b) => b.amount - a.amount);
 
     return {
       income,
       expense,
       balance: income - expense,
       monthlyTrend: monthly,
-      expenseCategories,
+      expenseCategories: toArray(expenseCats, expense),
+      incomeCategories: toArray(incomeCats, income),
       hasData: filtered.length > 0,
       trend: monthly,
     };
@@ -219,7 +226,7 @@ export default function Statistics() {
           onChangeMode={setTrendMode}
           chartType={chartType}
           onChangeChartType={setChartType}
-          title={tab === 'month' ? '每日统计' : '每月对比'}
+          title={tab === 'month' ? '每月统计' : '每年对比'}
         />
 
         {!stats.hasData ? (
@@ -228,44 +235,10 @@ export default function Statistics() {
             <p>暂无账单数据</p>
           </div>
         ) : (
-          <>
-            {tab === 'month' && (monthStats.incomeCategories.length > 0 || monthStats.expenseCategories.length > 0) && (
-              <>
-                {monthStats.expenseCategories.length > 0 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">支出分类</h3>
-                    <div className="space-y-3">
-                      {monthStats.expenseCategories.map((cat) => (
-                        <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="expense" />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {monthStats.incomeCategories.length > 0 && (
-                  <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">收入分类</h3>
-                    <div className="space-y-3">
-                      {monthStats.incomeCategories.map((cat) => (
-                        <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="income" />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {tab === 'year' && yearStats.expenseCategories.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">支出分类排行</h3>
-                <div className="space-y-3">
-                  {yearStats.expenseCategories.map((cat) => (
-                    <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type="expense" />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+          <CategoryPieChart
+            data={tab === 'month' ? monthStats : yearStats}
+            renderIcon={renderIcon}
+          />
         )}
       </main>
 
@@ -311,10 +284,10 @@ function TrendChart({
   const showBalance = trendMode === 'all' || trendMode === 'balance';
 
   const options: { key: typeof trendMode; label: string }[] = [
-    { key: 'all', label: '全部' },
-    { key: 'income', label: '收入' },
     { key: 'expense', label: '支出' },
+    { key: 'income', label: '收入' },
     { key: 'balance', label: '结余' },
+    { key: 'all', label: '全部' },
   ];
 
   const renderChart = () => {
@@ -439,6 +412,111 @@ function TrendChart({
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+function CategoryPieChart({
+  data,
+  renderIcon,
+}: {
+  data: {
+    expenseCategories: CategoryStat[];
+    incomeCategories: CategoryStat[];
+  };
+  renderIcon: (name: string, className?: string) => React.ReactNode;
+}) {
+  const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
+
+  const pieColors = [
+    '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
+    '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
+    '#14b8a6', '#a855f7', '#d946ef', '#22c55e', '#eab308',
+  ];
+
+  const list = pieType === 'expense' ? data.expenseCategories : data.incomeCategories;
+  const pieData = list.map((item) => ({
+    name: item.name,
+    value: item.amount,
+    percentage: item.percentage,
+    icon: item.icon,
+  }));
+
+  const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+  const tooltipBg = isDark ? '#1f2937' : '#ffffff';
+  const tooltipText = isDark ? '#f3f4f6' : '#1f2937';
+  const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300 space-y-4">
+      <div className="flex items-center justify-center mb-3 relative">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">分类统计</h3>
+      </div>
+
+      {pieData.length > 0 ? (
+        <>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
+                  outerRadius={70}
+                  paddingAngle={2}
+                >
+                  {pieData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: number, name: string, props: { payload?: { percentage?: number } }) => [
+                    `¥${value.toFixed(2)} (${props?.payload?.percentage?.toFixed(1) ?? 0}%)`,
+                    name,
+                  ]}
+                  contentStyle={{
+                    backgroundColor: tooltipBg,
+                    borderColor: tooltipBorder,
+                    borderRadius: '0.5rem',
+                    fontSize: 12,
+                    color: tooltipText,
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="flex justify-center pt-3 border-t border-gray-100 dark:border-gray-700">
+            <div className="tab-container">
+              <button
+                onClick={() => setPieType('expense')}
+                className={`tab-item ${pieType === 'expense' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
+              >
+                支出
+              </button>
+              <button
+                onClick={() => setPieType('income')}
+                className={`tab-item ${pieType === 'income' ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm' : ''}`}
+              >
+                收入
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {list.map((cat) => (
+              <CategoryBarItem key={cat.name} stat={cat} renderIcon={renderIcon} type={pieType} />
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+          暂无{pieType === 'expense' ? '支出' : '收入'}分类数据
+        </div>
+      )}
     </div>
   );
 }
