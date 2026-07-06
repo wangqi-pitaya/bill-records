@@ -40,7 +40,7 @@ export default function Statistics() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [showPicker, setShowPicker] = useState(false);
-  const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense' | 'balance'>('expense');
+  const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense'>('expense');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
 
@@ -277,8 +277,8 @@ function TrendChart({
   title,
 }: {
   data: TrendItem[];
-  trendMode: 'all' | 'income' | 'expense' | 'balance';
-  onChangeMode: (mode: 'all' | 'income' | 'expense' | 'balance') => void;
+  trendMode: 'all' | 'income' | 'expense';
+  onChangeMode: (mode: 'all' | 'income' | 'expense') => void;
   chartType: 'bar' | 'line';
   onChangeChartType: (type: 'bar' | 'line') => void;
   title: string;
@@ -293,12 +293,10 @@ function TrendChart({
 
   const showIncome = trendMode === 'all' || trendMode === 'income';
   const showExpense = trendMode === 'all' || trendMode === 'expense';
-  const showBalance = trendMode === 'all' || trendMode === 'balance';
 
   const options: { key: typeof trendMode; label: string }[] = [
     { key: 'expense', label: '支出' },
     { key: 'income', label: '收入' },
-    { key: 'balance', label: '结余' },
     { key: 'all', label: '全部' },
   ];
 
@@ -311,7 +309,6 @@ function TrendChart({
     const barOrLineProps = {
       income: { dataKey: 'income', name: '收入', stroke: COLOR_INCOME, fill: COLOR_INCOME },
       expense: { dataKey: 'expense', name: '支出', stroke: COLOR_EXPENSE, fill: COLOR_EXPENSE },
-      balance: { dataKey: 'balance', name: '结余', stroke: COLOR_BALANCE, fill: COLOR_BALANCE },
     };
 
     if (chartType === 'bar') {
@@ -345,7 +342,6 @@ function TrendChart({
           <ReferenceLine y={0} stroke={gridColor} />
           {showIncome && <Bar {...barOrLineProps.income} radius={[2, 2, 0, 0]} stroke="none" />}
           {showExpense && <Bar {...barOrLineProps.expense} radius={[2, 2, 0, 0]} stroke="none" />}
-          {showBalance && <Bar {...barOrLineProps.balance} radius={[2, 2, 0, 0]} stroke="none" />}
         </BarChart>
       );
     }
@@ -383,9 +379,6 @@ function TrendChart({
         )}
         {showExpense && (
           <Line {...barOrLineProps.expense} type="monotone" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
-        )}
-        {showBalance && (
-          <Line {...barOrLineProps.balance} type="monotone" strokeWidth={2} dot={{ r: 3, strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} />
         )}
       </LineChart>
     );
