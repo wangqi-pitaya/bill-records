@@ -298,76 +298,68 @@ function TrendChart({
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 transition-colors duration-300">
-      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">趋势</h3>
-
-      <div className="flex items-center gap-4 mb-4">
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showIncome}
-            onChange={onToggleIncome}
-            className="w-3.5 h-3.5 rounded border-gray-300 text-income-500 focus:ring-income-500"
-          />
-          <span className="text-xs text-income-500 font-medium">收入</span>
-        </label>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showExpense}
-            onChange={onToggleExpense}
-            className="w-3.5 h-3.5 rounded border-gray-300 text-expense-500 focus:ring-expense-500"
-          />
-          <span className="text-xs text-expense-500 font-medium">支出</span>
-        </label>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showBalance}
-            onChange={onToggleBalance}
-            className="w-3.5 h-3.5 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
-          />
-          <span className="text-xs text-primary-500 font-medium">结余</span>
-        </label>
+      <div className="flex items-end justify-between h-28 gap-0.5">
+        {data.map((item, idx) => {
+          const bars = [];
+          const barWidth = `${100 / data.length}%`;
+          if (showIncome) {
+            bars.push(
+              <div
+                key="income"
+                className="w-full bg-income-500 rounded-t-sm"
+                style={{ height: `${(item.income / maxVal) * 100}%` }}
+              />
+            );
+          }
+          if (showExpense) {
+            bars.push(
+              <div
+                key="expense"
+                className="w-full bg-expense-500 rounded-t-sm"
+                style={{ height: `${(item.expense / maxVal) * 100}%` }}
+              />
+            );
+          }
+          if (showBalance) {
+            bars.push(
+              <div
+                key="balance"
+                className={`w-full rounded-t-sm ${item.balance >= 0 ? 'bg-primary-500' : 'bg-expense-400'}`}
+                style={{ height: `${(Math.abs(item.balance) / maxVal) * 100}%` }}
+              />
+            );
+          }
+          return (
+            <div key={idx} className="flex flex-col items-center gap-1" style={{ width: barWidth }}>
+              <div className="flex flex-col-reverse w-full h-full gap-0.5">
+                {bars.length > 0 ? bars : <div className="w-full h-0.5" />}
+              </div>
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">{item.label.replace('月', '').replace('日', '')}</span>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="overflow-x-auto -mx-4 px-4">
-        <div className="flex items-end gap-0.5 min-w-max h-32">
-          {data.map((item, idx) => {
-            const bars = [];
-            if (showIncome) {
-              bars.push(
-                <div
-                  key="income"
-                  className="w-1.5 bg-income-500 rounded-t-sm"
-                  style={{ height: `${(item.income / maxVal) * 100}%` }}
-                />
-              );
-            }
-            if (showExpense) {
-              bars.push(
-                <div
-                  key="expense"
-                  className="w-1.5 bg-expense-500 rounded-t-sm"
-                  style={{ height: `${(item.expense / maxVal) * 100}%` }}
-                />
-              );
-            }
-            if (showBalance) {
-              bars.push(
-                <div
-                  key="balance"
-                  className={`w-1.5 rounded-t-sm ${item.balance >= 0 ? 'bg-primary-500' : 'bg-expense-400'}`}
-                  style={{ height: `${(Math.abs(item.balance) / maxVal) * 100}%` }}
-                />
-              );
-            }
-            return (
-              <div key={idx} className="flex flex-col items-center gap-1" style={{ minWidth: bars.length * 8 + 4 }}>
-                <div className="flex items-end gap-0.5 h-28">{bars.length > 0 ? bars : <div className="w-1.5 h-0.5" />}</div>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">{item.label.replace('月', '').replace('日', '')}</span>
-              </div>
-            );
-          })}
+      <div className="flex justify-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+        <div className="tab-container">
+          <button
+            onClick={onToggleIncome}
+            className={`tab-item ${showIncome ? 'tab-item-active-income' : ''}`}
+          >
+            收入
+          </button>
+          <button
+            onClick={onToggleExpense}
+            className={`tab-item ${showExpense ? 'tab-item-active-expense' : ''}`}
+          >
+            支出
+          </button>
+          <button
+            onClick={onToggleBalance}
+            className={`tab-item ${showBalance ? 'tab-item-active-income' : ''}`}
+          >
+            结余
+          </button>
         </div>
       </div>
     </div>

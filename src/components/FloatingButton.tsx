@@ -15,7 +15,7 @@ export const FloatingButton = ({ onClick, visible = true, color, className }: Fl
   return (
     <button
       onClick={onClick}
-      className={`fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-floating hover:shadow-lg hover:scale-110 transition-all duration-300 flex items-center justify-center text-white ${
+      className={`fixed bottom-22 right-8 w-14 h-14 rounded-full shadow-floating hover:shadow-lg hover:scale-110 transition-all duration-300 flex items-center justify-center text-white z-50 ${
         color ? '' : 'bg-gradient-to-br from-primary-400 to-primary-600'
       } ${
         visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
