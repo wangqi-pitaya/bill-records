@@ -220,6 +220,8 @@ export default function Statistics() {
           income={stats.income}
           expense={stats.expense}
           balance={stats.balance}
+          avgExpense={stats.expense / stats.trend.length}
+          avgLabel={tab === 'month' ? '日均支出' : '月均支出'}
           color={currentWallet?.color}
         />
 
@@ -329,10 +331,10 @@ function TrendChart({
             tick={{ fill: axisColor, fontSize: 10 }}
             axisLine={{ stroke: gridColor }}
             tickLine={{ stroke: gridColor }}
-            tickFormatter={(v: number) => `¥${v}`}
+            tickFormatter={(v: number) => String(v)}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [`¥${value.toFixed(2)}`, name]}
+            formatter={(value: number, name: string) => [value.toFixed(2), name]}
             contentStyle={{
               backgroundColor: isDark ? '#1f2937' : '#ffffff',
               borderColor: gridColor,
@@ -364,10 +366,10 @@ function TrendChart({
           tick={{ fill: axisColor, fontSize: 10 }}
           axisLine={{ stroke: gridColor }}
           tickLine={{ stroke: gridColor }}
-          tickFormatter={(v: number) => `¥${v}`}
+          tickFormatter={(v: number) => String(v)}
         />
         <Tooltip
-          formatter={(value: number, name: string) => [`¥${value.toFixed(2)}`, name]}
+          formatter={(value: number, name: string) => [value.toFixed(2), name]}
           contentStyle={{
             backgroundColor: isDark ? '#1f2937' : '#ffffff',
             borderColor: gridColor,
@@ -533,7 +535,7 @@ function CategoryPieChart({
                   fontSize={14}
                   fontWeight="600"
                 >
-                  ¥{total.toFixed(2)}
+                  {total.toFixed(2)}
                 </text>
               </PieChart>
             </ResponsiveContainer>
@@ -589,7 +591,7 @@ function CategoryBarItem({ stat, renderIcon, type }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium truncate text-gray-700 dark:text-gray-300">{stat.name}</span>
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">¥{stat.amount.toFixed(2)}</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{stat.amount.toFixed(2)}</span>
         </div>
         <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
@@ -630,7 +632,7 @@ function DetailTable({
 
       <div className="flex items-center justify-center mb-4">
         <span className="text-xs text-gray-500 dark:text-gray-400">{avgLabel}</span>
-        <span className="text-sm font-semibold text-expense-500 ml-2">¥{avgExpense.toFixed(2)}</span>
+        <span className="text-sm font-semibold text-expense-500 ml-2">{avgExpense.toFixed(2)}</span>
       </div>
 
       {filteredData.length > 0 ? (
@@ -664,16 +666,22 @@ function DetailTable({
                   <td className="py-2 px-3 text-gray-700 dark:text-gray-300 whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 z-10">
                     {item.label}
                   </td>
-                  <td className="py-2 px-3 text-right text-income-500 whitespace-nowrap">
-                    {item.income > 0 ? `¥${item.income.toFixed(2)}` : '-'}
+                  <td className="py-2 px-3 text-right text-income-500 whitespace-nowrap overflow-hidden">
+                    <span style={{ fontSize: item.income.toFixed(2).length > 8 ? '10px' : undefined }}>
+                      {item.income > 0 ? item.income.toFixed(2) : '-'}
+                    </span>
                   </td>
-                  <td className="py-2 px-3 text-right text-expense-500 whitespace-nowrap">
-                    {item.expense > 0 ? `¥${item.expense.toFixed(2)}` : '-'}
+                  <td className="py-2 px-3 text-right text-expense-500 whitespace-nowrap overflow-hidden">
+                    <span style={{ fontSize: item.expense.toFixed(2).length > 8 ? '10px' : undefined }}>
+                      {item.expense > 0 ? item.expense.toFixed(2) : '-'}
+                    </span>
                   </td>
-                  <td className={`py-2 px-3 text-right font-medium whitespace-nowrap ${
+                  <td className={`py-2 px-3 text-right font-medium whitespace-nowrap overflow-hidden ${
                     item.balance >= 0 ? 'text-income-500' : 'text-expense-500'
                   }`}>
-                    ¥{item.balance.toFixed(2)}
+                    <span style={{ fontSize: item.balance.toFixed(2).length > 8 ? '10px' : undefined }}>
+                      {item.balance.toFixed(2)}
+                    </span>
                   </td>
                 </tr>
               ))}
