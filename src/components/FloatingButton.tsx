@@ -4,9 +4,10 @@ interface FloatingButtonProps {
   onClick: () => void;
   visible?: boolean;
   color?: string;
+  className?: string;
 }
 
-export const FloatingButton = ({ onClick, visible = true, color }: FloatingButtonProps) => {
+export const FloatingButton = ({ onClick, visible = true, color, className }: FloatingButtonProps) => {
   const buttonStyle = color
     ? { background: `linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})` }
     : undefined;
@@ -18,7 +19,7 @@ export const FloatingButton = ({ onClick, visible = true, color }: FloatingButto
         color ? '' : 'bg-gradient-to-br from-primary-400 to-primary-600'
       } ${
         visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
-      }`}
+      } ${className || ''}`}
       style={buttonStyle}
     >
       <Plus className="w-7 h-7" />

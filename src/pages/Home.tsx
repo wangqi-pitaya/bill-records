@@ -102,7 +102,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 pt-16 pb-4">
+      <main className="max-w-4xl mx-auto px-4 pt-16 pb-20">
         <div className="mb-6">
           <StatCard
             income={yearStatistics.income}
@@ -166,6 +166,7 @@ export default function Home() {
         }}
         visible={floatingButtonVisible}
         color={currentWallet?.color}
+        className="bottom-20"
       />
 
       {dateFilter.showDatePicker && (
