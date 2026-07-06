@@ -491,6 +491,10 @@ function CategoryPieChart({
                   paddingAngle={paddingAngle}
                   label={(props: { name?: string; percent?: number; cx?: number; cy?: number; midAngle?: number; outerRadius?: number }) => {
                     const { name = '', percent = 0, cx = 0, cy = 0, midAngle = 0, outerRadius = 0 } = props;
+                    const percentage = percent * 100;
+                    if (percentage < 2) {
+                      return null;
+                    }
                     const RADIAN = Math.PI / 180;
                     const radius = outerRadius + 12;
                     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -502,7 +506,7 @@ function CategoryPieChart({
                           {name}
                         </text>
                         <text x={x} y={y + 6} fill={textColor} textAnchor={x > cx ? 'start' : 'end'} fontSize={9} fontWeight="600">
-                          {(percent * 100).toFixed(0)}%
+                          {percentage.toFixed(0)}%
                         </text>
                       </g>
                     );
@@ -559,6 +563,9 @@ function CategoryPieChart({
           </div>
 
           <div className="space-y-3">
+            <div className="text-xs text-gray-400 dark:text-gray-500 text-center">
+              占比小于2%的分类不显示标签
+            </div>
             {list.map((cat) => (
               <CategoryBarItem
                 key={cat.name}
