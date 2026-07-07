@@ -12,6 +12,7 @@ import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
 import { AddBillDrawer } from '../components/AddBillDrawer';
 import { Calendar } from '../components/Calendar';
+import { Drawer } from '../components/Drawer';
 import {
   getDateLabel,
   groupBillsByDate,
@@ -173,72 +174,67 @@ export default function Home() {
         className="bottom-20"
       />
 
-      {dateFilter.showDatePicker && (
-        <div
-          className="fixed inset-0 z-[60] flex items-start animate-fade-in"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) dateFilter.setShowDatePicker(false);
-          }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full bg-white dark:bg-gray-800 rounded-b-2xl max-h-[80vh] overflow-auto animate-slide-down transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 transition-colors duration-300">
-              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                <button
-                  onClick={() => {
-                    dateFilter.setPickerMode('year');
-                  }}
-                  className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                    dateFilter.pickerMode === 'year'
-                      ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                  }`}
-                >
-                  年
-                </button>
-                <button
-                  onClick={() => dateFilter.setPickerMode('month')}
-                  className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                    dateFilter.pickerMode === 'month'
-                      ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                  }`}
-                >
-                  月
-                </button>
-              </div>
-            </div>
-
-            <div className="px-4 py-4">
-              <Calendar
-                mode="single"
-                value={dateFilter.tempDate}
-                onChange={dateFilter.setTempDate}
-                config={{
-                  showYearPicker: true,
-                  showMonthPicker: dateFilter.pickerMode === 'month',
-                  showDayPicker: false,
-                }}
-              />
-            </div>
-
-            <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3 transition-colors duration-300">
-              <button
-                onClick={() => dateFilter.setShowDatePicker(false)}
-                className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={dateFilter.confirmSelection}
-                className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
-              >
-                确定
-              </button>
-            </div>
+      <Drawer
+        isOpen={dateFilter.showDatePicker}
+        onClose={() => dateFilter.setShowDatePicker(false)}
+        direction="top"
+        showCloseButton={false}
+        showFooter
+        footerButtons={
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => dateFilter.setShowDatePicker(false)}
+              className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              onClick={dateFilter.confirmSelection}
+              className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
+            >
+              确定
+            </button>
+          </div>
+        }
+      >
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => dateFilter.setPickerMode('year')}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+                dateFilter.pickerMode === 'year'
+                  ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              年
+            </button>
+            <button
+              onClick={() => dateFilter.setPickerMode('month')}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+                dateFilter.pickerMode === 'month'
+                  ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              月
+            </button>
           </div>
         </div>
-      )}
+
+        <div className="px-4 py-4">
+          <Calendar
+            mode="single"
+            value={dateFilter.tempDate}
+            onChange={dateFilter.setTempDate}
+            config={{
+              showYearPicker: true,
+              showMonthPicker: dateFilter.pickerMode === 'month',
+              showDayPicker: false,
+            }}
+          />
+        </div>
+      </Drawer>
 
       <AddBillDrawer
         isOpen={drawerOpen}

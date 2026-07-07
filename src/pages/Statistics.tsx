@@ -22,7 +22,7 @@ import { useWalletStore } from '../store/useWalletStore';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { StatCard } from '../components/StatCard';
 import { FilterDrawer, FilterOptions } from '../components/FilterDrawer';
-import { YearMonthPicker } from '../components/YearMonthPicker';
+import { CalendarPicker } from '../components/Calendar';
 
 interface CategoryStat {
   name: string;
@@ -216,9 +216,10 @@ export default function Statistics() {
 
   const hasActiveFilters = filters.walletId !== 'all' || filters.datePreset !== 'all';
 
-  const handleConfirmPicker = (y: number, m?: number) => {
+  const handleConfirmPicker = (date: string) => {
+    const [y, m] = date.split('-').map(Number);
     setYear(y);
-    if (m !== undefined) setMonth(m);
+    setMonth(m);
     setShowPicker(false);
     setFilters({
       walletId: 'all',
@@ -347,15 +348,12 @@ export default function Statistics() {
         )}
       </main>
 
-      <YearMonthPicker
+      <CalendarPicker
         isOpen={showPicker}
-        mode={tab}
-        initialYear={year}
-        initialMonth={month}
-        onClose={() => setShowPicker(false)}
+        value={`${year}-${String(month).padStart(2, '0')}-01`}
         onConfirm={handleConfirmPicker}
-        minYear={minYear}
-        maxYear={maxYear}
+        onClose={() => setShowPicker(false)}
+        title="选择日期"
       />
 
       {/* 筛选抽屉 */}

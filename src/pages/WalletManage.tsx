@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Check, Settings, Pencil, BarChart3, ArrowRightLeft, Tr
 import { useWalletStore } from '../store/useWalletStore';
 import { useBillStore } from '../store/useBillStore';
 import { useToast } from '../hooks/useToast';
+import { Drawer } from '../components/Drawer';
 
 const presetColors = [
   '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
@@ -337,63 +338,53 @@ export default function WalletManage() {
 
       {/* 底部设置弹层 */}
       {showSettingSheet && activeWallet && (
-        <div
-          className="fixed inset-0 z-[60] flex flex-col justify-end animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowSettingSheet(false); }}
+        <Drawer
+          isOpen={showSettingSheet}
+          onClose={() => setShowSettingSheet(false)}
+          direction="bottom"
+          title={activeWallet.name}
         >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full bg-white dark:bg-gray-800 rounded-t-2xl animate-slide-up transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">{activeWallet.name}</h3>
+          <div className="px-4 py-2">
+            <button
+              onClick={() => openEditModal(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Pencil className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <span className="text-base text-gray-800 dark:text-gray-100">修改</span>
+            </button>
+            <button
+              onClick={() => handleGoStatistics(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <BarChart3 className="w-5 h-5 text-primary-500" />
+              <span className="text-base text-gray-800 dark:text-gray-100">报表统计</span>
+            </button>
+            <button
+              onClick={() => openMigrateModal(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <ArrowRightLeft className="w-5 h-5 text-blue-500" />
+              <span className="text-base text-gray-800 dark:text-gray-100">迁移账本</span>
+            </button>
+            <button
+              onClick={() => { setShowClearConfirm(true); setShowSettingSheet(false); }}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Eraser className="w-5 h-5 text-orange-500" />
+              <span className="text-base text-gray-800 dark:text-gray-100">清除账单</span>
+            </button>
+            {!activeWallet.isDefault && (
               <button
-                onClick={() => setShowSettingSheet(false)}
-                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg transition-colors"
+                onClick={() => { setShowDeleteConfirm(true); setShowSettingSheet(false); }}
+                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <Trash2 className="w-5 h-5 text-red-500" />
+                <span className="text-base text-red-600 dark:text-red-400">删除账本</span>
               </button>
-            </div>
-            <div className="px-4 py-2">
-              <button
-                onClick={() => openEditModal(activeWallet.id)}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Pencil className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <span className="text-base text-gray-800 dark:text-gray-100">修改</span>
-              </button>
-              <button
-                onClick={() => handleGoStatistics(activeWallet.id)}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <BarChart3 className="w-5 h-5 text-primary-500" />
-                <span className="text-base text-gray-800 dark:text-gray-100">报表统计</span>
-              </button>
-              <button
-                onClick={() => openMigrateModal(activeWallet.id)}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ArrowRightLeft className="w-5 h-5 text-blue-500" />
-                <span className="text-base text-gray-800 dark:text-gray-100">迁移账本</span>
-              </button>
-              <button
-                onClick={() => { setShowClearConfirm(true); setShowSettingSheet(false); }}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Eraser className="w-5 h-5 text-orange-500" />
-                <span className="text-base text-gray-800 dark:text-gray-100">清除账单</span>
-              </button>
-              {!activeWallet.isDefault && (
-                <button
-                  onClick={() => { setShowDeleteConfirm(true); setShowSettingSheet(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  <Trash2 className="w-5 h-5 text-red-500" />
-                  <span className="text-base text-red-600 dark:text-red-400">删除账本</span>
-                </button>
-              )}
-            </div>
-            <div className="h-6" />
+            )}
           </div>
-        </div>
+          <div className="h-6" />
+        </Drawer>
       )}
 
       {/* 清除账单二次确认 */}

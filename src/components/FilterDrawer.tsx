@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import { X } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
 import { CalendarRangePicker } from './Calendar';
+import { Drawer } from './Drawer';
 
 export interface FilterOptions {
   walletId: string;
@@ -32,7 +32,6 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
   const [showCustomDate, setShowCustomDate] = useState(filters.datePreset === 'custom');
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // 同步外部filters变化
   useMemo(() => {
     setLocalFilters(filters);
     setShowCustomDate(filters.datePreset === 'custom');
@@ -64,31 +63,32 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
     ...wallets.map(w => ({ id: w.id, name: w.name })),
   ], [wallets]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100]">
-      {/* 遮罩 */}
-      <div
-        className="absolute inset-0 bg-black/40 transition-opacity"
-        onClick={onClose}
-      />
-      {/* 抽屉 */}
-      <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[360px] bg-white dark:bg-gray-800 shadow-2xl flex flex-col transition-transform animate-slide-in-right">
-        {/* 头部 */}
-        <div className="flex items-center justify-between px-4 h-12 border-b border-gray-100 dark:border-gray-700">
-          <h2 className="text-base font-bold text-gray-800 dark:text-gray-100">筛选</h2>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-gray-500 dark:text-gray-400"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* 内容 */}
+    <>
+      <Drawer
+        isOpen={isOpen}
+        onClose={onClose}
+        direction="right"
+        title="筛选"
+        showFooter
+        footerButtons={
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={handleReset}
+              className="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300"
+            >
+              重置
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium"
+            >
+              确定
+            </button>
+          </div>
+        }
+      >
         <div className="flex-1 overflow-auto p-4 space-y-6">
-          {/* 账本筛选 */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">账本</h3>
             <div className="space-y-2">
@@ -108,7 +108,6 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
             </div>
           </div>
 
-          {/* 日期筛选 */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">账单日期</h3>
             <div className="grid grid-cols-3 gap-2">
@@ -127,7 +126,6 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
               ))}
             </div>
 
-            {/* 自定义日期 */}
             {showCustomDate && (
               <div className="mt-3">
                 <button
@@ -146,23 +144,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
             )}
           </div>
         </div>
-
-        {/* 底部按钮 */}
-        <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-          <button
-            onClick={handleReset}
-            className="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-300"
-          >
-            重置
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium"
-          >
-            确定
-          </button>
-        </div>
-      </div>
+      </Drawer>
 
       <CalendarRangePicker
         isOpen={showDatePicker}
@@ -173,6 +155,6 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
         }}
         onClose={() => setShowDatePicker(false)}
       />
-    </div>
+    </>
   );
 }
