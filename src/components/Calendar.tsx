@@ -103,9 +103,11 @@ export function Calendar({
     currentDays.push({ day: i, month: viewMonth, year: viewYear });
   }
 
-  // 下个月的日期填充
+  // 下个月的日期填充 - 始终展示6行（42个单元格）
   const totalCells = prevDays.length + currentDays.length;
-  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  const totalRows = 6;
+  const targetCells = totalRows * 7;
+  const remaining = targetCells - totalCells;
   const nextDays: { day: number; month: number; year: number }[] = [];
   for (let i = 1; i <= remaining; i++) {
     const nextMonth = viewMonth === 11 ? 0 : viewMonth + 1;
