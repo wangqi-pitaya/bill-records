@@ -22,6 +22,30 @@ export const useBillStore = create<BillStore>()(
         set({ bills: updatedBills });
       },
 
+      softDeleteBill: (id) => {
+        const updatedBills = get().bills.map(b =>
+          b.id === id ? { ...b, deleted: true, deletedAt: Date.now() } : b
+        );
+        set({ bills: updatedBills });
+      },
+
+      restoreBill: (id) => {
+        const updatedBills = get().bills.map(b =>
+          b.id === id ? { ...b, deleted: false, deletedAt: undefined } : b
+        );
+        set({ bills: updatedBills });
+      },
+
+      permanentDeleteBill: (id) => {
+        const updatedBills = get().bills.filter(b => b.id !== id);
+        set({ bills: updatedBills });
+      },
+
+      clearTrash: () => {
+        const updatedBills = get().bills.filter(b => !b.deleted);
+        set({ bills: updatedBills });
+      },
+
       updateBill: (id, bill) => {
         const updatedBills = get().bills.map(b =>
           b.id === id ? { ...b, ...bill } : b
@@ -35,13 +59,14 @@ export const useBillStore = create<BillStore>()(
 
       getStatistics: (walletId?: string) => {
         const { bills } = get();
+        const activeBills = bills.filter(b => !b.deleted);
         const filteredBills = walletId
-          ? bills.filter((b) =>
+          ? activeBills.filter((b) =>
               walletId === 'default'
                 ? !b.walletId || b.walletId === 'default'
                 : b.walletId === walletId
             )
-          : bills;
+          : activeBills;
         const income = filteredBills
           .filter(b => b.type === 'income')
           .reduce((sum, b) => sum + b.amount, 0);

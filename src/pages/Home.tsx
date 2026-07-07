@@ -23,7 +23,7 @@ export default function Home() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bills, deleteBill, getBillById } = useBillStore();
+  const { bills: allBills, softDeleteBill, getBillById } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
@@ -31,6 +31,8 @@ export default function Home() {
   const currentWallet = useMemo(() => {
     return wallets.find(w => w.id === currentWalletId);
   }, [wallets, currentWalletId]);
+
+  const bills = useMemo(() => allBills.filter(b => !b.deleted), [allBills]);
 
   const walletBills = useMemo(
     () => filterBillsByWallet(bills, currentWalletId),
@@ -140,8 +142,8 @@ export default function Home() {
                       key={bill.id}
                       bill={bill}
                       onDelete={(id) => {
-                        deleteBill(id);
-                        toast.success('账单已删除');
+                        softDeleteBill(id);
+                        toast.success('账单已删除，可在回收站找回');
                       }}
                       isLast={idx === group.bills.length - 1}
                       onEdit={(b) => {

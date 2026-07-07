@@ -224,6 +224,16 @@ export default function Profile() {
           <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
         </button>
 
+        {/* 回收站 */}
+        <button
+          onClick={() => navigate('/trash', { state: { isSecondary: true } })}
+          className="w-full flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-800 rounded-card shadow-card transition-colors duration-300"
+        >
+          <Trash2 className="w-5 h-5 text-red-500 shrink-0" />
+          <span className="flex-1 text-left text-base text-gray-800 dark:text-gray-100">回收站</span>
+          <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+        </button>
+
         {/* 第二部分：相关设置 */}
         <div className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden transition-colors duration-300">
           <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
