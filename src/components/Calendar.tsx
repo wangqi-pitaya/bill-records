@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Modal } from './Modal';
 
 export type CalendarMode = 'single' | 'range';
 
@@ -464,53 +465,28 @@ interface CalendarPickerProps {
 export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选择日期' }: CalendarPickerProps) {
   const [tempDate, setTempDate] = useState(value);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center px-4 animate-fade-in">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-modal w-full max-w-[340px] overflow-hidden animate-scale-in">
-        {/* 头部 */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
-          <button
-            onClick={onClose}
-            className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            <X className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-          </button>
-        </div>
-
-        {/* 日历 */}
-        <div className="p-4">
-          <Calendar
-            mode="single"
-            value={tempDate}
-            onChange={setTempDate}
-            config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
-          />
-        </div>
-
-        {/* 底部按钮 */}
-        <div className="flex border-t border-gray-100 dark:border-gray-700">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 text-sm text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-r border-gray-100 dark:border-gray-700"
-          >
-            取消
-          </button>
-          <button
-            onClick={() => {
-              onConfirm(tempDate);
-              onClose();
-            }}
-            className="flex-1 py-3 text-sm text-primary-500 dark:text-primary-400 font-medium hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-          >
-            确定
-          </button>
-        </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      showFooter
+      cancelText="取消"
+      confirmText="确定"
+      onConfirm={() => {
+        onConfirm(tempDate);
+        onClose();
+      }}
+    >
+      <div className="p-4">
+        <Calendar
+          mode="single"
+          value={tempDate}
+          onChange={setTempDate}
+          config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
+        />
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -528,78 +504,50 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
   const [tempStart, setTempStart] = useState(startValue);
   const [tempEnd, setTempEnd] = useState(endValue);
 
-  if (!isOpen) return null;
-
   const handleRangeChange = (start: string, end: string) => {
     setTempStart(start);
     setTempEnd(end);
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center px-4 animate-fade-in">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-modal w-full max-w-[340px] overflow-hidden animate-scale-in">
-        {/* 头部 */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
-          <button
-            onClick={onClose}
-            className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            <X className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-          </button>
-        </div>
-
-        {/* 已选范围展示 */}
-        <div className="px-4 pt-3 pb-1">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <span className={`px-3 py-1 rounded-lg ${tempStart ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
-              {tempStart || '开始日期'}
-            </span>
-            <span className="text-gray-400 dark:text-gray-500">~</span>
-            <span className={`px-3 py-1 rounded-lg ${tempEnd ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
-              {tempEnd || '结束日期'}
-            </span>
-          </div>
-        </div>
-
-        {/* 日历 */}
-        <div className="p-4">
-          <Calendar
-            mode="range"
-            startValue={tempStart}
-            endValue={tempEnd}
-            onRangeChange={handleRangeChange}
-            config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
-          />
-        </div>
-
-        {/* 底部按钮 */}
-        <div className="flex border-t border-gray-100 dark:border-gray-700">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 text-sm text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-r border-gray-100 dark:border-gray-700"
-          >
-            取消
-          </button>
-          <button
-            onClick={() => {
-              if (tempStart && tempEnd) {
-                onConfirm(tempStart, tempEnd);
-                onClose();
-              }
-            }}
-            disabled={!tempStart || !tempEnd}
-            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-              tempStart && tempEnd
-                ? 'text-primary-500 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20'
-                : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-            }`}
-          >
-            确定
-          </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      showFooter
+      cancelText="取消"
+      confirmText="确定"
+      confirmDisabled={!tempStart || !tempEnd}
+      onConfirm={() => {
+        if (tempStart && tempEnd) {
+          onConfirm(tempStart, tempEnd);
+          onClose();
+        }
+      }}
+    >
+      {/* 已选范围展示 */}
+      <div className="px-4 pt-3 pb-1">
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <span className={`px-3 py-1 rounded-lg ${tempStart ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+            {tempStart || '开始日期'}
+          </span>
+          <span className="text-gray-400 dark:text-gray-500">~</span>
+          <span className={`px-3 py-1 rounded-lg ${tempEnd ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
+            {tempEnd || '结束日期'}
+          </span>
         </div>
       </div>
-    </div>
+
+      {/* 日历 */}
+      <div className="p-4">
+        <Calendar
+          mode="range"
+          startValue={tempStart}
+          endValue={tempEnd}
+          onRangeChange={handleRangeChange}
+          config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
+        />
+      </div>
+    </Modal>
   );
 }
