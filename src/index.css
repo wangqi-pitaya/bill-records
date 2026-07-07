@@ -65,11 +65,13 @@
   }
 
   .tab-item-active-expense {
-    @apply bg-expense-500 text-white shadow-md;
+    @apply bg-expense-500 text-white !important;
+    @apply shadow-md;
   }
 
   .tab-item-active-income {
-    @apply bg-income-500 text-white shadow-md;
+    @apply bg-income-500 text-white !important;
+    @apply shadow-md;
   }
 
   .modal-backdrop {
@@ -78,5 +80,15 @@
 
   .modal-content {
     @apply relative bg-white rounded-modal shadow-modal w-full max-w-sm overflow-hidden animate-scale-in dark:bg-gray-800;
+  }
+
+  svg {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  svg *:focus,
+  svg *:active {
+    outline: none;
   }
 }

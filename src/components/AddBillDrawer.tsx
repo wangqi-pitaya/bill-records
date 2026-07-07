@@ -107,9 +107,6 @@ export const AddBillDrawer = ({ isOpen, onClose, editBill }: AddBillDrawerProps)
             </div>
             <div className="flex-1 min-w-0">
               <div className="relative w-full">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-base pointer-events-none">
-                  ¥
-                </span>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -124,7 +121,7 @@ export const AddBillDrawer = ({ isOpen, onClose, editBill }: AddBillDrawerProps)
                     e.currentTarget.focus();
                   }}
                   placeholder="0.00"
-                  className="input-base pl-7 pr-3 py-3 text-lg font-bold"
+                  className="input-base pl-3 pr-3 py-3 text-lg font-bold"
                 />
               </div>
             </div>

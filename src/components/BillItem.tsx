@@ -141,27 +141,32 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="flex items-center gap-4 select-none">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
+          <div className="flex items-center gap-3 select-none">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
               bill.type === 'income' ? 'bg-income-100 dark:bg-income-900/30' : 'bg-expense-100 dark:bg-expense-900/30'
             }`}>
-              <IconComponent className={`w-6 h-6 ${
+              <IconComponent className={`w-5 h-5 ${
                 bill.type === 'income' ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'
               }`} />
             </div>
             
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-gray-800 dark:text-gray-100 truncate">{bill.category}</div>
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <div className="font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap overflow-hidden text-ellipsis">{bill.category}</div>
               {bill.note && (
                 <div className="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5">{bill.note}</div>
               )}
             </div>
             
-            <div className="text-right shrink-0">
-              <div className={`text-lg font-bold ${
-                bill.type === 'income' ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'
-              }`}>
-                {bill.type === 'income' ? '+' : '-'}¥{bill.amount.toFixed(2)}
+            <div className="text-right shrink-0 flex flex-col items-end">
+              <div
+                className={`font-bold whitespace-nowrap ${
+                  bill.type === 'income' ? 'text-income-600 dark:text-income-400' : 'text-expense-600 dark:text-expense-400'
+                }`}
+                style={{
+                  fontSize: bill.amount.toFixed(2).length > 8 ? '12px' : bill.amount.toFixed(2).length > 10 ? '10px' : '18px',
+                }}
+              >
+                {bill.type === 'income' ? '+' : '-'}{bill.amount.toFixed(2)}
               </div>
               <div className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{bill.date}</div>
             </div>

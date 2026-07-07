@@ -1,5 +1,3 @@
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
-
 interface StatCardProps {
   income: number;
   expense: number;
@@ -12,37 +10,44 @@ export const StatCard = ({ income, expense, balance, color }: StatCardProps) => 
     ? { background: `linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})` }
     : undefined;
 
+  const balanceStr = balance.toFixed(2);
+  const incomeStr = income.toFixed(2);
+  const expenseStr = expense.toFixed(2);
+
   return (
     <div
-      className={`rounded-2xl p-6 shadow-card text-white ${
+      className={`rounded-2xl p-4 shadow-card text-white ${
         color ? '' : 'bg-gradient-to-br from-primary-400 to-primary-600'
       }`}
       style={cardStyle}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Wallet className="w-5 h-5" />
-          <span className="text-sm font-medium text-white/90">余额</span>
-        </div>
-        <span className="text-2xl font-bold">¥{balance.toFixed(2)}</span>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-white/90 whitespace-nowrap">结余</span>
+        <span
+          className="text-xl font-bold whitespace-nowrap"
+          style={{ fontSize: balanceStr.length > 10 ? '14px' : undefined }}
+        >
+          {balanceStr}
+        </span>
       </div>
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/20">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <TrendingUp className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs text-white/80">收入</div>
-            <div className="text-base font-semibold">¥{income.toFixed(2)}</div>
+
+      <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/20">
+        <div>
+          <div className="text-xs text-white/80 whitespace-nowrap">收入</div>
+          <div
+            className="text-base font-semibold whitespace-nowrap"
+            style={{ fontSize: incomeStr.length > 10 ? '12px' : undefined }}
+          >
+            {incomeStr}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-            <TrendingDown className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-xs text-white/80">支出</div>
-            <div className="text-base font-semibold">¥{expense.toFixed(2)}</div>
+        <div>
+          <div className="text-xs text-white/80 whitespace-nowrap">支出</div>
+          <div
+            className="text-base font-semibold whitespace-nowrap"
+            style={{ fontSize: expenseStr.length > 10 ? '12px' : undefined }}
+          >
+            {expenseStr}
           </div>
         </div>
       </div>
