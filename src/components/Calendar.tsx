@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 
 export type CalendarMode = 'single' | 'range';
@@ -78,6 +78,10 @@ export function Calendar({
 
   const [viewYear, setViewYear] = useState(initYear);
   const [viewMonth, setViewMonth] = useState(initMonth);
+  const [pageStartYear, setPageStartYear] = useState(() => {
+    const midIndex = 4;
+    return initYear - midIndex;
+  });
 
   const [rangeStart, setRangeStart] = useState(startValue);
   const [rangeEnd, setRangeEnd] = useState(endValue);
@@ -110,6 +114,19 @@ export function Calendar({
       return m + 1;
     });
   }, []);
+
+  const handlePrevYearPage = useCallback(() => {
+    setPageStartYear((s) => s - 9);
+  }, []);
+
+  const handleNextYearPage = useCallback(() => {
+    setPageStartYear((s) => s + 9);
+  }, []);
+
+  useEffect(() => {
+    const midIndex = 4;
+    setPageStartYear(initYear - midIndex);
+  }, [initYear]);
 
   const handleSelectDate = useCallback(
     (year: number, month: number, day: number = 1) => {
@@ -187,6 +204,62 @@ export function Calendar({
     const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
     const selectedDateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-01`;
 
+    if (config.showMonthPicker === false) {
+      const yearPage = Array.from({ length: 9 }, (_, i) => pageStartYear + i);
+
+      return (
+        <div className="w-full select-none">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={handlePrevYearPage}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+            </div>
+
+            <span className="text-base font-semibold text-gray-800 dark:text-gray-100">
+              {viewYear}年
+            </span>
+
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={handleNextYearPage}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-700 transition-colors"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {yearPage.map((year) => {
+              const yearDateStr = `${year}-01-01`;
+              const isSelectedYear = isSelected(yearDateStr);
+              
+              return (
+                <button
+                  key={year}
+                  onClick={() => {
+                    setViewYear(year);
+                    handleSelectDate(year, 0);
+                  }}
+                  className={`py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isSelectedYear
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {year}年
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="w-full select-none">
         <div className="flex items-center justify-between mb-4">
@@ -220,31 +293,29 @@ export function Calendar({
           </div>
         </div>
 
-        {config.showMonthPicker !== false && (
-          <div className="grid grid-cols-4 gap-2">
-            {months.map((month, index) => {
-              const monthDateStr = `${viewYear}-${String(index + 1).padStart(2, '0')}-01`;
-              const isSelectedMonth = isSelected(monthDateStr);
-              
-              return (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setViewMonth(index);
-                    handleSelectDate(viewYear, index);
-                  }}
-                  className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isSelectedMonth
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
-                >
-                  {month}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <div className="grid grid-cols-4 gap-2">
+          {months.map((month, index) => {
+            const monthDateStr = `${viewYear}-${String(index + 1).padStart(2, '0')}-01`;
+            const isSelectedMonth = isSelected(monthDateStr);
+            
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  setViewMonth(index);
+                  handleSelectDate(viewYear, index);
+                }}
+                className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isSelectedMonth
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {month}
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }
