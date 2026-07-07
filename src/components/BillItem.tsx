@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import * as Icons from 'lucide-react';
 import { Bill } from '../types';
-import { ConfirmModal } from './ConfirmModal';
+import { Modal } from './Modal';
 import { formatMoney } from '../lib/utils';
 
 interface BillItemProps {
@@ -175,16 +175,19 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
         </div>
       </div>
 
-      <ConfirmModal
+      <Modal
         isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
         title="确认删除"
-        message="确定要删除这条账单记录吗？删除后可在回收站找回。"
+        showFooter
         confirmText="删除"
-        cancelText="取消"
-        type="danger"
+        confirmVariant="danger"
         onConfirm={handleConfirmDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
+      >
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-2">
+          确定要删除这条账单记录吗？删除后可在回收站找回。
+        </p>
+      </Modal>
     </>
   );
 };

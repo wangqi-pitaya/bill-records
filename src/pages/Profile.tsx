@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBillStore } from '../store/useBillStore';
 import { useTheme } from '../hooks/useTheme';
 import { useToast } from '../hooks/useToast';
-import { ConfirmModal } from '../components/ConfirmModal';
+import { Modal } from '../components/Modal';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -25,8 +25,8 @@ export default function Profile() {
   const toast = useToast();
 
   const [nickname, setNickname] = useState(() => localStorage.getItem('profile_nickname') || '记账达人');
-  const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [editNickname, setEditNickname] = useState('');
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // 统计数据
@@ -57,18 +57,14 @@ export default function Profile() {
     }
     setNickname(trimmed);
     localStorage.setItem('profile_nickname', trimmed);
-    setIsEditingNickname(false);
+    setShowEditModal(false);
     toast.success('昵称已更新');
   }, [editNickname, toast]);
 
   const startEditNickname = useCallback(() => {
     setEditNickname(nickname);
-    setIsEditingNickname(true);
+    setShowEditModal(true);
   }, [nickname]);
-
-  const cancelEditNickname = useCallback(() => {
-    setIsEditingNickname(false);
-  }, []);
 
   // 导出账单
   const handleExport = useCallback(() => {
@@ -149,51 +145,23 @@ export default function Profile() {
         <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-5 transition-colors duration-300">
           <div className="flex items-center gap-4">
             {/* 头像 */}
-            <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
-              <User className="w-8 h-8 text-primary-500" />
+            <div className="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
+              <User className="w-6 h-6 text-primary-500" />
             </div>
 
             {/* 昵称 */}
             <div className="flex-1 min-w-0">
-              {isEditingNickname ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={editNickname}
-                    onChange={(e) => setEditNickname(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    maxLength={20}
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleSaveNickname}
-                    className="w-8 h-8 flex items-center justify-center bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={cancelEditNickname}
-                    className="w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                    {nickname}
-                  </span>
-                  <button
-                    onClick={startEditNickname}
-                    className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                已记账 {stats.useDays} 天
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  {nickname}
+                </span>
+                <button
+                  onClick={startEditNickname}
+                  className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded transition-colors"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -295,17 +263,44 @@ export default function Profile() {
 
       </main>
 
+      {/* 编辑昵称弹窗 */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="编辑昵称"
+        showFooter
+        confirmText="保存"
+        confirmDisabled={!editNickname.trim()}
+        onConfirm={handleSaveNickname}
+      >
+        <div>
+          <label className="text-sm text-gray-600 dark:text-gray-400 mb-1.5 block">昵称</label>
+          <input
+            type="text"
+            value={editNickname}
+            onChange={(e) => setEditNickname(e.target.value)}
+            placeholder="输入昵称"
+            className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            maxLength={20}
+            autoFocus
+          />
+        </div>
+      </Modal>
+
       {/* 清除数据确认弹窗 */}
-      <ConfirmModal
+      <Modal
         isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
         title="清除数据"
-        message="确定要清除所有数据吗？包括账单、分类、账本等所有记录，此操作不可恢复。"
+        showFooter
         confirmText="清除"
-        cancelText="取消"
-        type="danger"
+        confirmVariant="danger"
         onConfirm={handleClearData}
-        onCancel={() => setShowClearConfirm(false)}
-      />
+      >
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-2">
+          确定要清除所有数据吗？包括账单、分类、账本等所有记录，此操作不可恢复。
+        </p>
+      </Modal>
     </div>
   );
 }

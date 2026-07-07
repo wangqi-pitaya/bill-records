@@ -4,7 +4,7 @@ import { ArrowLeft, Search, SlidersHorizontal, X, RefreshCw, Trash2 } from 'luci
 import { useBillStore } from '../store/useBillStore';
 import { useToast } from '../hooks/useToast';
 import { FilterDrawer, FilterOptions } from '../components/FilterDrawer';
-import { ConfirmModal } from '../components/ConfirmModal';
+import { Modal } from '../components/Modal';
 import { groupBillsByDate, filterBillsByWallet, getDateRangeByPreset, formatMoney } from '../lib/utils';
 
 export default function TrashPage() {
@@ -209,16 +209,19 @@ export default function TrashPage() {
         onConfirm={setFilters}
       />
 
-      <ConfirmModal
+      <Modal
         isOpen={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
         title="清空回收站"
-        message={`确定要清空回收站中全部 ${deletedBills.length} 条账单吗？此操作不可恢复。`}
+        showFooter
         confirmText="清空"
-        cancelText="取消"
-        type="danger"
+        confirmVariant="danger"
         onConfirm={handleClearTrash}
-        onCancel={() => setShowClearConfirm(false)}
-      />
+      >
+        <p className="text-sm text-gray-600 dark:text-gray-400 text-center py-2">
+          确定要清空回收站中全部 {deletedBills.length} 条账单吗？此操作不可恢复。
+        </p>
+      </Modal>
     </div>
   );
 }
