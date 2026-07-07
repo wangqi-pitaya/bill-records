@@ -10,13 +10,16 @@ import {
   X,
   Moon,
   Sun,
+  Search,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useBillStore } from '../store/useBillStore';
 import { useTheme } from '../hooks/useTheme';
 import { useToast } from '../hooks/useToast';
 import { ConfirmModal } from '../components/ConfirmModal';
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { bills } = useBillStore();
   const { theme, toggleTheme, isDark } = useTheme();
   const toast = useToast();
@@ -210,6 +213,16 @@ export default function Profile() {
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账笔数</div>
           </div>
         </div>
+
+        {/* 搜索账单 */}
+        <button
+          onClick={() => navigate('/search', { state: { isSecondary: true } })}
+          className="w-full flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-800 rounded-card shadow-card transition-colors duration-300"
+        >
+          <Search className="w-5 h-5 text-primary-500 shrink-0" />
+          <span className="flex-1 text-left text-base text-gray-800 dark:text-gray-100">搜索账单</span>
+          <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+        </button>
 
         {/* 第二部分：相关设置 */}
         <div className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden transition-colors duration-300">

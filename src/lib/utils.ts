@@ -105,3 +105,39 @@ export const formatMoney = (value: number, decimals: number = 2): string => {
   const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
 };
+
+/**
+ * 根据日期预设获取日期范围
+ */
+export const getDateRangeByPreset = (preset: 'all' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'lastYear' | 'custom', startDate?: string, endDate?: string) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  switch (preset) {
+    case 'thisMonth': {
+      const start = new Date(year, month, 1);
+      const end = new Date(year, month + 1, 0);
+      return { start: formatDate(start), end: formatDate(end) };
+    }
+    case 'lastMonth': {
+      const start = new Date(year, month - 1, 1);
+      const end = new Date(year, month, 0);
+      return { start: formatDate(start), end: formatDate(end) };
+    }
+    case 'thisYear': {
+      const start = new Date(year, 0, 1);
+      const end = new Date(year, 11, 31);
+      return { start: formatDate(start), end: formatDate(end) };
+    }
+    case 'lastYear': {
+      const start = new Date(year - 1, 0, 1);
+      const end = new Date(year - 1, 11, 31);
+      return { start: formatDate(start), end: formatDate(end) };
+    }
+    case 'custom':
+      return { start: startDate || '', end: endDate || '' };
+    default:
+      return { start: '', end: '' };
+  }
+};
