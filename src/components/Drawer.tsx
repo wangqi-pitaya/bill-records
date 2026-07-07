@@ -42,13 +42,13 @@ const directionClasses: Record<DrawerDirection, {
     position: 'top-0 left-0 bottom-0',
     transform: '-translate-x-full',
     openTransform: 'translate-x-0',
-    animate: '',
+    animate: 'animate-slide-in-left',
   },
   right: {
     position: 'top-0 right-0 bottom-0',
     transform: 'translate-x-full',
     openTransform: 'translate-x-0',
-    animate: '',
+    animate: 'animate-slide-in-right',
   },
 };
 
@@ -106,7 +106,7 @@ export function Drawer({
       <div
         className={`absolute ${styles.position} bg-white dark:bg-gray-800 shadow-2xl flex flex-col transition-transform duration-300 ${
           isOpen ? styles.openTransform : styles.transform
-        } ${direction === 'right' ? 'animate-slide-in-right' : ''}`}
+        } ${styles.animate}`}
         style={{
           width: isVertical ? width : '100%',
           height: !isVertical ? height : '100%',

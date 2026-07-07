@@ -467,7 +467,7 @@ export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center px-4 animate-fade-in">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-modal w-full max-w-[340px] overflow-hidden animate-scale-in">
         {/* 头部 */}
@@ -536,7 +536,7 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center px-4 animate-fade-in">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-modal w-full max-w-[340px] overflow-hidden animate-scale-in">
         {/* 头部 */}

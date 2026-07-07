@@ -70,6 +70,7 @@ export default {
         "slide-up": "slideUp 0.3s ease-out",
         "slide-down": "slideDown 0.3s ease-out",
         "slide-in-right": "slideInRight 0.3s ease-out",
+        "slide-in-left": "slideInLeft 0.3s ease-out",
         "fade-in": "fadeIn 0.2s ease-out",
         "scale-in": "scaleIn 0.2s ease-out",
         "toast-in": "toastIn 0.3s ease-out",
@@ -86,6 +87,10 @@ export default {
         },
         slideInRight: {
           from: { transform: "translateX(100%)" },
+          to: { transform: "translateX(0)" },
+        },
+        slideInLeft: {
+          from: { transform: "translateX(-100%)" },
           to: { transform: "translateX(0)" },
         },
         fadeIn: {
