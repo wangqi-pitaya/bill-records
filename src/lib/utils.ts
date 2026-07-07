@@ -91,3 +91,17 @@ export const filterBillsByWallet = (bills: Bill[], walletId: string): Bill[] => 
   }
   return bills.filter(b => b.walletId === walletId);
 };
+
+/**
+ * 格式化金额，添加千分符
+ * @param value 数值
+ * @param decimals 小数位数，默认2位
+ * @returns 格式化后的字符串，如 "1,234.56"
+ */
+export const formatMoney = (value: number, decimals: number = 2): string => {
+  if (isNaN(value)) return '0.00';
+  const fixed = value.toFixed(decimals);
+  const [intPart, decPart] = fixed.split('.');
+  const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+};

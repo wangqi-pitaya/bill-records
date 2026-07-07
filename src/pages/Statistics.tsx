@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, X, ArrowLeft } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { formatMoney } from '../lib/utils';
 import {
   BarChart,
   Bar,
@@ -350,7 +351,7 @@ function TrendChart({
             tickFormatter={(v: number) => String(v)}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [value.toFixed(2), name]}
+            formatter={(value: number, name: string) => [formatMoney(value), name]}
             contentStyle={{
               backgroundColor: isDark ? '#1f2937' : '#ffffff',
               borderColor: gridColor,
@@ -384,7 +385,7 @@ function TrendChart({
           tickFormatter={(v: number) => String(v)}
         />
         <Tooltip
-          formatter={(value: number, name: string) => [value.toFixed(2), name]}
+          formatter={(value: number, name: string) => [formatMoney(value), name]}
           contentStyle={{
             backgroundColor: isDark ? '#1f2937' : '#ffffff',
             borderColor: gridColor,
@@ -543,13 +544,13 @@ function CategoryPieChart({
                   {pieType === 'expense' ? '支出' : '收入'}
                 </text>
                 {(() => {
-                  const amountStr = total.toFixed(2);
+                  const amountStr = formatMoney(total);
                   const len = amountStr.length;
                   let fontSize = 14;
                   if (len > 8) fontSize = 12;
                   if (len > 10) fontSize = 10;
                   if (len > 12) fontSize = 8;
-                  
+
                   if (len <= 10) {
                     return (
                       <text
@@ -565,7 +566,7 @@ function CategoryPieChart({
                       </text>
                     );
                   }
-                  
+
                   const intPart = amountStr.split('.')[0];
                   const decPart = '.' + amountStr.split('.')[1];
                   return (
@@ -655,7 +656,7 @@ function CategoryBarItem({ stat, renderIcon, type }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium truncate text-gray-700 dark:text-gray-300">{stat.name}</span>
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{stat.amount.toFixed(2)}</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{formatMoney(stat.amount)}</span>
         </div>
         <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
@@ -692,7 +693,7 @@ function DetailTable({
 
       <div className="flex items-center justify-center mb-4">
         <span className="text-xs text-gray-500 dark:text-gray-400">{avgLabel}</span>
-        <span className="text-sm font-semibold text-expense-500 ml-2">{avgExpense.toFixed(2)}</span>
+        <span className="text-sm font-semibold text-expense-500 ml-2">{formatMoney(avgExpense)}</span>
       </div>
 
       {data.length > 0 ? (
@@ -727,15 +728,15 @@ function DetailTable({
                     {item.label}
                   </td>
                   <td className="py-2 px-3 text-right text-income-500 break-all">
-                    {item.income > 0 ? item.income.toFixed(2) : '-'}
+                    {item.income > 0 ? formatMoney(item.income) : '-'}
                   </td>
                   <td className="py-2 px-3 text-right text-expense-500 break-all">
-                    {item.expense > 0 ? item.expense.toFixed(2) : '-'}
+                    {item.expense > 0 ? formatMoney(item.expense) : '-'}
                   </td>
                   <td className={`py-2 px-3 text-right font-medium break-all ${
                     item.balance >= 0 ? 'text-income-500' : 'text-expense-500'
                   }`}>
-                    {item.balance.toFixed(2)}
+                    {formatMoney(item.balance)}
                   </td>
                 </tr>
               ))}

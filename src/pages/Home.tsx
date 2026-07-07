@@ -16,6 +16,7 @@ import {
   groupBillsByDate,
   filterBillsByDate,
   filterBillsByWallet,
+  formatMoney,
 } from '../lib/utils';
 
 export default function Home() {
@@ -122,13 +123,13 @@ export default function Home() {
                     {group.totalExpense > 0 && (
                       <span className="text-xs text-expense-500 whitespace-nowrap text-right leading-none">
                         <span className="text-gray-400 dark:text-gray-500 mr-0.5">支出</span>
-                        <span className="font-semibold">-{group.totalExpense.toFixed(2)}</span>
+                        <span className="font-semibold">-{formatMoney(group.totalExpense)}</span>
                       </span>
                     )}
                     {group.totalIncome > 0 && (
                       <span className="text-xs text-income-500 whitespace-nowrap text-right leading-none">
                         <span className="text-gray-400 dark:text-gray-500 mr-0.5">收入</span>
-                        <span className="font-semibold">+{group.totalIncome.toFixed(2)}</span>
+                        <span className="font-semibold">+{formatMoney(group.totalIncome)}</span>
                       </span>
                     )}
                   </div>
