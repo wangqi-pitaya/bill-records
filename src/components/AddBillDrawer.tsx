@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X, Settings, Calendar } from 'lucide-react';
 import { useBillForm } from '../hooks/useBillForm';
 import { CategoryGrid } from './CategoryGrid';
-import { DatePicker } from './DatePicker';
+import { CalendarPicker } from './Calendar';
 import { LoadingSpinner } from './Loading';
 import { Bill } from '../types';
 import { getShortDateLabel } from '../lib/utils';
@@ -157,7 +157,7 @@ export const AddBillDrawer = ({ isOpen, onClose, editBill }: AddBillDrawerProps)
         </div>
       </div>
 
-      <DatePicker
+      <CalendarPicker
         isOpen={form.showDatePicker}
         value={form.date}
         onConfirm={form.setDate}

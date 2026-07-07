@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
+import { CalendarRangePicker } from './Calendar';
 
 export interface FilterOptions {
   walletId: string;
@@ -29,6 +30,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
   const { wallets } = useWalletStore();
   const [localFilters, setLocalFilters] = useState<FilterOptions>(filters);
   const [showCustomDate, setShowCustomDate] = useState(filters.datePreset === 'custom');
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // 同步外部filters变化
   useMemo(() => {
@@ -127,25 +129,19 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
 
             {/* 自定义日期 */}
             {showCustomDate && (
-              <div className="mt-3 space-y-3">
-                <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">开始日期</label>
-                  <input
-                    type="date"
-                    value={localFilters.startDate}
-                    onChange={(e) => setLocalFilters(prev => ({ ...prev, startDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">结束日期</label>
-                  <input
-                    type="date"
-                    value={localFilters.endDate}
-                    onChange={(e) => setLocalFilters(prev => ({ ...prev, endDate: e.target.value }))}
-                    className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  />
-                </div>
+              <div className="mt-3">
+                <button
+                  onClick={() => setShowDatePicker(true)}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                >
+                  <span className={localFilters.startDate ? 'text-primary-600 dark:text-primary-400 font-medium' : 'text-gray-400 dark:text-gray-500'}>
+                    {localFilters.startDate || '开始日期'}
+                  </span>
+                  <span className="text-gray-400 dark:text-gray-500">~</span>
+                  <span className={localFilters.endDate ? 'text-primary-600 dark:text-primary-400 font-medium' : 'text-gray-400 dark:text-gray-500'}>
+                    {localFilters.endDate || '结束日期'}
+                  </span>
+                </button>
               </div>
             )}
           </div>
@@ -167,6 +163,16 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
           </button>
         </div>
       </div>
+
+      <CalendarRangePicker
+        isOpen={showDatePicker}
+        startValue={localFilters.startDate}
+        endValue={localFilters.endDate}
+        onConfirm={(start, end) => {
+          setLocalFilters(prev => ({ ...prev, startDate: start, endDate: end }));
+        }}
+        onClose={() => setShowDatePicker(false)}
+      />
     </div>
   );
 }
