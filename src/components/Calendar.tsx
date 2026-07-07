@@ -245,8 +245,9 @@ export function Calendar({
 
           <div className="grid grid-cols-3 gap-2">
             {yearPage.map((year) => {
-              const yearDateStr = `${year}-01-01`;
-              const isSelectedYear = isSelected(yearDateStr);
+              const isSelectedYear = mode === 'single' && value
+                ? parseDate(value).getFullYear() === year
+                : false;
               
               return (
                 <button
@@ -305,8 +306,9 @@ export function Calendar({
 
         <div className="grid grid-cols-4 gap-2">
           {months.map((month, index) => {
-            const monthDateStr = `${viewYear}-${String(index + 1).padStart(2, '0')}-01`;
-            const isSelectedMonth = isSelected(monthDateStr);
+            const isSelectedMonth = mode === 'single' && value
+              ? parseDate(value).getFullYear() === viewYear && parseDate(value).getMonth() === index
+              : false;
             
             return (
               <button
