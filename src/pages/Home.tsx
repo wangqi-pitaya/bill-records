@@ -215,8 +215,8 @@ export default function Home() {
                 value={dateFilter.tempDate}
                 onChange={dateFilter.setTempDate}
                 config={{
-                  showYearPicker: dateFilter.pickerMode === 'year',
-                  showMonthPicker: true,
+                  showYearPicker: true,
+                  showMonthPicker: dateFilter.pickerMode === 'month',
                   showDayPicker: false,
                 }}
               />

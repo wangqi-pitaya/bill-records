@@ -191,14 +191,12 @@ export function Calendar({
       <div className="w-full select-none">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-0.5">
-            {config.showYearPicker && (
-              <button
-                onClick={handlePrevYear}
-                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ChevronsLeft className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={handlePrevYear}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </button>
           </div>
 
           <button
@@ -213,40 +211,40 @@ export function Calendar({
           </button>
 
           <div className="flex items-center gap-0.5">
-            {config.showYearPicker && (
-              <button
-                onClick={handleNextYear}
-                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ChevronsRight className="w-4 h-4" />
-              </button>
-            )}
+            <button
+              onClick={handleNextYear}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
-          {months.map((month, index) => {
-            const monthDateStr = `${viewYear}-${String(index + 1).padStart(2, '0')}-01`;
-            const isSelectedMonth = isSelected(monthDateStr);
-            
-            return (
-              <button
-                key={index}
-                onClick={() => {
-                  setViewMonth(index);
-                  handleSelectDate(viewYear, index);
-                }}
-                className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isSelectedMonth
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                }`}
-              >
-                {month}
-              </button>
-            );
-          })}
-        </div>
+        {config.showMonthPicker !== false && (
+          <div className="grid grid-cols-4 gap-2">
+            {months.map((month, index) => {
+              const monthDateStr = `${viewYear}-${String(index + 1).padStart(2, '0')}-01`;
+              const isSelectedMonth = isSelected(monthDateStr);
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setViewMonth(index);
+                    handleSelectDate(viewYear, index);
+                  }}
+                  className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isSelectedMonth
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  }`}
+                >
+                  {month}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }

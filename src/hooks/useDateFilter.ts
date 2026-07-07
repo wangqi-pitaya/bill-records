@@ -15,8 +15,8 @@ export interface DateFilterState {
   confirmSelection: () => void;
 }
 
-const formatDateStr = (year: number, month?: number): string => {
-  const m = month !== undefined ? String(month).padStart(2, '0') : '01';
+const formatDateStr = (year: number, month?: number | null): string => {
+  const m = month != null ? String(month).padStart(2, '0') : '01';
   return `${year}-${m}-01`;
 };
 
