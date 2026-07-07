@@ -11,18 +11,21 @@ import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
 import { AddBillDrawer } from '../components/AddBillDrawer';
+import { Calendar } from '../components/Calendar';
+import { Drawer } from '../components/Drawer';
 import {
   getDateLabel,
   groupBillsByDate,
   filterBillsByDate,
   filterBillsByWallet,
+  formatMoney,
 } from '../lib/utils';
 
 export default function Home() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bills, deleteBill, getBillById } = useBillStore();
+  const { bills: allBills, softDeleteBill, getBillById } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
@@ -30,6 +33,8 @@ export default function Home() {
   const currentWallet = useMemo(() => {
     return wallets.find(w => w.id === currentWalletId);
   }, [wallets, currentWalletId]);
+
+  const bills = useMemo(() => allBills.filter(b => !b.deleted), [allBills]);
 
   const walletBills = useMemo(
     () => filterBillsByWallet(bills, currentWalletId),
@@ -122,13 +127,13 @@ export default function Home() {
                     {group.totalExpense > 0 && (
                       <span className="text-xs text-expense-500 whitespace-nowrap text-right leading-none">
                         <span className="text-gray-400 dark:text-gray-500 mr-0.5">支出</span>
-                        <span className="font-semibold">-{group.totalExpense.toFixed(2)}</span>
+                        <span className="font-semibold">-{formatMoney(group.totalExpense)}</span>
                       </span>
                     )}
                     {group.totalIncome > 0 && (
                       <span className="text-xs text-income-500 whitespace-nowrap text-right leading-none">
                         <span className="text-gray-400 dark:text-gray-500 mr-0.5">收入</span>
-                        <span className="font-semibold">+{group.totalIncome.toFixed(2)}</span>
+                        <span className="font-semibold">+{formatMoney(group.totalIncome)}</span>
                       </span>
                     )}
                   </div>
@@ -139,8 +144,8 @@ export default function Home() {
                       key={bill.id}
                       bill={bill}
                       onDelete={(id) => {
-                        deleteBill(id);
-                        toast.success('账单已删除');
+                        softDeleteBill(id);
+                        toast.success('账单已删除，可在回收站找回');
                       }}
                       isLast={idx === group.bills.length - 1}
                       onEdit={(b) => {
@@ -169,102 +174,67 @@ export default function Home() {
         className="bottom-20"
       />
 
-      {dateFilter.showDatePicker && (
-        <div
-          className="fixed inset-0 z-[60] flex items-start animate-fade-in"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) dateFilter.setShowDatePicker(false);
-          }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full bg-white dark:bg-gray-800 rounded-b-2xl max-h-[80vh] overflow-auto animate-slide-down transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 transition-colors duration-300">
-              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                <button
-                  onClick={() => {
-                    dateFilter.setPickerMode('year');
-                    dateFilter.setPickerMonth(null);
-                  }}
-                  className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                    dateFilter.pickerMode === 'year'
-                      ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                  }`}
-                >
-                  按年
-                </button>
-                <button
-                  onClick={() => dateFilter.setPickerMode('month')}
-                  className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                    dateFilter.pickerMode === 'month'
-                      ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                  }`}
-                >
-                  按月
-                </button>
-              </div>
-            </div>
-
-            <div className="px-4 py-4">
-              <div className="mb-4">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">年份</span>
-                <div className="flex flex-wrap gap-2">
-                  {dateFilter.availableYears.map(year => (
-                    <button
-                      key={year}
-                      onClick={() => dateFilter.setPickerYear(year)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        dateFilter.pickerYear === year
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {year}年
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {dateFilter.pickerMode === 'month' && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">月份</span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                      <button
-                        key={month}
-                        onClick={() => dateFilter.setPickerMonth(month)}
-                        className={`px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          dateFilter.pickerMonth === month
-                            ? 'bg-primary-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        {month}月
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3 transition-colors duration-300">
-              <button
-                onClick={() => dateFilter.setShowDatePicker(false)}
-                className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              >
-                取消
-              </button>
-              <button
-                onClick={dateFilter.confirmSelection}
-                className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
-              >
-                确定
-              </button>
-            </div>
+      <Drawer
+        isOpen={dateFilter.showDatePicker}
+        onClose={() => dateFilter.setShowDatePicker(false)}
+        direction="top"
+        showCloseButton={false}
+        showFooter
+        footerButtons={
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => dateFilter.setShowDatePicker(false)}
+              className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              onClick={dateFilter.confirmSelection}
+              className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors"
+            >
+              确定
+            </button>
+          </div>
+        }
+      >
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+            <button
+              onClick={() => dateFilter.setPickerMode('year')}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+                dateFilter.pickerMode === 'year'
+                  ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              年
+            </button>
+            <button
+              onClick={() => dateFilter.setPickerMode('month')}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+                dateFilter.pickerMode === 'month'
+                  ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              月
+            </button>
           </div>
         </div>
-      )}
+
+        <div className="px-4 py-4">
+          <Calendar
+            mode="single"
+            value={dateFilter.tempDate}
+            onChange={dateFilter.setTempDate}
+            config={{
+              showYearPicker: true,
+              showMonthPicker: dateFilter.pickerMode === 'month',
+              showDayPicker: false,
+            }}
+          />
+        </div>
+      </Drawer>
 
       <AddBillDrawer
         isOpen={drawerOpen}

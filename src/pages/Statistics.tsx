@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight, BarChart3, X, ArrowLeft } from 'lucide-react';
+import { Calendar, ChevronDown, BarChart3, ArrowLeft, SlidersHorizontal } from 'lucide-react';
 import * as Icons from 'lucide-react';
+import { formatMoney, filterBillsByWallet, getDateRangeByPreset } from '../lib/utils';
 import {
   BarChart,
   Bar,
@@ -19,8 +20,9 @@ import {
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
 import { useCategoryStore } from '../store/useCategoryStore';
-import { filterBillsByWallet } from '../lib/utils';
 import { StatCard } from '../components/StatCard';
+import { FilterDrawer, FilterOptions } from '../components/FilterDrawer';
+import { CalendarPicker } from '../components/Calendar';
 
 interface CategoryStat {
   name: string;
@@ -47,21 +49,45 @@ export default function Statistics() {
   const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense'>('expense');
   const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
+  const [showFilter, setShowFilter] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    walletId: 'all',
+    datePreset: 'all',
+    startDate: '',
+    endDate: '',
+  });
 
   const handleTabChange = (newTab: 'month' | 'year') => {
     setTab(newTab);
     setTrendMode('expense');
     setPieType('expense');
+    setFilters({
+      walletId: 'all',
+      datePreset: 'all',
+      startDate: '',
+      endDate: '',
+    });
   };
 
   const { bills } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
   const { categories } = useCategoryStore();
 
-  const statsWalletId = (location.state as { isSecondary?: boolean; walletId?: string })?.walletId || currentWalletId;
+  const routeWalletId = (location.state as { isSecondary?: boolean; walletId?: string })?.walletId;
+  const statsWalletId = filters.walletId !== 'all' ? filters.walletId : (routeWalletId || currentWalletId);
   const statsWallet = wallets.find(w => w.id === statsWalletId);
 
-  const walletBills = useMemo(() => filterBillsByWallet(bills, statsWalletId), [bills, statsWalletId]);
+  const walletBills = useMemo(() => {
+    let result = filterBillsByWallet(bills, statsWalletId);
+    // 应用日期范围筛选
+    if (filters.datePreset !== 'all') {
+      const { start, end } = getDateRangeByPreset(filters.datePreset, filters.startDate, filters.endDate);
+      if (start && end) {
+        result = result.filter(b => b.date >= start && b.date <= end);
+      }
+    }
+    return result;
+  }, [bills, statsWalletId, filters]);
 
   const availableYears = useMemo(() => {
     const years = new Set(walletBills.map(b => Number(b.date.split('-')[0])));
@@ -172,12 +198,35 @@ export default function Statistics() {
     };
   }, [walletBills, year, categories]);
 
-  const currentLabel = tab === 'month' ? `${year}年${month}月` : `${year}年`;
+  const currentLabel = useMemo(() => {
+    if (filters.datePreset !== 'all') {
+      const dateRange = getDateRangeByPreset(filters.datePreset, filters.startDate, filters.endDate);
+      if (dateRange.start && dateRange.end) {
+        if (filters.datePreset === 'thisMonth' || filters.datePreset === 'lastMonth') {
+          return `${dateRange.start.slice(0, 7)} (${filters.datePreset === 'thisMonth' ? '本月' : '上月'})`;
+        } else if (filters.datePreset === 'thisYear' || filters.datePreset === 'lastYear') {
+          return `${dateRange.start.slice(0, 4)}年 (${filters.datePreset === 'thisYear' ? '今年' : '去年'})`;
+        } else {
+          return `${dateRange.start} ~ ${dateRange.end}`;
+        }
+      }
+    }
+    return tab === 'month' ? `${year}年${month}月` : `${year}年`;
+  }, [filters.datePreset, filters.startDate, filters.endDate, tab, year, month]);
 
-  const handleConfirmPicker = (y: number, m?: number) => {
+  const hasActiveFilters = filters.walletId !== 'all' || filters.datePreset !== 'all';
+
+  const handleConfirmPicker = (date: string) => {
+    const [y, m] = date.split('-').map(Number);
     setYear(y);
-    if (m !== undefined) setMonth(m);
+    setMonth(m);
     setShowPicker(false);
+    setFilters({
+      walletId: 'all',
+      datePreset: 'all',
+      startDate: '',
+      endDate: '',
+    });
   };
 
   const renderIcon = (iconName: string, className?: string) => {
@@ -190,36 +239,60 @@ export default function Statistics() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-20">
       <header className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 px-4 shadow-sm transition-colors duration-300">
-        <div className="max-w-4xl mx-auto">
-          <div className="h-12 flex items-center">
+        <div className="max-w-4xl mx-auto relative">
+          <div className="h-12 flex items-center justify-between">
             {isSecondary ? (
               <>
                 <button
                   onClick={() => navigate(-1)}
-                  className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 shrink-0"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <h1 className="flex-1 text-center text-base font-bold text-gray-800 dark:text-gray-100">统计</h1>
-                <div className="w-8" />
+                <button
+                  onClick={() => setShowFilter(true)}
+                  className={`w-8 h-8 flex items-center justify-center shrink-0 relative rounded-lg transition-colors ${
+                    hasActiveFilters ? 'text-primary-500' : 'text-gray-700 dark:text-gray-300'
+                  } hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700`}
+                >
+                  <SlidersHorizontal className="w-5 h-5" />
+                  {hasActiveFilters && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-primary-500 rounded-full" />
+                  )}
+                </button>
               </>
             ) : (
-              <div className="flex-1 flex justify-center">
-                <div className="tab-container">
-                  <button
-                    onClick={() => handleTabChange('month')}
-                    className={`tab-item ${tab === 'month' ? 'tab-item-active-income' : ''}`}
-                  >
-                    月
-                  </button>
-                  <button
-                    onClick={() => handleTabChange('year')}
-                    className={`tab-item ${tab === 'year' ? 'tab-item-active-income' : ''}`}
-                  >
-                    年
-                  </button>
+              <>
+                <div className="w-8" />
+                <div className="flex-1 flex justify-center">
+                  <div className="tab-container">
+                    <button
+                      onClick={() => handleTabChange('month')}
+                      className={`tab-item ${tab === 'month' ? 'tab-item-active-income' : ''}`}
+                    >
+                      月
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('year')}
+                      className={`tab-item ${tab === 'year' ? 'tab-item-active-income' : ''}`}
+                    >
+                      年
+                    </button>
+                  </div>
                 </div>
-              </div>
+                <button
+                  onClick={() => setShowFilter(true)}
+                  className={`w-8 h-8 flex items-center justify-center shrink-0 relative rounded-lg transition-colors ${
+                    hasActiveFilters ? 'text-primary-500' : 'text-gray-700 dark:text-gray-300'
+                  } hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700`}
+                >
+                  <SlidersHorizontal className="w-5 h-5" />
+                  {hasActiveFilters && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-primary-500 rounded-full" />
+                  )}
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -275,15 +348,20 @@ export default function Statistics() {
         )}
       </main>
 
-      <YearMonthPicker
+      <CalendarPicker
         isOpen={showPicker}
-        mode={tab}
-        initialYear={year}
-        initialMonth={month}
-        onClose={() => setShowPicker(false)}
+        value={`${year}-${String(month).padStart(2, '0')}-01`}
         onConfirm={handleConfirmPicker}
-        minYear={minYear}
-        maxYear={maxYear}
+        onClose={() => setShowPicker(false)}
+        title="选择日期"
+      />
+
+      {/* 筛选抽屉 */}
+      <FilterDrawer
+        isOpen={showFilter}
+        onClose={() => setShowFilter(false)}
+        filters={filters}
+        onConfirm={setFilters}
       />
     </div>
   );
@@ -350,7 +428,7 @@ function TrendChart({
             tickFormatter={(v: number) => String(v)}
           />
           <Tooltip
-            formatter={(value: number, name: string) => [value.toFixed(2), name]}
+            formatter={(value: number, name: string) => [formatMoney(value), name]}
             contentStyle={{
               backgroundColor: isDark ? '#1f2937' : '#ffffff',
               borderColor: gridColor,
@@ -384,7 +462,7 @@ function TrendChart({
           tickFormatter={(v: number) => String(v)}
         />
         <Tooltip
-          formatter={(value: number, name: string) => [value.toFixed(2), name]}
+          formatter={(value: number, name: string) => [formatMoney(value), name]}
           contentStyle={{
             backgroundColor: isDark ? '#1f2937' : '#ffffff',
             borderColor: gridColor,
@@ -543,13 +621,13 @@ function CategoryPieChart({
                   {pieType === 'expense' ? '支出' : '收入'}
                 </text>
                 {(() => {
-                  const amountStr = total.toFixed(2);
+                  const amountStr = formatMoney(total);
                   const len = amountStr.length;
                   let fontSize = 14;
                   if (len > 8) fontSize = 12;
                   if (len > 10) fontSize = 10;
                   if (len > 12) fontSize = 8;
-                  
+
                   if (len <= 10) {
                     return (
                       <text
@@ -565,7 +643,7 @@ function CategoryPieChart({
                       </text>
                     );
                   }
-                  
+
                   const intPart = amountStr.split('.')[0];
                   const decPart = '.' + amountStr.split('.')[1];
                   return (
@@ -655,7 +733,7 @@ function CategoryBarItem({ stat, renderIcon, type }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium truncate text-gray-700 dark:text-gray-300">{stat.name}</span>
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{stat.amount.toFixed(2)}</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{formatMoney(stat.amount)}</span>
         </div>
         <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
@@ -692,7 +770,7 @@ function DetailTable({
 
       <div className="flex items-center justify-center mb-4">
         <span className="text-xs text-gray-500 dark:text-gray-400">{avgLabel}</span>
-        <span className="text-sm font-semibold text-expense-500 ml-2">{avgExpense.toFixed(2)}</span>
+        <span className="text-sm font-semibold text-expense-500 ml-2">{formatMoney(avgExpense)}</span>
       </div>
 
       {data.length > 0 ? (
@@ -727,15 +805,15 @@ function DetailTable({
                     {item.label}
                   </td>
                   <td className="py-2 px-3 text-right text-income-500 break-all">
-                    {item.income > 0 ? item.income.toFixed(2) : '-'}
+                    {item.income > 0 ? formatMoney(item.income) : '-'}
                   </td>
                   <td className="py-2 px-3 text-right text-expense-500 break-all">
-                    {item.expense > 0 ? item.expense.toFixed(2) : '-'}
+                    {item.expense > 0 ? formatMoney(item.expense) : '-'}
                   </td>
                   <td className={`py-2 px-3 text-right font-medium break-all ${
                     item.balance >= 0 ? 'text-income-500' : 'text-expense-500'
                   }`}>
-                    {item.balance.toFixed(2)}
+                    {formatMoney(item.balance)}
                   </td>
                 </tr>
               ))}
@@ -747,178 +825,6 @@ function DetailTable({
           暂无明细数据
         </div>
       )}
-    </div>
-  );
-}
-
-function YearMonthPicker({
-  isOpen,
-  mode,
-  initialYear,
-  initialMonth,
-  onClose,
-  onConfirm,
-  minYear,
-  maxYear,
-}: {
-  isOpen: boolean;
-  mode: 'year' | 'month';
-  initialYear: number;
-  initialMonth: number;
-  onClose: () => void;
-  onConfirm: (year: number, month?: number) => void;
-  minYear: number;
-  maxYear: number;
-}) {
-  const [viewYear, setViewYear] = useState(initialYear);
-  const [viewMonth, setViewMonth] = useState(initialMonth);
-  const [pageStartYear, setPageStartYear] = useState(initialYear - 5);
-
-  useEffect(() => {
-    if (isOpen) {
-      setViewYear(initialYear);
-      setViewMonth(initialMonth);
-      setPageStartYear(initialYear - 5);
-    }
-  }, [isOpen, initialYear, initialMonth]);
-
-  if (!isOpen) return null;
-
-  const handlePrev = () => {
-    if (mode === 'year') {
-      const newStart = pageStartYear - 12;
-      setPageStartYear(newStart);
-    } else {
-      if (viewYear > minYear) setViewYear(viewYear - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (mode === 'year') {
-      const newStart = pageStartYear + 12;
-      setPageStartYear(newStart);
-    } else {
-      if (viewYear < maxYear) setViewYear(viewYear + 1);
-    }
-  };
-
-  const canGoPrev = mode === 'year' ? true : viewYear > minYear;
-  const canGoNext = mode === 'year' ? true : viewYear < maxYear;
-
-  const handleConfirm = () => {
-    if (mode === 'year') {
-      onConfirm(viewYear);
-    } else {
-      onConfirm(viewYear, viewMonth);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-fade-in">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-modal w-full max-w-[280px] overflow-hidden animate-scale-in">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">选择日期</h3>
-          <button
-            onClick={onClose}
-            className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600"
-          >
-            <X className="w-3 h-3 text-gray-600 dark:text-gray-400" />
-          </button>
-        </div>
-
-        <div className="p-3">
-          <div className="flex items-center justify-between mb-3">
-            <button
-              onClick={handlePrev}
-              disabled={!canGoPrev}
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-sm transition-colors ${
-                canGoPrev
-                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  : 'bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-700 cursor-not-allowed'
-              }`}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              {mode === 'year'
-                ? `${pageStartYear} - ${pageStartYear + 11}`
-                : `${viewYear}年`}
-            </span>
-            <button
-              onClick={handleNext}
-              disabled={!canGoNext}
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-sm transition-colors ${
-                canGoNext
-                  ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  : 'bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-700 cursor-not-allowed'
-              }`}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {mode === 'year' ? (
-            <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: 12 }, (_, i) => {
-                const y = pageStartYear + i;
-                const isDisabled = y < minYear || y > maxYear;
-                const isSelected = y === viewYear;
-                return (
-                  <button
-                    key={y}
-                    onClick={() => !isDisabled && setViewYear(y)}
-                    disabled={isDisabled}
-                    className={`py-2 text-xs font-medium rounded-md transition-colors ${
-                      isSelected
-                        ? 'bg-primary-500 text-white'
-                        : isDisabled
-                        ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {y}
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-                const isSelected = m === viewMonth;
-                return (
-                  <button
-                    key={m}
-                    onClick={() => setViewMonth(m)}
-                    className={`py-2 text-xs font-medium rounded-md transition-colors ${
-                      isSelected
-                        ? 'bg-primary-500 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    {m}月
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="flex border-t border-gray-100 dark:border-gray-700">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 text-xs text-gray-600 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-r border-gray-100 dark:border-gray-700"
-          >
-            取消
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="flex-1 py-2.5 text-xs text-primary-500 dark:text-primary-400 font-medium hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-          >
-            确定
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Home from "@/pages/Home";
 import Statistics from "@/pages/Statistics";
+import Profile from "@/pages/Profile";
+import Search from "@/pages/Search";
+import Trash from "@/pages/Trash";
 import CategoryManage from "@/pages/CategoryManage";
 import WalletManage from "@/pages/WalletManage";
 import { ToastContainer } from "@/components/Toast";
@@ -19,6 +22,9 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/statistics" element={<Statistics />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="/trash" element={<Trash />} />
         <Route path="/categories" element={<CategoryManage />} />
         <Route path="/wallets" element={<WalletManage />} />
       </Routes>

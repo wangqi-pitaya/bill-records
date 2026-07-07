@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookOpen, BarChart3 } from 'lucide-react';
+import { BookOpen, BarChart3, User } from 'lucide-react';
 
 export function TabBar() {
   const navigate = useNavigate();
@@ -13,9 +13,7 @@ export function TabBar() {
   };
 
   const isActive = (path: string) => {
-    if (path === '/' && location.pathname === '/') return true;
-    if (path === '/statistics' && location.pathname === '/statistics') return true;
-    return false;
+    return location.pathname === path;
   };
 
   return (
@@ -42,6 +40,17 @@ export function TabBar() {
         >
           <BarChart3 className="w-5 h-5" />
           <span className="text-[11px] font-medium">统计</span>
+        </button>
+        <button
+          onClick={() => handleNavigate('/profile')}
+          className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+            isActive('/profile')
+              ? 'text-primary-600 dark:text-primary-400'
+              : 'text-gray-400 dark:text-gray-500'
+          }`}
+        >
+          <User className="w-5 h-5" />
+          <span className="text-[11px] font-medium">我的</span>
         </button>
       </div>
     </nav>

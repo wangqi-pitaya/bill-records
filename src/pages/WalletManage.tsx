@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Check, Settings, Pencil, BarChart3, ArrowRightLeft, Trash2, Eraser, X, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Settings, Pencil, BarChart3, ArrowRightLeft, Trash2, Eraser, AlertCircle } from 'lucide-react';
 import { useWalletStore } from '../store/useWalletStore';
 import { useBillStore } from '../store/useBillStore';
 import { useToast } from '../hooks/useToast';
+import { Drawer } from '../components/Drawer';
+import { Modal } from '../components/Modal';
 
 const presetColors = [
   '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
@@ -98,6 +100,12 @@ export default function WalletManage() {
     navigate('/statistics', { state: { isSecondary: true, walletId } });
   };
 
+  const openClearConfirm = (walletId: string) => {
+    setActiveWalletId(walletId);
+    setShowClearConfirm(true);
+    setShowSettingSheet(false);
+  };
+
   const handleClearBills = () => {
     if (!activeWalletId) return;
     clearBillsByWalletId(activeWalletId);
@@ -127,6 +135,12 @@ export default function WalletManage() {
     setShowMigrateModal(false);
     setFromWalletId(null);
     setToWalletId(null);
+  };
+
+  const openDeleteConfirm = (walletId: string) => {
+    setActiveWalletId(walletId);
+    setShowDeleteConfirm(true);
+    setShowSettingSheet(false);
   };
 
   const handleDeleteWallet = () => {
@@ -224,327 +238,278 @@ export default function WalletManage() {
       </main>
 
       {/* 添加账本弹窗 */}
-      {showAddModal && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowAddModal(false); }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden animate-scale-in transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">添加账本</h2>
-            </div>
-            <div className="px-4 py-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本名称</label>
-                <input
-                  type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
-                  placeholder="请输入账本名称"
-                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                  maxLength={20}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本描述</label>
-                <input
-                  type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="请输入账本描述（可选）"
-                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                  maxLength={50}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">主题颜色</label>
-                <div className="flex flex-wrap gap-3">
-                  {presetColors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ${
-                        selectedColor === color ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110' : 'hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: color }}
-                    >
-                      {selectedColor === color && <Check className="w-5 h-5 text-white" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-              <button onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
-              <button onClick={handleAddWallet} className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors">添加</button>
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="添加账本"
+        showFooter
+        confirmText="添加"
+        confirmDisabled={!newName.trim()}
+        onConfirm={handleAddWallet}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本名称</label>
+            <input
+              type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
+              placeholder="请输入账本名称"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+              maxLength={20}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本描述</label>
+            <input
+              type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)}
+              placeholder="请输入账本描述（可选）"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+              maxLength={50}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">主题颜色</label>
+            <div className="flex flex-wrap gap-3">
+              {presetColors.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setSelectedColor(color)}
+                  className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ${
+                    selectedColor === color ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110' : 'hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color }}
+                >
+                  {selectedColor === color && <Check className="w-5 h-5 text-white" />}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* 编辑账本弹窗 */}
-      {showEditModal && activeWallet && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowEditModal(false); }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden animate-scale-in transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">修改账本</h2>
-            </div>
-            <div className="px-4 py-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本名称</label>
-                <input
-                  type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
-                  placeholder="请输入账本名称"
-                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                  maxLength={20}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本描述</label>
-                <input
-                  type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)}
-                  placeholder="请输入账本描述（可选）"
-                  className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-                  maxLength={50}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">主题颜色</label>
-                <div className="flex flex-wrap gap-3">
-                  {presetColors.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ${
-                        selectedColor === color ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110' : 'hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: color }}
-                    >
-                      {selectedColor === color && <Check className="w-5 h-5 text-white" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-              <button onClick={() => setShowEditModal(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
-              <button onClick={handleEditWallet} className="flex-1 py-2.5 rounded-lg bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition-colors">保存</button>
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => { setShowEditModal(false); setActiveWalletId(null); }}
+        title="修改账本"
+        showFooter
+        confirmText="保存"
+        confirmDisabled={!newName.trim()}
+        onConfirm={handleEditWallet}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本名称</label>
+            <input
+              type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
+              placeholder="请输入账本名称"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+              maxLength={20}
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">账本描述</label>
+            <input
+              type="text" value={newDescription} onChange={(e) => setNewDescription(e.target.value)}
+              placeholder="请输入账本描述（可选）"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
+              maxLength={50}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">主题颜色</label>
+            <div className="flex flex-wrap gap-3">
+              {presetColors.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setSelectedColor(color)}
+                  className={`w-10 h-10 rounded-full transition-all duration-200 flex items-center justify-center ${
+                    selectedColor === color ? 'ring-2 ring-offset-2 ring-gray-400 dark:ring-gray-500 scale-110' : 'hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color }}
+                >
+                  {selectedColor === color && <Check className="w-5 h-5 text-white" />}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* 底部设置弹层 */}
       {showSettingSheet && activeWallet && (
-        <div
-          className="fixed inset-0 z-[60] flex flex-col justify-end animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowSettingSheet(false); }}
+        <Drawer
+          isOpen={showSettingSheet}
+          onClose={() => setShowSettingSheet(false)}
+          direction="bottom"
+          title={activeWallet.name}
         >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full bg-white dark:bg-gray-800 rounded-t-2xl animate-slide-up transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">{activeWallet.name}</h3>
+          <div className="px-4 py-2">
+            <button
+              onClick={() => openEditModal(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Pencil className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <span className="text-base text-gray-800 dark:text-gray-100">修改</span>
+            </button>
+            <button
+              onClick={() => handleGoStatistics(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <BarChart3 className="w-5 h-5 text-primary-500" />
+              <span className="text-base text-gray-800 dark:text-gray-100">报表统计</span>
+            </button>
+            <button
+              onClick={() => openMigrateModal(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <ArrowRightLeft className="w-5 h-5 text-blue-500" />
+              <span className="text-base text-gray-800 dark:text-gray-100">迁移账本</span>
+            </button>
+            <button
+              onClick={() => openClearConfirm(activeWallet.id)}
+              className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Eraser className="w-5 h-5 text-orange-500" />
+              <span className="text-base text-gray-800 dark:text-gray-100">清除账单</span>
+            </button>
+            {!activeWallet.isDefault && (
               <button
-                onClick={() => setShowSettingSheet(false)}
-                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-lg transition-colors"
+                onClick={() => openDeleteConfirm(activeWallet.id)}
+                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
               >
-                <X className="w-5 h-5" />
+                <Trash2 className="w-5 h-5 text-red-500" />
+                <span className="text-base text-red-600 dark:text-red-400">删除账本</span>
               </button>
-            </div>
-            <div className="px-4 py-2">
-              <button
-                onClick={() => openEditModal(activeWallet.id)}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Pencil className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <span className="text-base text-gray-800 dark:text-gray-100">修改</span>
-              </button>
-              <button
-                onClick={() => handleGoStatistics(activeWallet.id)}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <BarChart3 className="w-5 h-5 text-primary-500" />
-                <span className="text-base text-gray-800 dark:text-gray-100">报表统计</span>
-              </button>
-              <button
-                onClick={() => openMigrateModal(activeWallet.id)}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <ArrowRightLeft className="w-5 h-5 text-blue-500" />
-                <span className="text-base text-gray-800 dark:text-gray-100">迁移账本</span>
-              </button>
-              <button
-                onClick={() => { setShowClearConfirm(true); setShowSettingSheet(false); }}
-                className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <Eraser className="w-5 h-5 text-orange-500" />
-                <span className="text-base text-gray-800 dark:text-gray-100">清除账单</span>
-              </button>
-              {!activeWallet.isDefault && (
-                <button
-                  onClick={() => { setShowDeleteConfirm(true); setShowSettingSheet(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-3.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  <Trash2 className="w-5 h-5 text-red-500" />
-                  <span className="text-base text-red-600 dark:text-red-400">删除账本</span>
-                </button>
-              )}
-            </div>
-            <div className="h-6" />
+            )}
           </div>
-        </div>
+          <div className="h-6" />
+        </Drawer>
       )}
 
-      {/* 清除账单二次确认 */}
-      {showClearConfirm && activeWallet && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowClearConfirm(false); }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden animate-scale-in transition-colors duration-300">
-            <div className="px-4 py-5 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                <Eraser className="w-6 h-6 text-orange-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">清除账单</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                确定要清除账本"{activeWallet.name}"的所有账单吗？此操作不可恢复。
-              </p>
-            </div>
-            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-              <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
-              <button onClick={handleClearBills} className="flex-1 py-2.5 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors">清除</button>
-            </div>
+      {/* 清除账单确认弹窗 */}
+      <Modal
+        isOpen={showClearConfirm && !!activeWallet}
+        onClose={() => { setShowClearConfirm(false); setActiveWalletId(null); }}
+        title="清除账单"
+        showFooter
+        confirmText="清除"
+        confirmVariant="warning"
+        onConfirm={handleClearBills}
+      >
+        <div className="text-center py-2">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+            <Eraser className="w-6 h-6 text-orange-500" />
           </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            确定要清除账本"{activeWallet?.name}"的所有账单吗？此操作不可恢复。
+          </p>
         </div>
-      )}
+      </Modal>
 
-      {/* 删除账本二次确认 */}
-      {showDeleteConfirm && activeWallet && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowDeleteConfirm(false); }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden animate-scale-in transition-colors duration-300">
-            <div className="px-4 py-5 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-500" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1">删除账本</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                确定要删除账本"{activeWallet.name}"吗？账单数据也将一并删除，此操作不可恢复。
-              </p>
-            </div>
-            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
-              <button onClick={handleDeleteWallet} className="flex-1 py-2.5 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors">删除</button>
-            </div>
+      {/* 删除账本确认弹窗 */}
+      <Modal
+        isOpen={showDeleteConfirm && !!activeWallet}
+        onClose={() => { setShowDeleteConfirm(false); setActiveWalletId(null); }}
+        title="删除账本"
+        showFooter
+        confirmText="删除"
+        confirmVariant="danger"
+        onConfirm={handleDeleteWallet}
+      >
+        <div className="text-center py-2">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+            <Trash2 className="w-6 h-6 text-red-500" />
           </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            确定要删除账本"{activeWallet?.name}"吗？账单数据也将一并删除，此操作不可恢复。
+          </p>
         </div>
-      )}
+      </Modal>
 
       {/* 迁移账本弹窗 */}
-      {showMigrateModal && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowMigrateModal(false); }}
-        >
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="relative w-full max-w-sm bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden animate-scale-in transition-colors duration-300">
-            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">迁移账本</h2>
-            </div>
-            <div className="px-4 py-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">原账本</label>
-                <div className="rounded-lg bg-gray-50 dark:bg-gray-700 p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: wallets.find(w => w.id === fromWalletId)?.color || '#10b981' }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
-                        {wallets.find(w => w.id === fromWalletId)?.name}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">将从该账本迁移账单</p>
-                    </div>
-                  </div>
+      <Modal
+        isOpen={showMigrateModal}
+        onClose={() => { setShowMigrateModal(false); setFromWalletId(null); setToWalletId(null); }}
+        title="迁移账本"
+        showFooter
+        confirmText="迁移"
+        confirmDisabled={!toWalletId}
+        onConfirm={handleMigrate}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">原账本</label>
+            <div className="rounded-lg bg-gray-50 dark:bg-gray-700 p-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: wallets.find(w => w.id === fromWalletId)?.color || '#10b981' }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">
+                    {wallets.find(w => w.id === fromWalletId)?.name}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">将从该账本迁移账单</p>
                 </div>
               </div>
-              <div className="flex justify-center">
-                <ArrowRightLeft className="w-5 h-5 text-gray-400" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">目标账本</label>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {wallets
-                    .filter(w => w.id !== fromWalletId)
-                    .map((wallet) => {
-                      const isSelected = toWalletId === wallet.id;
-                      return (
-                        <button
-                          key={wallet.id}
-                          onClick={() => setToWalletId(wallet.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
-                            isSelected
-                              ? 'bg-white dark:bg-gray-800 border-2'
-                              : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
-                          }`}
-                          style={isSelected ? { borderColor: wallet.color } : undefined}
-                        >
-                          <div
-                            className="w-8 h-8 rounded-full shrink-0 transition-transform duration-200"
-                            style={{
-                              backgroundColor: wallet.color,
-                              transform: isSelected ? 'scale(1.1)' : 'scale(1)',
-                            }}
-                          />
-                          <div className="flex-1 min-w-0 text-left">
-                            <p className={`text-sm font-medium truncate ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
-                              {wallet.name}
-                            </p>
-                            {wallet.isDefault && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400">默认账本</p>
-                            )}
-                          </div>
-                          {isSelected && (
-                            <div
-                              className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                              style={{ backgroundColor: wallet.color }}
-                            >
-                              <Check className="w-4 h-4 text-white" />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5">
-                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                  <AlertCircle className="w-4 h-4 inline mr-1.5" />
-                  迁移账本后，原账本中的账单将会全部迁移至目标账本中，该操作不可逆，谨慎操作。
-                </p>
-              </div>
-            </div>
-            <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3">
-              <button onClick={() => setShowMigrateModal(false)} className="flex-1 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">取消</button>
-              <button
-                onClick={handleMigrate}
-                disabled={!toWalletId}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  toWalletId
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                    : 'bg-gray-200 dark:bg-gray-600 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                迁移
-              </button>
             </div>
           </div>
+          <div className="flex justify-center">
+            <ArrowRightLeft className="w-5 h-5 text-gray-400" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">目标账本</label>
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {wallets
+                .filter(w => w.id !== fromWalletId)
+                .map((wallet) => {
+                  const isSelected = toWalletId === wallet.id;
+                  return (
+                    <button
+                      key={wallet.id}
+                      onClick={() => setToWalletId(wallet.id)}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 ${
+                        isSelected
+                          ? 'bg-white dark:bg-gray-800 border-2'
+                          : 'bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                      }`}
+                      style={isSelected ? { borderColor: wallet.color } : undefined}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full shrink-0 transition-transform duration-200"
+                        style={{
+                          backgroundColor: wallet.color,
+                          transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                        }}
+                      />
+                      <div className="flex-1 min-w-0 text-left">
+                        <p className={`text-sm font-medium truncate ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {wallet.name}
+                        </p>
+                        {wallet.isDefault && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">默认账本</p>
+                        )}
+                      </div>
+                      {isSelected && (
+                        <div
+                          className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                          style={{ backgroundColor: wallet.color }}
+                        >
+                          <Check className="w-4 h-4 text-white" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2.5">
+            <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+              <AlertCircle className="w-4 h-4 inline mr-1.5" />
+              迁移账本后，原账本中的账单将会全部迁移至目标账本中，该操作不可逆，谨慎操作。
+            </p>
+          </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

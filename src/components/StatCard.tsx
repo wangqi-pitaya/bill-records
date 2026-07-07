@@ -1,3 +1,5 @@
+import { formatMoney } from '../lib/utils';
+
 interface StatCardProps {
   income: number;
   expense: number;
@@ -10,9 +12,9 @@ export const StatCard = ({ income, expense, balance, color }: StatCardProps) => 
     ? { background: `linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})` }
     : undefined;
 
-  const balanceStr = balance.toFixed(2);
-  const incomeStr = income.toFixed(2);
-  const expenseStr = expense.toFixed(2);
+  const balanceStr = formatMoney(balance);
+  const incomeStr = formatMoney(income);
+  const expenseStr = formatMoney(expense);
 
   return (
     <div
