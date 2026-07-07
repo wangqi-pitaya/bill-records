@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 
 export interface ModalProps {
@@ -36,18 +35,7 @@ export function Modal({
   confirmVariant = 'primary',
   width = 'max-w-sm',
 }: ModalProps) {
-  const [show, setShow] = useState(isOpen);
-
-  useEffect(() => {
-    if (isOpen) {
-      setShow(true);
-    } else {
-      const timer = setTimeout(() => setShow(false), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
-  if (!show) return null;
+  if (!isOpen) return null;
 
   const handleOverlayClick = () => {
     if (closable && onClose) {
@@ -79,16 +67,12 @@ export function Modal({
 
   return (
     <div
-      className={`fixed inset-0 z-[200] flex items-center justify-center px-4 transition-opacity duration-200 ${
-        isOpen ? 'opacity-100' : 'opacity-0'
-      }`}
+      className="fixed inset-0 z-[200] flex items-center justify-center px-4 animate-fade-in"
       onClick={handleOverlayClick}
     >
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/50" />
       <div
-        className={`relative w-full ${width} bg-white dark:bg-gray-800 rounded-modal shadow-modal overflow-hidden transition-all duration-200 ${
-          isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-        }`}
+        className="relative w-full max-w-[340px] bg-white dark:bg-gray-800 rounded-xl shadow-modal overflow-hidden animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
