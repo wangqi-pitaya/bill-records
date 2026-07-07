@@ -3,11 +3,8 @@ import {
   User,
   Download,
   Upload,
-  Moon,
-  Sun,
   Trash2,
   ChevronRight,
-  Calendar,
   Pencil,
   Check,
   X,
@@ -199,25 +196,16 @@ export default function Profile() {
         {/* 统计卡片 */}
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 text-center transition-colors duration-300">
-            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-primary-500" />
-            </div>
-            <div className="text-xl font-bold text-gray-800 dark:text-gray-100">{stats.useDays}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">使用天数</div>
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.useDays}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">使用天数</div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 text-center transition-colors duration-300">
-            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-income-100 dark:bg-income-900/30 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-income-500" />
-            </div>
-            <div className="text-xl font-bold text-gray-800 dark:text-gray-100">{stats.uniqueDates}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">记账天数</div>
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.uniqueDates}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账天数</div>
           </div>
           <div className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 text-center transition-colors duration-300">
-            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-expense-100 dark:bg-expense-900/30 flex items-center justify-center">
-              <Pencil className="w-5 h-5 text-expense-500" />
-            </div>
-            <div className="text-xl font-bold text-gray-800 dark:text-gray-100">{stats.totalBills}</div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">记账笔数</div>
+            <div className="text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.totalBills}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账笔数</div>
           </div>
         </div>
 
@@ -252,15 +240,18 @@ export default function Profile() {
             onClick={toggleTheme}
             className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-t border-gray-50 dark:border-gray-750"
           >
-            {isDark ? (
-              <Moon className="w-5 h-5 text-primary-500 shrink-0" />
-            ) : (
-              <Sun className="w-5 h-5 text-amber-500 shrink-0" />
-            )}
             <span className="flex-1 text-left text-base text-gray-800 dark:text-gray-100">夜间模式</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {isDark ? '已开启' : '已关闭'}
-            </span>
+            <div
+              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
+                isDark ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <div
+                className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${
+                  isDark ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              />
+            </div>
           </button>
 
           {/* 清除数据 */}
@@ -274,10 +265,6 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* 版本号 */}
-        <div className="text-center py-4">
-          <span className="text-xs text-gray-400 dark:text-gray-500">v0.4.0</span>
-        </div>
       </main>
 
       {/* 清除数据确认弹窗 */}
