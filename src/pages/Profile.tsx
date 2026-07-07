@@ -8,6 +8,8 @@ import {
   Pencil,
   Check,
   X,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { useBillStore } from '../store/useBillStore';
 import { useTheme } from '../hooks/useTheme';
@@ -218,7 +220,7 @@ export default function Profile() {
           {/* 导出账单 */}
           <button
             onClick={handleExport}
-            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-3.5"
           >
             <Download className="w-5 h-5 text-primary-500 shrink-0" />
             <span className="flex-1 text-left text-base text-gray-800 dark:text-gray-100">导出账单</span>
@@ -228,7 +230,7 @@ export default function Profile() {
           {/* 导入账单 */}
           <button
             onClick={handleImport}
-            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-t border-gray-50 dark:border-gray-750"
+            className="w-full flex items-center gap-3 px-4 py-3.5 border-t border-gray-50 dark:border-gray-750"
           >
             <Upload className="w-5 h-5 text-primary-500 shrink-0" />
             <span className="flex-1 text-left text-base text-gray-800 dark:text-gray-100">导入账单</span>
@@ -238,8 +240,9 @@ export default function Profile() {
           {/* 夜间模式 */}
           <button
             onClick={toggleTheme}
-            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-t border-gray-50 dark:border-gray-750"
+            className="w-full flex items-center gap-3 px-4 py-3.5 border-t border-gray-50 dark:border-gray-750"
           >
+            {isDark ? <Sun className="w-5 h-5 text-gray-700 dark:text-gray-300 shrink-0" /> : <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300 shrink-0" />}
             <span className="flex-1 text-left text-base text-gray-800 dark:text-gray-100">夜间模式</span>
             <div
               className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${
@@ -257,7 +260,7 @@ export default function Profile() {
           {/* 清除数据 */}
           <button
             onClick={() => setShowClearConfirm(true)}
-            className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-t border-gray-50 dark:border-gray-750"
+            className="w-full flex items-center gap-3 px-4 py-3.5 border-t border-gray-50 dark:border-gray-750"
           >
             <Trash2 className="w-5 h-5 text-red-500 shrink-0" />
             <span className="flex-1 text-left text-base text-red-600 dark:text-red-400">清除数据</span>
