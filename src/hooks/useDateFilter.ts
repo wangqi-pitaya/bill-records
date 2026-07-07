@@ -28,11 +28,22 @@ export function useDateFilter(bills: { date: string }[]): DateFilterState {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerMode, setPickerMode] = useState<'year' | 'month'>('year');
   const [tempDate, setTempDate] = useState(formatDateStr(selectedYear, selectedMonth));
+  const [initialDate, setInitialDate] = useState(formatDateStr(selectedYear, selectedMonth));
 
   useEffect(() => {
-    setTempDate(formatDateStr(selectedYear, selectedMonth));
-    setPickerMode(selectedMonth === null ? 'year' : 'month');
-  }, [showDatePicker, selectedYear, selectedMonth]);
+    if (showDatePicker) {
+      const initial = formatDateStr(selectedYear, selectedMonth);
+      setInitialDate(initial);
+      setTempDate(initial);
+      setPickerMode(selectedMonth === null ? 'year' : 'month');
+    }
+  }, [showDatePicker]);
+
+  useEffect(() => {
+    if (showDatePicker) {
+      setTempDate(initialDate);
+    }
+  }, [showDatePicker, pickerMode]);
 
   useEffect(() => {
     if (showDatePicker) {

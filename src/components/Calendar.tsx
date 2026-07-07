@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 
 export type CalendarMode = 'single' | 'range';
@@ -87,6 +87,8 @@ export function Calendar({
   const [rangeEnd, setRangeEnd] = useState(endValue);
   const [selecting, setSelecting] = useState(false);
 
+  const isFirstMount = useRef(true);
+
   const handlePrevYear = useCallback(() => {
     setViewYear((y) => y - 1);
   }, []);
@@ -124,9 +126,17 @@ export function Calendar({
   }, []);
 
   useEffect(() => {
-    const midIndex = 4;
-    setPageStartYear(initYear - midIndex);
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      const midIndex = 4;
+      setPageStartYear(initYear - midIndex);
+    }
   }, [initYear]);
+
+  useEffect(() => {
+    setViewYear(initYear);
+    setViewMonth(initMonth);
+  }, [initYear, initMonth]);
 
   const handleSelectDate = useCallback(
     (year: number, month: number, day: number = 1) => {
