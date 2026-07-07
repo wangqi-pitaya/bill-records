@@ -198,7 +198,22 @@ export default function Statistics() {
     };
   }, [walletBills, year, categories]);
 
-  const currentLabel = tab === 'month' ? `${year}年${month}月` : `${year}年`;
+  const currentLabel = useMemo(() => {
+    if (filters.datePreset !== 'all') {
+      const dateRange = getDateRangeByPreset(filters.datePreset, filters.startDate, filters.endDate);
+      if (dateRange.start && dateRange.end) {
+        if (filters.datePreset === 'thisMonth' || filters.datePreset === 'lastMonth') {
+          return `${dateRange.start.slice(0, 7)} (${filters.datePreset === 'thisMonth' ? '本月' : '上月'})`;
+        } else if (filters.datePreset === 'thisYear' || filters.datePreset === 'lastYear') {
+          return `${dateRange.start.slice(0, 4)}年 (${filters.datePreset === 'thisYear' ? '今年' : '去年'})`;
+        } else {
+          return `${dateRange.start} ~ ${dateRange.end}`;
+        }
+      }
+    }
+    return tab === 'month' ? `${year}年${month}月` : `${year}年`;
+  }, [filters.datePreset, filters.startDate, filters.endDate, tab, year, month]);
+
   const hasActiveFilters = filters.walletId !== 'all' || filters.datePreset !== 'all';
 
   const handleConfirmPicker = (y: number, m?: number) => {

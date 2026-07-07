@@ -178,7 +178,7 @@ export const BillItem = ({ bill, onDelete, onEdit, isLast = false }: BillItemPro
       <ConfirmModal
         isOpen={showDeleteConfirm}
         title="确认删除"
-        message="确定要删除这条账单记录吗？删除后无法恢复。"
+        message="确定要删除这条账单记录吗？删除后可在回收站找回。"
         confirmText="删除"
         cancelText="取消"
         type="danger"
