@@ -9,13 +9,16 @@ export interface DateFilterState {
   setShowDatePicker: (show: boolean) => void;
   pickerMode: 'year' | 'month';
   setPickerMode: (mode: 'year' | 'month') => void;
-  pickerYear: number;
-  setPickerYear: (year: number) => void;
-  pickerMonth: number | null;
-  setPickerMonth: (month: number | null) => void;
+  tempDate: string;
+  setTempDate: (date: string) => void;
   availableYears: number[];
   confirmSelection: () => void;
 }
+
+const formatDateStr = (year: number, month?: number): string => {
+  const m = month !== undefined ? String(month).padStart(2, '0') : '01';
+  return `${year}-${m}-01`;
+};
 
 export function useDateFilter(bills: { date: string }[]): DateFilterState {
   const currentYear = new Date().getFullYear();
@@ -24,12 +27,10 @@ export function useDateFilter(bills: { date: string }[]): DateFilterState {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerMode, setPickerMode] = useState<'year' | 'month'>('year');
-  const [pickerYear, setPickerYear] = useState(selectedYear);
-  const [pickerMonth, setPickerMonth] = useState<number | null>(selectedMonth);
+  const [tempDate, setTempDate] = useState(formatDateStr(selectedYear, selectedMonth));
 
   useEffect(() => {
-    setPickerYear(selectedYear);
-    setPickerMonth(selectedMonth);
+    setTempDate(formatDateStr(selectedYear, selectedMonth));
     setPickerMode(selectedMonth === null ? 'year' : 'month');
   }, [showDatePicker, selectedYear, selectedMonth]);
 
@@ -51,8 +52,9 @@ export function useDateFilter(bills: { date: string }[]): DateFilterState {
   }, [bills, currentYear]);
 
   const confirmSelection = () => {
-    setSelectedYear(pickerYear);
-    setSelectedMonth(pickerMode === 'year' ? null : pickerMonth);
+    const [y, m] = tempDate.split('-').map(Number);
+    setSelectedYear(y);
+    setSelectedMonth(pickerMode === 'year' ? null : m);
     setShowDatePicker(false);
   };
 
@@ -65,10 +67,8 @@ export function useDateFilter(bills: { date: string }[]): DateFilterState {
     setShowDatePicker,
     pickerMode,
     setPickerMode,
-    pickerYear,
-    setPickerYear,
-    pickerMonth,
-    setPickerMonth,
+    tempDate,
+    setTempDate,
     availableYears,
     confirmSelection,
   };

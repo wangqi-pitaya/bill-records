@@ -83,40 +83,6 @@ export function Calendar({
   const [rangeEnd, setRangeEnd] = useState(endValue);
   const [selecting, setSelecting] = useState(false);
 
-  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
-  const firstDay = getFirstDayOfWeek(viewYear, viewMonth);
-
-  // 上个月的日期填充
-  const prevDays: { day: number; month: number; year: number }[] = [];
-  if (firstDay > 0) {
-    const prevMonth = viewMonth === 0 ? 11 : viewMonth - 1;
-    const prevYear = viewMonth === 0 ? viewYear - 1 : viewYear;
-    const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
-    for (let i = firstDay - 1; i >= 0; i--) {
-      prevDays.push({ day: daysInPrevMonth - i, month: prevMonth, year: prevYear });
-    }
-  }
-
-  // 当月日期
-  const currentDays: { day: number; month: number; year: number }[] = [];
-  for (let i = 1; i <= daysInMonth; i++) {
-    currentDays.push({ day: i, month: viewMonth, year: viewYear });
-  }
-
-  // 下个月的日期填充 - 始终展示6行（42个单元格）
-  const totalCells = prevDays.length + currentDays.length;
-  const totalRows = 6;
-  const targetCells = totalRows * 7;
-  const remaining = targetCells - totalCells;
-  const nextDays: { day: number; month: number; year: number }[] = [];
-  for (let i = 1; i <= remaining; i++) {
-    const nextMonth = viewMonth === 11 ? 0 : viewMonth + 1;
-    const nextYear = viewMonth === 11 ? viewYear + 1 : viewYear;
-    nextDays.push({ day: i, month: nextMonth, year: nextYear });
-  }
-
-  const allDays = [...prevDays, ...currentDays, ...nextDays];
-
   const handlePrevYear = useCallback(() => {
     setViewYear((y) => y - 1);
   }, []);
@@ -145,9 +111,9 @@ export function Calendar({
     });
   }, []);
 
-  const handleSelectDay = useCallback(
-    (dayInfo: { day: number; month: number; year: number }) => {
-      const dateStr = formatDateStr(new Date(dayInfo.year, dayInfo.month, dayInfo.day));
+  const handleSelectDate = useCallback(
+    (year: number, month: number, day: number = 1) => {
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
       if (mode === 'single') {
         onChange?.(dateStr);
@@ -156,13 +122,11 @@ export function Calendar({
 
       if (mode === 'range') {
         if (!selecting || !rangeStart) {
-          // 开始选择
           setRangeStart(dateStr);
           setRangeEnd('');
           setSelecting(true);
           onRangeChange?.(dateStr, '');
         } else {
-          // 结束选择，自动校正顺序
           const start = rangeStart;
           const end = dateStr;
           const startTime = new Date(start).getTime();
@@ -189,6 +153,13 @@ export function Calendar({
     [mode, onChange, onRangeChange, selecting, rangeStart]
   );
 
+  const handleSelectDay = useCallback(
+    (dayInfo: { day: number; month: number; year: number }) => {
+      handleSelectDate(dayInfo.year, dayInfo.month, dayInfo.day);
+    },
+    [handleSelectDate]
+  );
+
   const isInRange = (dateStr: string) => {
     if (mode !== 'range') return false;
     const s = rangeStart;
@@ -212,9 +183,107 @@ export function Calendar({
     return isRangeStart(dateStr) || isRangeEnd(dateStr);
   };
 
+  if (!config.showDayPicker) {
+    const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+    const selectedDateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-01`;
+
+    return (
+      <div className="w-full select-none">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-0.5">
+            {config.showYearPicker && (
+              <button
+                onClick={handlePrevYear}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={() => handleSelectDate(viewYear, viewMonth)}
+            className={`text-base font-semibold transition-colors ${
+              isSelected(selectedDateStr)
+                ? 'text-primary-500'
+                : 'text-gray-800 dark:text-gray-100 hover:text-primary-500'
+            }`}
+          >
+            {viewYear}年
+          </button>
+
+          <div className="flex items-center gap-0.5">
+            {config.showYearPicker && (
+              <button
+                onClick={handleNextYear}
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {months.map((month, index) => {
+            const monthDateStr = `${viewYear}-${String(index + 1).padStart(2, '0')}-01`;
+            const isSelectedMonth = isSelected(monthDateStr);
+            
+            return (
+              <button
+                key={index}
+                onClick={() => {
+                  setViewMonth(index);
+                  handleSelectDate(viewYear, index);
+                }}
+                className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isSelectedMonth
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
+              >
+                {month}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const firstDay = getFirstDayOfWeek(viewYear, viewMonth);
+
+  const prevDays: { day: number; month: number; year: number }[] = [];
+  if (firstDay > 0) {
+    const prevMonth = viewMonth === 0 ? 11 : viewMonth - 1;
+    const prevYear = viewMonth === 0 ? viewYear - 1 : viewYear;
+    const daysInPrevMonth = getDaysInMonth(prevYear, prevMonth);
+    for (let i = firstDay - 1; i >= 0; i--) {
+      prevDays.push({ day: daysInPrevMonth - i, month: prevMonth, year: prevYear });
+    }
+  }
+
+  const currentDays: { day: number; month: number; year: number }[] = [];
+  for (let i = 1; i <= daysInMonth; i++) {
+    currentDays.push({ day: i, month: viewMonth, year: viewYear });
+  }
+
+  const totalCells = prevDays.length + currentDays.length;
+  const totalRows = 6;
+  const targetCells = totalRows * 7;
+  const remaining = targetCells - totalCells;
+  const nextDays: { day: number; month: number; year: number }[] = [];
+  for (let i = 1; i <= remaining; i++) {
+    const nextMonth = viewMonth === 11 ? 0 : viewMonth + 1;
+    const nextYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+    nextDays.push({ day: i, month: nextMonth, year: nextYear });
+  }
+
+  const allDays = [...prevDays, ...currentDays, ...nextDays];
+
   return (
     <div className="w-full select-none">
-      {/* 顶部导航 */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-0.5">
           {config.showYearPicker && (
@@ -259,7 +328,6 @@ export function Calendar({
         </div>
       </div>
 
-      {/* 星期标题 */}
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((d) => (
           <div key={d} className="text-center text-xs text-gray-500 dark:text-gray-400 py-1.5">
@@ -268,7 +336,6 @@ export function Calendar({
         ))}
       </div>
 
-      {/* 日期网格 */}
       <div className="grid grid-cols-7 gap-0">
         {allDays.map((dayInfo, idx) => {
           const dateStr = formatDateStr(new Date(dayInfo.year, dayInfo.month, dayInfo.day));

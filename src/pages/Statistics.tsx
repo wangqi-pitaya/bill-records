@@ -239,7 +239,7 @@ export default function Statistics() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-20">
       <header className="fixed top-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 px-4 shadow-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto relative">
-          <div className="h-12 flex items-center">
+          <div className="h-12 flex items-center justify-between">
             {isSecondary ? (
               <>
                 <button
@@ -251,9 +251,9 @@ export default function Statistics() {
                 <h1 className="flex-1 text-center text-base font-bold text-gray-800 dark:text-gray-100">统计</h1>
                 <button
                   onClick={() => setShowFilter(true)}
-                  className={`w-8 h-8 flex items-center justify-center shrink-0 relative ${
+                  className={`w-8 h-8 flex items-center justify-center shrink-0 relative rounded-lg transition-colors ${
                     hasActiveFilters ? 'text-primary-500' : 'text-gray-700 dark:text-gray-300'
-                  }`}
+                  } hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700`}
                 >
                   <SlidersHorizontal className="w-5 h-5" />
                   {hasActiveFilters && (
@@ -263,6 +263,7 @@ export default function Statistics() {
               </>
             ) : (
               <>
+                <div className="w-8" />
                 <div className="flex-1 flex justify-center">
                   <div className="tab-container">
                     <button
@@ -281,9 +282,9 @@ export default function Statistics() {
                 </div>
                 <button
                   onClick={() => setShowFilter(true)}
-                  className={`w-8 h-8 flex items-center justify-center shrink-0 absolute right-4 ${
+                  className={`w-8 h-8 flex items-center justify-center shrink-0 relative rounded-lg transition-colors ${
                     hasActiveFilters ? 'text-primary-500' : 'text-gray-700 dark:text-gray-300'
-                  }`}
+                  } hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700`}
                 >
                   <SlidersHorizontal className="w-5 h-5" />
                   {hasActiveFilters && (

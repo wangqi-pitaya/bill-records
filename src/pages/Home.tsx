@@ -11,6 +11,7 @@ import { StatCard } from '../components/StatCard';
 import { BillItem } from '../components/BillItem';
 import { FloatingButton } from '../components/FloatingButton';
 import { AddBillDrawer } from '../components/AddBillDrawer';
+import { Calendar } from '../components/Calendar';
 import {
   getDateLabel,
   groupBillsByDate,
@@ -186,7 +187,6 @@ export default function Home() {
                 <button
                   onClick={() => {
                     dateFilter.setPickerMode('year');
-                    dateFilter.setPickerMonth(null);
                   }}
                   className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
                     dateFilter.pickerMode === 'year'
@@ -194,7 +194,7 @@ export default function Home() {
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
                 >
-                  按年
+                  年
                 </button>
                 <button
                   onClick={() => dateFilter.setPickerMode('month')}
@@ -204,51 +204,22 @@ export default function Home() {
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                   }`}
                 >
-                  按月
+                  月
                 </button>
               </div>
             </div>
 
             <div className="px-4 py-4">
-              <div className="mb-4">
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">年份</span>
-                <div className="flex flex-wrap gap-2">
-                  {dateFilter.availableYears.map(year => (
-                    <button
-                      key={year}
-                      onClick={() => dateFilter.setPickerYear(year)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        dateFilter.pickerYear === year
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      {year}年
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {dateFilter.pickerMode === 'month' && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 block">月份</span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                      <button
-                        key={month}
-                        onClick={() => dateFilter.setPickerMonth(month)}
-                        className={`px-2 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          dateFilter.pickerMonth === month
-                            ? 'bg-primary-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        {month}月
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <Calendar
+                mode="single"
+                value={dateFilter.tempDate}
+                onChange={dateFilter.setTempDate}
+                config={{
+                  showYearPicker: dateFilter.pickerMode === 'year',
+                  showMonthPicker: true,
+                  showDayPicker: false,
+                }}
+              />
             </div>
 
             <div className="sticky bottom-0 bg-white dark:bg-gray-800 px-4 py-3 border-t border-gray-100 dark:border-gray-700 flex gap-3 transition-colors duration-300">
