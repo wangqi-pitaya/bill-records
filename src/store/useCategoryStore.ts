@@ -10,6 +10,8 @@ interface CategoryStore {
   addCategory: (category: Omit<Category, 'id'>) => void;
   deleteCategory: (id: string) => boolean;
   reorderCategories: (type: BillType, newOrder: Category[]) => void;
+  moveCategoryUp: (id: string, type: BillType) => void;
+  moveCategoryDown: (id: string, type: BillType) => void;
   getCategoriesByType: (type: BillType) => Category[];
   isCategoryUsed: (categoryName: string) => boolean;
 }
@@ -46,6 +48,26 @@ export const useCategoryStore = create<CategoryStore>()(
         const otherCategories = get().categories.filter((c) => c.type !== type);
         const updatedCategories = [...otherCategories, ...newOrder];
         set({ categories: updatedCategories });
+      },
+
+      moveCategoryUp: (id, type) => {
+        const typedCategories = get().categories.filter((c) => c.type === type);
+        const index = typedCategories.findIndex((c) => c.id === id);
+        if (index <= 0) return;
+        const newOrder = [...typedCategories];
+        [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
+        const otherCategories = get().categories.filter((c) => c.type !== type);
+        set({ categories: [...otherCategories, ...newOrder] });
+      },
+
+      moveCategoryDown: (id, type) => {
+        const typedCategories = get().categories.filter((c) => c.type === type);
+        const index = typedCategories.findIndex((c) => c.id === id);
+        if (index === -1 || index >= typedCategories.length - 1) return;
+        const newOrder = [...typedCategories];
+        [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
+        const otherCategories = get().categories.filter((c) => c.type !== type);
+        set({ categories: [...otherCategories, ...newOrder] });
       },
 
       getCategoriesByType: (type) => {

@@ -77,6 +77,16 @@ export default function Profile() {
       onClick: () => Taro.navigateTo({ url: '/pages/search/index' }),
     },
     {
+      icon: 'Wallet',
+      label: '钱包管理',
+      onClick: () => Taro.navigateTo({ url: '/pages/wallet-manage/index' }),
+    },
+    {
+      icon: 'BookOpen',
+      label: '分类管理',
+      onClick: () => Taro.navigateTo({ url: '/pages/category-manage/index' }),
+    },
+    {
       icon: 'Trash2',
       label: '回收站',
       onClick: () => Taro.navigateTo({ url: '/pages/trash/index' }),

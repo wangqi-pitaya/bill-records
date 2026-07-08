@@ -17,7 +17,7 @@ export default function CategoryManage() {
   const [selectedIcon, setSelectedIcon] = useState('MoreHorizontal');
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
-  const { categories, addCategory, deleteCategory, isCategoryUsed } = useCategoryStore();
+  const { categories, addCategory, deleteCategory, isCategoryUsed, moveCategoryUp, moveCategoryDown } = useCategoryStore();
   const toast = useToast();
 
   const filteredCategories = categories.filter((c) => c.type === tab);
@@ -95,7 +95,7 @@ export default function CategoryManage() {
       <ScrollView scrollY className="pb-4">
         <View className="px-4 py-4">
           <View className="grid grid-cols-4 gap-3">
-            {filteredCategories.map((cat) => (
+            {filteredCategories.map((cat, index) => (
               <View
                 key={cat.id}
                 className="bg-white dark:bg-gray-800 rounded-card shadow-card p-3 flex flex-col items-center gap-2 relative"
@@ -111,6 +111,28 @@ export default function CategoryManage() {
                   onClick={() => handleDeleteRequest(cat)}
                 >
                   <Icon name="X" size={12} className="text-red-500" />
+                </View>
+                <View className="absolute bottom-1 left-1 right-1 flex justify-between">
+                  <View
+                    className={`w-5 h-5 flex items-center justify-center rounded-full ${
+                      index === 0 ? 'bg-gray-100 dark:bg-gray-700 opacity-40' : 'bg-blue-500/10 active:bg-blue-500/20'
+                    }`}
+                    onClick={() => index > 0 && moveCategoryUp(cat.id, tab)}
+                  >
+                    <View style={{ transform: 'rotate(90deg)' }}>
+                      <Icon name="ChevronDown" size={12} className={index === 0 ? 'text-gray-400' : 'text-blue-500'} />
+                    </View>
+                  </View>
+                  <View
+                    className={`w-5 h-5 flex items-center justify-center rounded-full ${
+                      index === filteredCategories.length - 1 ? 'bg-gray-100 dark:bg-gray-700 opacity-40' : 'bg-blue-500/10 active:bg-blue-500/20'
+                    }`}
+                    onClick={() => index < filteredCategories.length - 1 && moveCategoryDown(cat.id, tab)}
+                  >
+                    <View style={{ transform: 'rotate(-90deg)' }}>
+                      <Icon name="ChevronDown" size={12} className={index === filteredCategories.length - 1 ? 'text-gray-400' : 'text-blue-500'} />
+                    </View>
+                  </View>
                 </View>
               </View>
             ))}

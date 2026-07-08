@@ -4,18 +4,48 @@ import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useCategoryStore } from '../../store/useCategoryStore';
+import { useTheme } from '../../hooks/useTheme';
 import { StatCard } from '../../components/StatCard';
 import { FilterDrawer } from '../../components/FilterDrawer';
 import { YearMonthPicker } from '../../components/Calendar';
+import { EChartsWrap } from '../../components/ECharts';
 import { Icon } from '../../components/Icon';
 import { FilterOptions } from '../../types';
-import { formatMoney, filterBillsByWallet, getDateRangeByPreset } from '../../lib/utils';
+import {
+  formatMoney,
+  filterBillsByWallet,
+  getDateRangeByPreset,
+} from '../../lib/utils';
+import type { EChartsOption } from 'echarts';
+
+interface CategoryStat {
+  name: string;
+  amount: number;
+  percentage: number;
+  icon: string;
+}
+
+interface TrendItem {
+  label: string;
+  income: number;
+  expense: number;
+  balance: number;
+}
+
+const PIE_COLORS = [
+  '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6',
+  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
+  '#14b8a6', '#a855f7', '#d946ef', '#22c55e', '#eab308',
+];
 
 export default function Statistics() {
   const [tab, setTab] = useState<'month' | 'year'>('month');
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [showPicker, setShowPicker] = useState(false);
+  const [trendMode, setTrendMode] = useState<'all' | 'income' | 'expense'>('expense');
+  const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
+  const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     walletId: 'all',
@@ -27,6 +57,7 @@ export default function Statistics() {
   const { bills } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
   const { categories } = useCategoryStore();
+  const { isDark } = useTheme();
 
   const statsWalletId = filters.walletId !== 'all' ? filters.walletId : currentWalletId;
   const statsWallet = wallets.find((w) => w.id === statsWalletId);
@@ -42,13 +73,20 @@ export default function Statistics() {
     return result;
   }, [bills, statsWalletId, filters]);
 
-  const stats = useMemo(() => {
+  const toCategoryArray = (obj: Record<string, number>, total: number): CategoryStat[] =>
+    Object.entries(obj)
+      .map(([name, amount]) => ({
+        name,
+        amount,
+        percentage: total > 0 ? (amount / total) * 100 : 0,
+        icon: categories.find((c) => c.name === name)?.icon || 'MoreHorizontal',
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+  const monthStats = useMemo(() => {
     const filtered = walletBills.filter((b) => {
       const [y, m] = b.date.split('-').map(Number);
-      if (tab === 'month') {
-        return y === year && m === month;
-      }
-      return y === year;
+      return y === year && m === month;
     });
 
     const income = filtered.filter((b) => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
@@ -65,25 +103,66 @@ export default function Statistics() {
       }
     });
 
-    const toArray = (obj: Record<string, number>, total: number) =>
-      Object.entries(obj)
-        .map(([name, amount]) => ({
-          name,
-          amount,
-          percentage: total > 0 ? (amount / total) * 100 : 0,
-          icon: categories.find((c) => c.name === name)?.icon || 'MoreHorizontal',
-        }))
-        .sort((a, b) => b.amount - a.amount);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const dailyTrend: TrendItem[] = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = i + 1;
+      const dayStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayBills = filtered.filter((b) => b.date === dayStr);
+      const di = dayBills.filter((b) => b.type === 'income').reduce((s, b) => s + b.amount, 0);
+      const de = dayBills.filter((b) => b.type === 'expense').reduce((s, b) => s + b.amount, 0);
+      return { label: `${day}日`, income: di, expense: de, balance: di - de };
+    });
 
     return {
       income,
       expense,
       balance: income - expense,
-      expenseCategories: toArray(expenseCats, expense),
-      incomeCategories: toArray(incomeCats, income),
+      expenseCategories: toCategoryArray(expenseCats, expense),
+      incomeCategories: toCategoryArray(incomeCats, income),
       hasData: filtered.length > 0,
+      trend: dailyTrend,
     };
-  }, [walletBills, year, month, tab, categories]);
+  }, [walletBills, year, month, categories]);
+
+  const yearStats = useMemo(() => {
+    const filtered = walletBills.filter((b) => {
+      const [y] = b.date.split('-').map(Number);
+      return y === year;
+    });
+
+    const income = filtered.filter((b) => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
+    const expense = filtered.filter((b) => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0);
+
+    const monthly: TrendItem[] = Array.from({ length: 12 }, (_, i) => {
+      const m = i + 1;
+      const monthBills = filtered.filter((b) => Number(b.date.split('-')[1]) === m);
+      const mi = monthBills.filter((b) => b.type === 'income').reduce((sum, b) => sum + b.amount, 0);
+      const me = monthBills.filter((b) => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0);
+      return { label: `${m}月`, income: mi, expense: me, balance: mi - me };
+    });
+
+    const expenseCats: Record<string, number> = {};
+    const incomeCats: Record<string, number> = {};
+    filtered.forEach((b) => {
+      if (b.type === 'expense') {
+        expenseCats[b.category] = (expenseCats[b.category] || 0) + b.amount;
+      } else {
+        incomeCats[b.category] = (incomeCats[b.category] || 0) + b.amount;
+      }
+    });
+
+    return {
+      income,
+      expense,
+      balance: income - expense,
+      expenseCategories: toCategoryArray(expenseCats, expense),
+      incomeCategories: toCategoryArray(incomeCats, income),
+      hasData: filtered.length > 0,
+      trend: monthly,
+    };
+  }, [walletBills, year, categories]);
+
+  const stats = tab === 'month' ? monthStats : yearStats;
 
   const currentLabel =
     filters.datePreset !== 'all'
@@ -107,15 +186,171 @@ export default function Statistics() {
     setYear(y);
     setMonth(m);
     setShowPicker(false);
+    setFilters({
+      walletId: 'all',
+      datePreset: 'all',
+      startDate: '',
+      endDate: '',
+    });
   };
 
-  const [pieType, setPieType] = useState<'expense' | 'income'>('expense');
-  const list = pieType === 'expense' ? stats.expenseCategories : stats.incomeCategories;
-  const total = pieType === 'expense' ? stats.expense : stats.income;
+  const textColor = isDark ? '#d1d5db' : '#4b5563';
+  const axisLineColor = isDark ? '#374151' : '#e5e7eb';
+  const splitLineColor = isDark ? '#374151' : '#f3f4f6';
+
+  const trendOption: EChartsOption = useMemo(() => {
+    const series: any[] = [];
+    if (trendMode === 'all' || trendMode === 'income') {
+      series.push({
+        name: '收入',
+        type: chartType,
+        data: stats.trend.map((d) => d.income),
+        itemStyle: { color: '#10b981', borderRadius: chartType === 'bar' ? [3, 3, 0, 0] : 0 },
+        smooth: chartType === 'line',
+        symbol: 'circle',
+        symbolSize: chartType === 'line' ? 4 : 0,
+        lineStyle: chartType === 'line' ? { width: 2 } : undefined,
+        areaStyle: chartType === 'line' ? { opacity: 0.15, color: '#10b981' } : undefined,
+      });
+    }
+    if (trendMode === 'all' || trendMode === 'expense') {
+      series.push({
+        name: '支出',
+        type: chartType,
+        data: stats.trend.map((d) => d.expense),
+        itemStyle: { color: '#ef4444', borderRadius: chartType === 'bar' ? [3, 3, 0, 0] : 0 },
+        smooth: chartType === 'line',
+        symbol: 'circle',
+        symbolSize: chartType === 'line' ? 4 : 0,
+        lineStyle: chartType === 'line' ? { width: 2 } : undefined,
+        areaStyle: chartType === 'line' ? { opacity: 0.15, color: '#ef4444' } : undefined,
+      });
+    }
+
+    return {
+      tooltip: {
+        trigger: 'axis',
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        borderColor: axisLineColor,
+        borderWidth: 1,
+        textStyle: { color: textColor, fontSize: 12 },
+        formatter: (params: any) => {
+          const d = Array.isArray(params) ? params : [params];
+          let html = `<div style="font-weight:600;margin-bottom:4px;">${d[0].axisValueLabel}</div>`;
+          d.forEach((p: any) => {
+            const color = p.color;
+            html += `<div style="display:flex;justify-content:space-between;gap:12px;"><span style="color:${color}">● ${p.seriesName}</span><span style="font-weight:600;">${formatMoney(p.value)}</span></div>`;
+          });
+          return html;
+        },
+      },
+      grid: {
+        left: 8,
+        right: 8,
+        top: 12,
+        bottom: 24,
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category',
+        data: stats.trend.map((d) => d.label),
+        axisLine: { lineStyle: { color: axisLineColor } },
+        axisTick: { show: false },
+        axisLabel: {
+          color: textColor,
+          fontSize: 10,
+          interval: tab === 'year' ? 0 : 'auto',
+          formatter: (val: string) => val.replace('月', '').replace('日', ''),
+        },
+      },
+      yAxis: {
+        type: 'value',
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: { lineStyle: { color: splitLineColor } },
+        axisLabel: {
+          color: textColor,
+          fontSize: 10,
+          formatter: (v: number) => {
+            if (v >= 10000) return (v / 10000).toFixed(1) + 'w';
+            if (v >= 1000) return (v / 1000).toFixed(1) + 'k';
+            return String(v);
+          },
+        },
+      },
+      series,
+    } as EChartsOption;
+  }, [stats.trend, trendMode, chartType, isDark, tab]);
+
+  const pieList = pieType === 'expense' ? stats.expenseCategories : stats.incomeCategories;
+  const pieTotal = pieType === 'expense' ? stats.expense : stats.income;
+
+  const pieOption: EChartsOption = useMemo(() => {
+    const data = pieList.map((item, idx) => ({
+      name: item.name,
+      value: item.amount,
+      itemStyle: { color: PIE_COLORS[idx % PIE_COLORS.length] },
+    }));
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        borderColor: axisLineColor,
+        borderWidth: 1,
+        textStyle: { color: textColor, fontSize: 12 },
+        formatter: (p: any) => {
+          return `${p.name}<br/>金额: ${formatMoney(p.value)}<br/>占比: ${p.percent}%`;
+        },
+      },
+      legend: { show: false },
+      series: [
+        {
+          type: 'pie',
+          radius: ['45%', '65%'],
+          center: ['50%', '50%'],
+          avoidLabelOverlap: true,
+          itemStyle: {
+            borderRadius: 2,
+            borderColor: isDark ? '#1f2937' : '#ffffff',
+            borderWidth: 2,
+          },
+          label: {
+            show: true,
+            position: 'outside',
+            color: textColor,
+            fontSize: 11,
+            formatter: (p: any) => {
+              if (p.percent < 3) return '';
+              return `{name|${p.name}}\n{value|${p.percent.toFixed(1)}%}`;
+            },
+            rich: {
+              name: {
+                color: textColor,
+                fontSize: 11,
+                padding: [0, 0, 2, 0],
+              },
+              value: {
+                color: textColor,
+                fontSize: 11,
+                fontWeight: 600,
+              },
+            },
+          },
+          labelLine: {
+            show: true,
+            length: 8,
+            length2: 8,
+            lineStyle: { color: axisLineColor },
+          },
+          data,
+        },
+      ],
+    } as EChartsOption;
+  }, [pieList, isDark]);
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-4">
-      {/* Header */}
       <View className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm">
         <View className="h-12 flex items-center justify-between">
           <View className="w-8" />
@@ -175,92 +410,131 @@ export default function Statistics() {
             color={statsWallet?.color}
           />
 
+          {/* Trend Chart */}
+          <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4">
+            <View className="flex items-center justify-between mb-2">
+              <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                {tab === 'month' ? '按日统计' : '按月统计'}
+              </Text>
+              <View
+                className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center active:bg-gray-200 dark:active:bg-gray-600"
+                onClick={() => setChartType(chartType === 'bar' ? 'line' : 'bar')}
+              >
+                {chartType === 'bar' ? (
+                  <Icon name="TrendingUp" size={16} className="text-gray-600 dark:text-gray-400" />
+                ) : (
+                  <Icon name="BarChart3" size={16} className="text-gray-600 dark:text-gray-400" />
+                )}
+              </View>
+            </View>
+
+            {stats.hasData ? (
+              <EChartsWrap option={trendOption} height={320} />
+            ) : (
+              <View className="h-[320rpx] flex items-center justify-center">
+                <Text className="text-gray-400 dark:text-gray-500 text-sm">暂无数据</Text>
+              </View>
+            )}
+
+            <View className="flex justify-center mt-3">
+              <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                {[
+                  { key: 'expense', label: '支出' },
+                  { key: 'income', label: '收入' },
+                  { key: 'all', label: '全部' },
+                ].map((opt) => (
+                  <View
+                    key={opt.key}
+                    className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+                      trendMode === opt.key
+                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                    onClick={() => setTrendMode(opt.key as typeof trendMode)}
+                  >
+                    <Text>{opt.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          {/* Pie Chart */}
           {!stats.hasData ? (
             <View className="text-center py-12">
               <Icon name="BarChart3" size={48} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
               <Text className="text-gray-500 dark:text-gray-400">暂无账单数据</Text>
             </View>
           ) : (
-            <>
-              {/* Category Stats */}
-              <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4">
-                <Text className="text-sm font-semibold text-center text-gray-700 dark:text-gray-300 mb-4 block">
-                  分类统计
-                </Text>
+            <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 space-y-3">
+              <View className="flex justify-center">
+                <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                  <View
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      pieType === 'expense'
+                        ? 'bg-white dark:bg-gray-600 text-red-500 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                    onClick={() => setPieType('expense')}
+                  >
+                    <Text>支出</Text>
+                  </View>
+                  <View
+                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                      pieType === 'income'
+                        ? 'bg-white dark:bg-gray-600 text-green-500 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}
+                    onClick={() => setPieType('income')}
+                  >
+                    <Text>收入</Text>
+                  </View>
+                </View>
+              </View>
 
-                {list.length > 0 ? (
-                  <View className="space-y-4">
-                    <View className="flex justify-center mb-3">
-                      <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-                        <View
-                          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                            pieType === 'expense'
-                              ? 'bg-white dark:bg-gray-600 text-red-500 shadow-sm'
-                              : 'text-gray-600 dark:text-gray-400'
-                          }`}
-                          onClick={() => setPieType('expense')}
-                        >
-                          <Text>支出</Text>
-                        </View>
-                        <View
-                          className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                            pieType === 'income'
-                              ? 'bg-white dark:bg-gray-600 text-green-500 shadow-sm'
-                              : 'text-gray-600 dark:text-gray-400'
-                          }`}
-                          onClick={() => setPieType('income')}
-                        >
-                          <Text>收入</Text>
-                        </View>
-                      </View>
-                    </View>
+              {pieList.length > 0 ? (
+                <View>
+                  <EChartsWrap option={pieOption} height={340} />
 
-                    <View className="space-y-3">
-                      {list.map((cat) => (
-                        <View key={cat.name} className="flex items-center gap-3 p-2">
-                          <View
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                              pieType === 'income' ? 'bg-green-500/10' : 'bg-red-500/10'
-                            }`}
-                          >
-                            <Icon
-                              name={cat.icon}
-                              size={16}
-                              className={pieType === 'income' ? 'text-green-500' : 'text-red-500'}
-                            />
-                          </View>
-                          <View className="flex-1 min-w-0">
-                            <View className="flex items-center justify-between mb-1">
-                              <Text className="text-sm font-medium truncate text-gray-700 dark:text-gray-300">
-                                {cat.name}
-                              </Text>
-                              <Text className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                                {formatMoney(cat.amount)}
-                              </Text>
-                            </View>
-                            <View className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                              <View
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  pieType === 'income' ? 'bg-green-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${Math.min(cat.percentage, 100)}%` }}
-                              />
-                            </View>
-                            <Text className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                              {cat.percentage.toFixed(1)}%
+                  <View className="space-y-2 mt-2 px-2">
+                    {pieList.map((cat, idx) => (
+                      <View key={cat.name} className="flex items-center gap-3 p-2">
+                        <View
+                          className="w-3 h-3 rounded-full shrink-0"
+                          style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+                        />
+                        <View className="flex-1 min-w-0">
+                          <View className="flex items-center justify-between mb-1">
+                            <Text className="text-sm font-medium truncate text-gray-700 dark:text-gray-300">
+                              {cat.name}
+                            </Text>
+                            <Text className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                              {formatMoney(cat.amount)}
                             </Text>
                           </View>
+                          <View className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <View
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${Math.min(cat.percentage, 100)}%`,
+                                backgroundColor: PIE_COLORS[idx % PIE_COLORS.length],
+                              }}
+                            />
+                          </View>
+                          <Text className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                            {cat.percentage.toFixed(1)}%
+                          </Text>
                         </View>
-                      ))}
-                    </View>
+                      </View>
+                    ))}
                   </View>
-                ) : (
-                  <Text className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
-                    暂无{pieType === 'expense' ? '支出' : '收入'}分类数据
-                  </Text>
-                )}
-              </View>
-            </>
+                </View>
+              ) : (
+                <Text className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+                  暂无{pieType === 'expense' ? '支出' : '收入'}分类数据
+                </Text>
+              )}
+            </View>
           )}
         </View>
       </ScrollView>
