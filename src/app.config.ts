@@ -16,13 +16,15 @@ export default defineAppConfig({
   },
   tabBar: {
     color: '#9ca3af',
-    selectedColor: '#3b82f6',
+    selectedColor: '#10b981',
     backgroundColor: '#ffffff',
     borderStyle: 'black',
     list: [
       {
         pagePath: 'pages/index/index',
         text: '记账',
+        iconPath: 'assets/bill-unselected.svg',
+        selectedIconPath: 'assets/bill-selected.svg',
       },
       {
         pagePath: 'pages/statistics/index',
@@ -31,6 +33,8 @@ export default defineAppConfig({
       {
         pagePath: 'pages/profile/index',
         text: '我的',
+        iconPath: 'assets/profile-unselected.svg',
+        selectedIconPath: 'assets/profile-selected.svg',
       },
     ],
   },

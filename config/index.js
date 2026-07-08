@@ -18,7 +18,12 @@ const config = {
     '@': path.resolve(__dirname, '..', 'src')
   },
   copy: {
-    patterns: [],
+    patterns: [
+      {
+        from: 'src/assets',
+        to: 'dist/assets'
+      }
+    ],
     options: {}
   },
   framework: 'react',
