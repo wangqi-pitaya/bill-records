@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { Category, BillType } from '../types';
 import { defaultCategories } from '../data/defaults';
+import { generateId } from '../lib/utils';
+import { taroPersist } from './taroPersist';
 import { useBillStore } from './useBillStore';
 
 interface CategoryStore {
@@ -14,21 +15,21 @@ interface CategoryStore {
 }
 
 export const useCategoryStore = create<CategoryStore>()(
-  persist(
+  taroPersist(
     (set, get) => ({
       categories: defaultCategories,
 
       addCategory: (category) => {
         const newCategory: Category = {
           ...category,
-          id: crypto.randomUUID(),
+          id: generateId(),
         };
         const updatedCategories = [...get().categories, newCategory];
         set({ categories: updatedCategories });
       },
 
       deleteCategory: (id) => {
-        const category = get().categories.find(c => c.id === id);
+        const category = get().categories.find((c) => c.id === id);
         if (!category) return false;
 
         const bills = useBillStore.getState().bills;
@@ -36,19 +37,19 @@ export const useCategoryStore = create<CategoryStore>()(
 
         if (isUsed) return false;
 
-        const updatedCategories = get().categories.filter(c => c.id !== id);
+        const updatedCategories = get().categories.filter((c) => c.id !== id);
         set({ categories: updatedCategories });
         return true;
       },
 
       reorderCategories: (type, newOrder) => {
-        const otherCategories = get().categories.filter(c => c.type !== type);
+        const otherCategories = get().categories.filter((c) => c.type !== type);
         const updatedCategories = [...otherCategories, ...newOrder];
         set({ categories: updatedCategories });
       },
 
       getCategoriesByType: (type) => {
-        return get().categories.filter(c => c.type === type);
+        return get().categories.filter((c) => c.type === type);
       },
 
       isCategoryUsed: (categoryName) => {

@@ -1,3 +1,4 @@
+import { View, Text } from '@tarojs/components';
 import { formatMoney } from '../lib/utils';
 
 interface StatCardProps {
@@ -7,64 +8,30 @@ interface StatCardProps {
   color?: string;
 }
 
-export const StatCard = ({ income, expense, balance, color }: StatCardProps) => {
-  const cardStyle = color
-    ? { background: `linear-gradient(135deg, ${color}, ${adjustColor(color, -20)})` }
-    : undefined;
-
-  const balanceStr = formatMoney(balance);
-  const incomeStr = formatMoney(income);
-  const expenseStr = formatMoney(expense);
-
+export function StatCard({ income, expense, balance, color }: StatCardProps) {
   return (
-    <div
-      className={`rounded-2xl p-4 shadow-card text-white ${
-        color ? '' : 'bg-gradient-to-br from-primary-400 to-primary-600'
-      }`}
-      style={cardStyle}
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-sm font-medium text-white/90 whitespace-nowrap">结余</span>
-        <span
-          className="text-xl font-bold whitespace-nowrap"
-          style={{ fontSize: balanceStr.length > 10 ? '14px' : undefined }}
-        >
-          {balanceStr}
-        </span>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/20">
-        <div>
-          <div className="text-xs text-white/80 whitespace-nowrap">收入</div>
-          <div
-            className="text-base font-semibold whitespace-nowrap"
-            style={{ fontSize: incomeStr.length > 10 ? '12px' : undefined }}
-          >
-            {incomeStr}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs text-white/80 whitespace-nowrap">支出</div>
-          <div
-            className="text-base font-semibold whitespace-nowrap"
-            style={{ fontSize: expenseStr.length > 10 ? '12px' : undefined }}
-          >
-            {expenseStr}
-          </div>
-        </div>
-      </div>
-    </div>
+    <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-5 transition-colors">
+      <View className="flex justify-between items-center mb-4">
+        <View>
+          <Text className="text-xs text-gray-400 dark:text-gray-500">结余</Text>
+          <Text className={`text-xl font-bold mt-1 block ${balance >= 0 ? 'text-income-500' : 'text-expense-500'}`}>
+            {balance >= 0 ? '+' : ''}{formatMoney(balance)}
+          </Text>
+        </View>
+        {color && (
+          <View className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+        )}
+      </View>
+      <View className="flex justify-between">
+        <View>
+          <Text className="text-xs text-gray-400 dark:text-gray-500">收入</Text>
+          <Text className="text-base font-semibold text-income-500 mt-1 block">+{formatMoney(income)}</Text>
+        </View>
+        <View className="text-right">
+          <Text className="text-xs text-gray-400 dark:text-gray-500">支出</Text>
+          <Text className="text-base font-semibold text-expense-500 mt-1 block">-{formatMoney(expense)}</Text>
+        </View>
+      </View>
+    </View>
   );
-};
-
-function adjustColor(color: string, amount: number): string {
-  const hex = color.replace('#', '');
-  const num = parseInt(hex, 16);
-  let r = (num >> 16) + amount;
-  let g = ((num >> 8) & 0x00ff) + amount;
-  let b = (num & 0x0000ff) + amount;
-  r = Math.max(0, Math.min(255, r));
-  g = Math.max(0, Math.min(255, g));
-  b = Math.max(0, Math.min(255, b));
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }

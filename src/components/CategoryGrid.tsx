@@ -1,5 +1,6 @@
-import * as Icons from 'lucide-react';
+import { View, Text, ScrollView } from '@tarojs/components';
 import { Category, BillType } from '../types';
+import { Icon } from './Icon';
 
 interface CategoryGridProps {
   categories: Category[];
@@ -8,30 +9,30 @@ interface CategoryGridProps {
   type: BillType;
 }
 
-export const CategoryGrid = ({ categories, selectedCategory, onSelect, type }: CategoryGridProps) => {
+export function CategoryGrid({ categories, selectedCategory, onSelect, type }: CategoryGridProps) {
   return (
-    <div className="grid grid-cols-5 gap-2">
-      {categories.map((category) => {
-        const IconComponent = (Icons as unknown as Record<string, React.FC<{ className?: string }>>)[category.icon] || Icons.Circle;
-        const isSelected = selectedCategory?.id === category.id;
-        
-        return (
-          <button
-            key={category.id}
-            onClick={() => onSelect(category)}
-            className={`flex flex-col items-center justify-center gap-1 p-0.5 rounded-md aspect-square transition-all duration-200 ${
-              isSelected
-                ? type === 'income'
-                  ? 'bg-income-500 text-white shadow-lg scale-105'
-                  : 'bg-expense-500 text-white shadow-lg scale-105'
-                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-            }`}
-          >
-            <IconComponent className="w-6 h-6" />
-            <span className="text-xs font-medium whitespace-nowrap truncate max-w-full">{category.name}</span>
-          </button>
-        );
-      })}
-    </div>
+    <ScrollView scrollY className="h-full">
+      <View className="grid grid-cols-5 gap-3 p-2">
+        {categories.map((cat) => {
+          const isSelected = selectedCategory?.id === cat.id;
+          return (
+            <View
+              key={cat.id}
+              className={`flex flex-col items-center justify-center gap-1 p-2 rounded-[16rpx] aspect-square transition-all active:scale-95 ${
+                isSelected
+                  ? type === 'income'
+                    ? 'bg-income-500 text-white'
+                    : 'bg-expense-500 text-white'
+                  : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+              }`}
+              onClick={() => onSelect(cat)}
+            >
+              <Icon name={cat.icon} size={24} color={isSelected ? '#fff' : 'currentColor'} />
+              <Text className="text-xs font-medium truncate w-full text-center">{cat.name}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </ScrollView>
   );
-};
+}

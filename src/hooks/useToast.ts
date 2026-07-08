@@ -1,13 +1,25 @@
+import { useCallback } from 'react';
 import { useToastStore } from '../store/useToastStore';
 
 export function useToast() {
-  const showToast = useToastStore((state) => state.showToast);
+  const show = useToastStore((state) => state.show);
 
-  return {
-    showToast,
-    success: (message: string, duration?: number) => showToast(message, 'success', duration),
-    error: (message: string, duration?: number) => showToast(message, 'error', duration),
-    info: (message: string, duration?: number) => showToast(message, 'info', duration),
-    warning: (message: string, duration?: number) => showToast(message, 'warning', duration),
-  };
+  const success = useCallback(
+    (message: string) => show(message, 'success'),
+    [show]
+  );
+  const error = useCallback(
+    (message: string) => show(message, 'error'),
+    [show]
+  );
+  const warning = useCallback(
+    (message: string) => show(message, 'warning'),
+    [show]
+  );
+  const info = useCallback(
+    (message: string) => show(message, 'info'),
+    [show]
+  );
+
+  return { success, error, warning, info };
 }

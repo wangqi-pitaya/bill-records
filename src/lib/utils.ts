@@ -1,9 +1,43 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { Bill } from "../types"
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import Taro from '@tarojs/taro';
+import { Bill, DateGroup } from '../types';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
+}
+
+export function generateId(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+export function getStorage<T>(key: string, defaultValue: T): T {
+  try {
+    const value = Taro.getStorageSync<T>(key);
+    return value !== undefined ? value : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+}
+
+export function setStorage<T>(key: string, value: T): void {
+  try {
+    Taro.setStorageSync(key, value);
+  } catch (e) {
+    console.error('Storage set error:', e);
+  }
+}
+
+export function removeStorage(key: string): void {
+  try {
+    Taro.removeStorageSync(key);
+  } catch (e) {
+    console.error('Storage remove error:', e);
+  }
 }
 
 export const formatDate = (d: Date) => {
@@ -46,29 +80,28 @@ export const getShortDateLabel = (dateStr: string) => {
   return dateStr;
 };
 
-export interface DateGroup {
-  date: string;
-  bills: Bill[];
-  totalIncome: number;
-  totalExpense: number;
-}
-
 export const groupBillsByDate = (bills: Bill[]): DateGroup[] => {
   const groups: Record<string, Bill[]> = {};
-  bills.forEach(bill => {
+  bills.forEach((bill) => {
     if (!groups[bill.date]) {
       groups[bill.date] = [];
     }
     groups[bill.date].push(bill);
   });
 
-  const sortedDates = Object.keys(groups).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const sortedDates = Object.keys(groups).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
+  );
 
-  return sortedDates.map(date => ({
+  return sortedDates.map((date) => ({
     date,
     bills: groups[date],
-    totalIncome: groups[date].filter(b => b.type === 'income').reduce((sum, b) => sum + b.amount, 0),
-    totalExpense: groups[date].filter(b => b.type === 'expense').reduce((sum, b) => sum + b.amount, 0),
+    totalIncome: groups[date]
+      .filter((b) => b.type === 'income')
+      .reduce((sum, b) => sum + b.amount, 0),
+    totalExpense: groups[date]
+      .filter((b) => b.type === 'expense')
+      .reduce((sum, b) => sum + b.amount, 0),
   }));
 };
 
@@ -77,7 +110,7 @@ export const filterBillsByDate = (
   year: number,
   month: number | null
 ): Bill[] => {
-  return bills.filter(b => {
+  return bills.filter((b) => {
     const [y, m] = b.date.split('-').map(Number);
     if (y !== year) return false;
     if (month !== null && m !== month) return false;
@@ -87,17 +120,11 @@ export const filterBillsByDate = (
 
 export const filterBillsByWallet = (bills: Bill[], walletId: string): Bill[] => {
   if (walletId === 'default') {
-    return bills.filter(b => !b.walletId || b.walletId === 'default');
+    return bills.filter((b) => !b.walletId || b.walletId === 'default');
   }
-  return bills.filter(b => b.walletId === walletId);
+  return bills.filter((b) => b.walletId === walletId);
 };
 
-/**
- * 格式化金额，添加千分符
- * @param value 数值
- * @param decimals 小数位数，默认2位
- * @returns 格式化后的字符串，如 "1,234.56"
- */
 export const formatMoney = (value: number, decimals: number = 2): string => {
   if (isNaN(value)) return '0.00';
   const fixed = value.toFixed(decimals);
@@ -106,10 +133,11 @@ export const formatMoney = (value: number, decimals: number = 2): string => {
   return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
 };
 
-/**
- * 根据日期预设获取日期范围
- */
-export const getDateRangeByPreset = (preset: 'all' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'lastYear' | 'custom', startDate?: string, endDate?: string) => {
+export const getDateRangeByPreset = (
+  preset: 'all' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'lastYear' | 'custom',
+  startDate?: string,
+  endDate?: string
+) => {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();

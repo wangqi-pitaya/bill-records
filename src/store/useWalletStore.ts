@@ -1,14 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { Wallet } from '../types';
 import { defaultWallets } from '../data/defaults';
-
-export interface Wallet {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  isDefault: boolean;
-}
+import { generateId } from '../lib/utils';
+import { taroPersist } from './taroPersist';
 
 interface WalletStore {
   wallets: Wallet[];
@@ -20,7 +14,7 @@ interface WalletStore {
 }
 
 export const useWalletStore = create<WalletStore>()(
-  persist(
+  taroPersist(
     (set, get) => ({
       wallets: defaultWallets as Wallet[],
       currentWalletId: 'default',
@@ -33,7 +27,7 @@ export const useWalletStore = create<WalletStore>()(
         const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
         const walletColor = color || colors[get().wallets.length % colors.length];
         const newWallet: Wallet = {
-          id: crypto.randomUUID(),
+          id: generateId(),
           name,
           description,
           color: walletColor,

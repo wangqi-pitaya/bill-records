@@ -21,6 +21,28 @@ export interface Bill {
   deletedAt?: number;
 }
 
+export interface Wallet {
+  id: string;
+  name: string;
+  description: string;
+  color: string;
+  isDefault: boolean;
+}
+
+export interface DateGroup {
+  date: string;
+  bills: Bill[];
+  totalIncome: number;
+  totalExpense: number;
+}
+
+export interface FilterOptions {
+  walletId: string;
+  datePreset: 'all' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'lastYear' | 'custom';
+  startDate: string;
+  endDate: string;
+}
+
 export interface BillStore {
   bills: Bill[];
   addBill: (bill: Omit<Bill, 'id' | 'timestamp'>) => void;
@@ -29,7 +51,7 @@ export interface BillStore {
   restoreBill: (id: string) => void;
   permanentDeleteBill: (id: string) => void;
   clearTrash: () => void;
-  updateBill: (id: string, bill: Omit<Bill, 'id' | 'timestamp'>) => void;
+  updateBill: (id: string, bill: Partial<Bill>) => void;
   getBillById: (id: string) => Bill | undefined;
   getStatistics: (walletId?: string) => { income: number; expense: number; balance: number };
   clearBillsByWalletId: (walletId: string) => void;

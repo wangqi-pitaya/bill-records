@@ -30,16 +30,13 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
 
   const validateAmount = useCallback((value: string): string => {
     let val = value.replace(/[^0-9.]/g, '');
-
     if (val.startsWith('.')) {
       val = '0' + val;
     }
-
     const parts = val.split('.');
     if (parts.length > 2) {
       val = parts[0] + '.' + parts[1];
     }
-
     if (parts[0] && parts[0].length > 1 && parts[0].startsWith('0')) {
       val = val.replace(/^0+/, '0');
       if (val === '0') {
@@ -48,16 +45,13 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
         val = '0.' + (parts[1] || '');
       }
     }
-
     if (parts[0] && parts[0].length > 9) {
       parts[0] = parts[0].slice(0, 9);
       val = parts[0] + (parts[1] !== undefined ? '.' + parts[1] : '');
     }
-
     if (parts[1] && parts[1].length > 2) {
       val = parts[0] + '.' + parts[1].slice(0, 2);
     }
-
     return val;
   }, []);
 
@@ -106,14 +100,12 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     };
   }, [selectedCategory, amount, note, date, currentWalletId]);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(() => {
     const billData = buildBillData();
     if (!billData) return;
 
     setIsSubmitting(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 150));
-
+    setTimeout(() => {
       if (isEdit && editBill) {
         updateBill(editBill.id, billData);
         toast.success('账单已更新');
@@ -122,26 +114,23 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
         toast.success('账单已保存');
         resetForm();
       }
-      onSuccess?.();
-    } finally {
       setIsSubmitting(false);
-    }
+      onSuccess?.();
+    }, 150);
   }, [buildBillData, isEdit, editBill, updateBill, addBill, toast, onSuccess, resetForm]);
 
-  const handleSaveAndContinue = useCallback(async () => {
+  const handleSaveAndContinue = useCallback(() => {
     const billData = buildBillData();
     if (!billData) return;
 
     setIsSubmitting(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 150));
+    setTimeout(() => {
       addBill(billData);
       toast.success('已保存，继续记账');
       setAmount('');
       setNote('');
-    } finally {
       setIsSubmitting(false);
-    }
+    }, 150);
   }, [buildBillData, addBill, toast]);
 
   const currentCategories = getCategoriesByType(activeTab);

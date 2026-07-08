@@ -1,34 +1,22 @@
 import { create } from 'zustand';
 
-export type ToastType = 'success' | 'error' | 'info' | 'warning';
-
-export interface ToastItem {
-  id: string;
+interface ToastState {
   message: string;
-  type: ToastType;
-  duration: number;
+  visible: boolean;
+  type: 'success' | 'error' | 'warning' | 'info';
+  show: (message: string, type?: ToastState['type']) => void;
+  hide: () => void;
 }
 
-interface ToastStore {
-  toasts: ToastItem[];
-  showToast: (message: string, type?: ToastType, duration?: number) => void;
-  removeToast: (id: string) => void;
-}
-
-export const useToastStore = create<ToastStore>((set, get) => ({
-  toasts: [],
-
-  showToast: (message, type = 'info', duration = 2000) => {
-    const id = crypto.randomUUID();
-    const newToast: ToastItem = { id, message, type, duration };
-    set({ toasts: [...get().toasts, newToast] });
-
+export const useToastStore = create<ToastState>((set) => ({
+  message: '',
+  visible: false,
+  type: 'success',
+  show: (message, type = 'success') => {
+    set({ message, visible: true, type });
     setTimeout(() => {
-      get().removeToast(id);
-    }, duration);
+      set({ visible: false });
+    }, 2000);
   },
-
-  removeToast: (id) => {
-    set({ toasts: get().toasts.filter((t) => t.id !== id) });
-  },
+  hide: () => set({ visible: false }),
 }));
