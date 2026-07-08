@@ -29,6 +29,8 @@ export default defineAppConfig({
       {
         pagePath: 'pages/statistics/index',
         text: '统计',
+        iconPath: 'assets/statistics-unselected.svg',
+        selectedIconPath: 'assets/statistics-selected.svg',
       },
       {
         pagePath: 'pages/profile/index',
