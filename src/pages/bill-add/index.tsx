@@ -88,16 +88,16 @@ export default function BillAdd() {
 
       {/* Bottom Form */}
       <View className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 pt-3 pb-3 shrink-0 safe-bottom">
-        {/* 备注 + 日期 + 金额：等高、横向均匀分布 */}
+        <input
+          type="text"
+          value={form.note}
+          onInput={(e) => form.setNote((e.target as any).value)}
+          placeholder="添加备注..."
+          className="w-full px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent focus:border-transparent rounded-btn text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 mb-2"
+          style={{ '--tw-ring-color': themeColor } as any}
+        />
+
         <View className="flex items-center gap-2 mb-3">
-          <input
-            type="text"
-            value={form.note}
-            onInput={(e) => form.setNote((e.target as any).value)}
-            placeholder="添加备注..."
-            className="flex-1 px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent focus:border-transparent rounded-btn text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2"
-            style={{ '--tw-ring-color': themeColor } as any}
-          />
           <View
             className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent rounded-btn text-sm font-medium text-gray-700 dark:text-gray-300"
             onClick={() => form.setShowDatePicker(true)}
@@ -105,16 +105,14 @@ export default function BillAdd() {
             <Icon name="Calendar" size={14} />
             <Text>{getShortDateLabel(form.date)}</Text>
           </View>
-          <View className="flex-1">
-            <input
-              type="digit"
-              value={form.amount}
-              onInput={(e) => form.setAmount((e.target as any).value)}
-              placeholder="0.00"
-              className="w-full px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent rounded-btn text-base font-bold text-gray-800 dark:text-gray-100 text-center focus:outline-none focus:ring-2"
-              style={{ '--tw-ring-color': themeColor } as any}
-            />
-          </View>
+          <input
+            type="digit"
+            value={form.amount}
+            onInput={(e) => form.setAmount((e.target as any).value)}
+            placeholder="0.00"
+            className="flex-1 px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent rounded-btn text-base font-bold text-gray-800 dark:text-gray-100 text-center focus:outline-none focus:ring-2"
+            style={{ '--tw-ring-color': themeColor } as any}
+          />
         </View>
 
         {/* 再记 / 保存：统一圆角、统一高度、统一字号 */}

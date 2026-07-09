@@ -39,7 +39,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      direction="bottom"
+      direction="right"
       title="筛选"
       showFooter
       confirmText="确定"

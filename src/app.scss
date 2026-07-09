@@ -67,6 +67,14 @@ page {
   scrollbar-width: none;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* 抽屉与遮罩动画 */
 .fade-enter {
   opacity: 0;

@@ -147,10 +147,7 @@ export default function Index() {
                 {periodLabel}暂无账单记录
               </Text>
               <Text className="text-sm text-gray-400 dark:text-gray-500 mt-2 text-center">
-                点击右下角按钮
-              </Text>
-              <Text className="text-sm text-gray-400 dark:text-gray-500 text-center">
-                添加第一笔账单
+                点击右下角按钮添加第一笔账单
               </Text>
             </View>
           )}
@@ -212,6 +209,7 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
       showFooter
       confirmText="确定"
       title="选择时间"
+      onConfirm={handleConfirm}
     >
       <View className="p-4">
         <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 mb-4">

@@ -16,19 +16,6 @@ function applyThemeClass(theme: Theme) {
   }
 }
 
-function updateTabBarTheme(theme: Theme, selectedColor: string) {
-  try {
-    Taro.setTabBarStyle({
-      color: theme === 'dark' ? '#6b7280' : '#9ca3af',
-      selectedColor,
-      backgroundColor: theme === 'dark' ? '#1f2937' : '#ffffff',
-      borderStyle: theme === 'dark' ? 'black' : 'white',
-    });
-  } catch {
-    // ignore
-  }
-}
-
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>('light');
 
@@ -47,8 +34,6 @@ export function useTheme() {
   useEffect(() => {
     Taro.setStorageSync('theme', theme);
     applyThemeClass(theme);
-    const selectedColor = Taro.getStorageSync('wallet-selected-color') || '#10b981';
-    updateTabBarTheme(theme, selectedColor);
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

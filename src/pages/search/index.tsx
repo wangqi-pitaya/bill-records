@@ -48,14 +48,10 @@ export default function Search() {
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      <View className="bg-white dark:bg-gray-800 px-4 py-2 flex items-center gap-2">
-        <View
-          className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-          onClick={() => Taro.navigateBack({ fail: () => Taro.switchTab({ url: '/pages/index/index' }) })}
-        >
-          <Icon name="ArrowLeft" size={20} />
-        </View>
-        <View className="flex-1 flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1.5">
+      <PageHeader title="搜索账单" rightIcon="Funnel" onRightClick={() => setShowFilter(true)} />
+
+      <View className="bg-white dark:bg-gray-800 px-4 py-3">
+        <View className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-2">
           <Icon name="Search" size={16} className="text-gray-400 mr-2" />
           <input
             type="text"
@@ -69,12 +65,6 @@ export default function Search() {
               <Icon name="X" size={16} className="text-gray-400" />
             </View>
           )}
-        </View>
-        <View
-          className="w-8 h-8 flex items-center justify-center active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-          onClick={() => setShowFilter(true)}
-        >
-          <Icon name="Funnel" size={20} className="text-gray-700 dark:text-gray-300" />
         </View>
       </View>
 

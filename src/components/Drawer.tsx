@@ -20,6 +20,7 @@ interface DrawerProps {
   width?: string;
   height?: string;
   children?: React.ReactNode;
+  themeColor?: string;
 }
 
 const positionClasses: Record<Direction, string> = {
@@ -66,6 +67,7 @@ export function Drawer({
   width,
   height,
   children,
+  themeColor = '#10b981',
 }: DrawerProps) {
   const [mounted, setMounted] = useState(isOpen);
   const [entered, setEntered] = useState(false);
@@ -86,9 +88,9 @@ export function Drawer({
   if (!mounted) return null;
 
   const confirmColors = {
-    primary: 'bg-blue-500 active:bg-blue-600',
-    danger: 'bg-red-500 active:bg-red-600',
-    warning: 'bg-amber-500 active:bg-amber-600',
+    primary: themeColor,
+    danger: '#ef4444',
+    warning: '#f59e0b',
   };
 
   const isHorizontal = direction === 'left' || direction === 'right';
@@ -137,7 +139,8 @@ export function Drawer({
               <Text>{cancelText}</Text>
             </View>
             <View
-              className={`flex-1 h-12 text-white text-base flex items-center justify-center ${confirmColors[confirmVariant]} ${confirmDisabled ? 'opacity-50' : ''}`}
+              className={`flex-1 h-12 text-white text-base flex items-center justify-center ${confirmDisabled ? 'opacity-50' : ''}`}
+              style={{ backgroundColor: confirmColors[confirmVariant] }}
               onClick={() => {
                 if (!confirmDisabled) onConfirm?.();
               }}

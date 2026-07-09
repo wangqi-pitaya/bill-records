@@ -21,7 +21,6 @@ export function StatCard({ income, expense, balance, color = '#3b82f6', showHead
         <View className="flex items-start justify-between mb-4">
           <View className="flex flex-col">
             <Text className="text-xs text-white/80">结余</Text>
-            <Text className="text-sm text-white/80 mt-0.5">{positive ? '本月结余' : '本月超支'}</Text>
           </View>
           <Text className="text-2xl font-bold text-white">
             {positive ? '+' : ''}{formatMoney(balance)}

@@ -12,6 +12,7 @@ interface ModalProps {
   confirmDisabled?: boolean;
   confirmVariant?: 'primary' | 'danger' | 'warning';
   onConfirm?: () => void;
+  themeColor?: string;
 }
 
 export function Modal({
@@ -25,13 +26,14 @@ export function Modal({
   confirmDisabled = false,
   confirmVariant = 'primary',
   onConfirm,
+  themeColor = '#10b981',
 }: ModalProps) {
   if (!isOpen) return null;
 
   const confirmColors = {
-    primary: 'bg-blue-500 active:bg-blue-600',
-    danger: 'bg-red-500 active:bg-red-600',
-    warning: 'bg-amber-500 active:bg-amber-600',
+    primary: themeColor,
+    danger: '#ef4444',
+    warning: '#f59e0b',
   };
 
   return (
@@ -52,7 +54,8 @@ export function Modal({
               <Text>{cancelText}</Text>
             </View>
             <View
-              className={`flex-1 h-[96rpx] text-white text-base border-0 rounded-none flex items-center justify-center ${confirmColors[confirmVariant]} ${confirmDisabled ? 'opacity-50' : ''}`}
+              className={`flex-1 h-[96rpx] text-white text-base border-0 rounded-none flex items-center justify-center ${confirmDisabled ? 'opacity-50' : ''}`}
+              style={{ backgroundColor: confirmColors[confirmVariant] }}
               onClick={() => {
                 if (!confirmDisabled) onConfirm?.();
               }}

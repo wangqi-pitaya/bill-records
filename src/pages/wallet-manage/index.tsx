@@ -7,13 +7,14 @@ import { useToast } from '../../hooks/useToast';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
+import { Drawer } from '../../components/Drawer';
 import { Wallet } from '../../types';
 
 const colors = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
 export default function WalletManage() {
   const { wallets, currentWalletId, setCurrentWallet, addWallet, updateWallet, deleteWallet } = useWalletStore();
-  const { getStatistics, clearBillsByWalletId, migrateBills } = useBillStore();
+  const { clearBillsByWalletId, migrateBills } = useBillStore();
   const toast = useToast();
 
   const [showAdd, setShowAdd] = useState(false);
@@ -74,11 +75,6 @@ export default function WalletManage() {
 
   const handleDelete = () => {
     if (!selectedWallet) return;
-    if (selectedWallet.isDefault) {
-      toast.error('默认账本不能删除');
-      setShowDeleteConfirm(false);
-      return;
-    }
     deleteWallet(selectedWallet.id);
     setShowDeleteConfirm(false);
     setShowSettings(false);
@@ -106,75 +102,53 @@ export default function WalletManage() {
       <PageHeader title="账本管理" rightIcon="Plus" onRightClick={openAdd} />
       <ScrollView scrollY className="flex-1 pb-4">
         <View className="px-4 py-4 space-y-3">
-          {wallets.map((wallet) => {
-            const stats = getStatistics(wallet.id);
-            return (
-              <View
-                key={wallet.id}
-                className="rounded-card shadow-card overflow-hidden"
-                style={{ backgroundColor: wallet.color }}
-              >
-                <View className="p-4">
-                  <View className="flex items-center justify-between mb-2">
-                    <View className="flex items-center gap-2">
-                      <Text className="text-lg font-bold text-white">{wallet.name}</Text>
-                      {wallet.isDefault && (
-                        <View className="px-2 py-0.5 rounded-full bg-white/20">
-                          <Text className="text-xs text-white">默认</Text>
-                        </View>
-                      )}
-                    </View>
-                    <View
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
-                      onClick={() => openSettings(wallet)}
-                    >
-                      <Icon name="Settings" size={16} color="#fff" />
-                    </View>
+          {wallets.map((wallet) => (
+            <View
+              key={wallet.id}
+              className="rounded-card shadow-card overflow-hidden"
+              style={{ backgroundColor: wallet.color }}
+            >
+              <View className="p-4">
+                <View className="flex items-center justify-between">
+                  <View className="flex items-center gap-2">
+                    <Text className="text-lg font-bold text-white">{wallet.name}</Text>
+                    {wallet.isDefault && (
+                      <View className="px-2 py-0.5 rounded-full bg-white/20">
+                        <Text className="text-xs text-white">默认</Text>
+                      </View>
+                    )}
                   </View>
-                  <Text className="text-sm text-white/80 mb-3">{wallet.description}</Text>
-                  <View className="flex justify-between items-end">
-                    <View className="flex gap-4">
-                      <View>
-                        <Text className="text-xs text-white/70">收入</Text>
-                        <Text className="text-sm font-semibold text-white">+{stats.income.toFixed(2)}</Text>
-                      </View>
-                      <View>
-                        <Text className="text-xs text-white/70">支出</Text>
-                        <Text className="text-sm font-semibold text-white">-{stats.expense.toFixed(2)}</Text>
-                      </View>
-                    </View>
+                  <View className="flex items-center gap-2">
                     {currentWalletId === wallet.id ? (
-                      <View className="px-3 py-1 rounded-full bg-white/20">
-                        <Text className="text-xs text-white font-medium">当前使用</Text>
+                      <View className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20">
+                        <Icon name="Check" size={16} color="#fff" />
                       </View>
                     ) : (
                       <View
-                        className="px-3 py-1 rounded-full bg-white/20 active:bg-white/30"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
                         onClick={() => {
                           setCurrentWallet(wallet.id);
                           toast.success('已切换');
                         }}
                       >
-                        <Text className="text-xs text-white font-medium">切换</Text>
+                        <Icon name="ArrowRight" size={16} color="#fff" />
                       </View>
                     )}
+                    <View
+                      className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 active:bg-white/30"
+                      onClick={() => openSettings(wallet)}
+                    >
+                      <Icon name="MoreHorizontal" size={16} color="#fff" />
+                    </View>
                   </View>
                 </View>
+                <Text className="text-sm text-white/80 mt-2">{wallet.description}</Text>
               </View>
-            );
-          })}
-
-          <View
-            className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 flex items-center justify-center gap-2 active:bg-gray-50 dark:active:bg-gray-700"
-            onClick={openAdd}
-          >
-            <Icon name="Plus" size={20} className="text-blue-500" />
-            <Text className="text-sm font-medium text-blue-500">添加账本</Text>
-          </View>
+            </View>
+          ))}
         </View>
       </ScrollView>
 
-      {/* Add/Edit Modal */}
       <Modal
         isOpen={showAdd || showEdit}
         onClose={() => { setShowAdd(false); setShowEdit(false); }}
@@ -220,13 +194,13 @@ export default function WalletManage() {
         </View>
       </Modal>
 
-      {/* Settings Modal */}
-      <Modal
+      <Drawer
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
-        title="账本设置"
+        direction="bottom"
+        title={`${selectedWallet?.name}设置`}
       >
-        <View className="space-y-2 py-2">
+        <View className="px-4 py-2 space-y-2">
           <View
             className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600"
             onClick={() => {
@@ -252,7 +226,7 @@ export default function WalletManage() {
             onClick={() => { setShowSettings(false); setShowMigrate(true); }}
           >
             <Icon name="ArrowRightLeft" size={16} className="text-blue-500" />
-            <Text className="text-sm text-gray-700 dark:text-gray-300">迁移账本</Text>
+            <Text className="text-sm text-gray-700 dark:text-gray-300">迁移账单</Text>
           </View>
           <View
             className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600"
@@ -261,21 +235,22 @@ export default function WalletManage() {
             <Icon name="Eraser" size={16} className="text-amber-500" />
             <Text className="text-sm text-gray-700 dark:text-gray-300">清除账单</Text>
           </View>
-          <View
-            className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600"
-            onClick={() => { setShowSettings(false); setShowDeleteConfirm(true); }}
-          >
-            <Icon name="Trash2" size={16} className="text-red-500" />
-            <Text className="text-sm text-red-500">删除账本</Text>
-          </View>
+          {!selectedWallet?.isDefault && (
+            <View
+              className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600"
+              onClick={() => { setShowSettings(false); setShowDeleteConfirm(true); }}
+            >
+              <Icon name="Trash2" size={16} className="text-red-500" />
+              <Text className="text-sm text-red-500">删除账本</Text>
+            </View>
+          )}
         </View>
-      </Modal>
+      </Drawer>
 
-      {/* Migrate Modal */}
       <Modal
         isOpen={showMigrate}
         onClose={() => setShowMigrate(false)}
-        title="迁移账本"
+        title="迁移账单"
         showFooter
         confirmText="迁移"
         onConfirm={handleMigrate}
