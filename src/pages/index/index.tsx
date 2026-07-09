@@ -178,15 +178,16 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
 
   const handleDateChange = (dateStr: string) => {
     setTempDate(dateStr);
+  };
+
+  const handleConfirm = () => {
+    const [y, m] = tempDate.split('-').map(Number);
     if (mode === 'month') {
-      const [y, m] = dateStr.split('-').map(Number);
       onConfirm(y, m);
-      onClose();
     } else {
-      const [y] = dateStr.split('-').map(Number);
       onConfirm(y, null);
-      onClose();
     }
+    onClose();
   };
 
   return (
@@ -195,7 +196,10 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
       onClose={onClose}
       direction="top"
       showClose={false}
-      showFooter={false}
+      showFooter
+      confirmText="确定"
+      onConfirm={handleConfirm}
+      themeColor={themeColor}
     >
       <View className="p-4">
         <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 mb-4">

@@ -45,10 +45,10 @@ const enterTransformActive: Record<Direction, string> = {
 };
 
 const sizeClasses: Record<Direction, { dim: string; size: string }> = {
-  top: { dim: 'w-full', size: 'h-auto max-h-[80vh]' },
-  bottom: { dim: 'w-full', size: 'h-auto max-h-[80vh]' },
-  left: { dim: 'h-full', size: 'w-[80%] max-w-[640rpx]' },
-  right: { dim: 'h-full', size: 'w-[80%] max-w-[640rpx]' },
+  top: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
+  bottom: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
+  left: { dim: 'h-full', size: 'w-[85%] max-w-[700rpx]' },
+  right: { dim: 'h-full', size: 'w-[85%] max-w-[700rpx]' },
 };
 
 export function Drawer({

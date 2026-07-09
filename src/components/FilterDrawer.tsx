@@ -5,13 +5,6 @@ import { useWalletStore } from '../store/useWalletStore';
 import { Drawer } from './Drawer';
 import { CalendarRangePicker } from './Calendar';
 
-interface FilterDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  filters: FilterOptions;
-  onConfirm: (filters: FilterOptions) => void;
-}
-
 const datePresets: { key: FilterOptions['datePreset']; label: string }[] = [
   { key: 'all', label: '全部' },
   { key: 'thisMonth', label: '本月' },
@@ -60,7 +53,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm, themeColor =
       onConfirm={handleConfirm}
       themeColor={themeColor}
     >
-      <ScrollView scrollY className="max-h-[800rpx]">
+      <ScrollView scrollY className="max-h-[600rpx]">
         <View className="space-y-6 py-2 px-4">
           {/* Wallet filter */}
           <View>
@@ -132,15 +125,15 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm, themeColor =
           </View>
         </View>
       </ScrollView>
-
-      <CalendarRangePicker
-        isOpen={showRangePicker}
-        startValue={localFilters.startDate}
-        endValue={localFilters.endDate}
-        onConfirm={handleRangeConfirm}
-        onClose={() => setShowRangePicker(false)}
-        themeColor={themeColor}
-      />
     </Drawer>
+
+    <CalendarRangePicker
+      isOpen={showRangePicker}
+      startValue={localFilters.startDate}
+      endValue={localFilters.endDate}
+      onConfirm={handleRangeConfirm}
+      onClose={() => setShowRangePicker(false)}
+      themeColor={themeColor}
+    />
   );
 }
