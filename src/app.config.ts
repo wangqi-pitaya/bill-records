@@ -1,6 +1,7 @@
 export default defineAppConfig({
   pages: [
     'pages/index/index',
+    'pages/bill-add/index',
     'pages/statistics/index',
     'pages/profile/index',
     'pages/search/index',
