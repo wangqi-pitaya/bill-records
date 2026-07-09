@@ -60,5 +60,10 @@
     "tailwindcss": "^3.4.4",
     "typescript": "^5.4.0",
     "webpack": "^5.91.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "webpack": "5.94.0"
+    }
   }
 }
