@@ -15,11 +15,13 @@ export function ToastContainer() {
 
   return (
     <View
-      className="fixed left-0 right-0 z-[100] pointer-events-none flex items-center justify-center"
+      className="fixed left-0 right-0 z-[200] pointer-events-none"
       style={{ top: '120rpx' }}
     >
-      <View className={`px-5 py-2.5 rounded-lg ${typeStyles[type]} shadow-lg max-w-[80%]`}>
-        <Text className="text-white text-sm font-medium text-center block">{message}</Text>
+      <View className="flex items-center justify-center">
+        <View className={`px-5 py-2.5 rounded-lg ${typeStyles[type]} shadow-lg max-w-[80%]`}>
+          <Text className="text-white text-sm font-medium text-center block">{message}</Text>
+        </View>
       </View>
     </View>
   );

@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import { useState, useEffect } from 'react';
 import { FilterOptions } from '../types';
 import { useWalletStore } from '../store/useWalletStore';
-import { Modal } from './Modal';
+import { Drawer } from './Drawer';
 
 interface FilterDrawerProps {
   isOpen: boolean;
@@ -17,6 +17,7 @@ const datePresets: { key: FilterOptions['datePreset']; label: string }[] = [
   { key: 'lastMonth', label: '上月' },
   { key: 'thisYear', label: '今年' },
   { key: 'lastYear', label: '去年' },
+  { key: 'custom', label: '自定义' },
 ];
 
 export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDrawerProps) {
@@ -35,16 +36,17 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
   };
 
   return (
-    <Modal
+    <Drawer
       isOpen={isOpen}
       onClose={onClose}
+      direction="bottom"
       title="筛选"
       showFooter
       confirmText="确定"
       onConfirm={handleConfirm}
     >
       <ScrollView scrollY className="max-h-[800rpx]">
-        <View className="space-y-6 py-2">
+        <View className="space-y-6 py-2 px-4">
           {/* Wallet filter */}
           <View>
             <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">账本</Text>
@@ -93,9 +95,35 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
                 </View>
               ))}
             </View>
+
+            {/* Custom date range inputs */}
+            {localFilters.datePreset === 'custom' && (
+              <View className="mt-4 space-y-3">
+                <View className="flex gap-2">
+                  <View className="flex-1">
+                    <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 block">开始日期</Text>
+                    <input
+                      type="date"
+                      value={localFilters.startDate}
+                      onInput={(e) => setLocalFilters((prev) => ({ ...prev, startDate: (e.target as any).value }))}
+                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 block">结束日期</Text>
+                    <input
+                      type="date"
+                      value={localFilters.endDate}
+                      onInput={(e) => setLocalFilters((prev) => ({ ...prev, endDate: (e.target as any).value }))}
+                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
-    </Modal>
+    </Drawer>
   );
 }

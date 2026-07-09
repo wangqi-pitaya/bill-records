@@ -5,7 +5,6 @@ import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useTheme } from '../../hooks/useTheme';
 import { useToast } from '../../hooks/useToast';
-import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 
@@ -125,7 +124,6 @@ export default function Profile() {
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
-      <PageHeader title="我的" showBack={false} background="bg-white dark:bg-gray-800" />
       <View className="bg-white dark:bg-gray-800 px-4 pt-4 pb-6">
         <View className="flex items-center gap-4">
           <View className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: themeColor }}>

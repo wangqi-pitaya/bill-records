@@ -175,6 +175,7 @@ export default function Index() {
             dateFilter.setSelectedMonth(month);
           }
         }}
+        themeColor={themeColor}
       />
     </View>
   );
@@ -186,9 +187,10 @@ interface DatePickerDrawerProps {
   selectedYear: number;
   selectedMonth: number | null;
   onConfirm: (year: number, month: number | null) => void;
+  themeColor?: string;
 }
 
-function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm }: DatePickerDrawerProps) {
+function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm, themeColor = '#10b981' }: DatePickerDrawerProps) {
   const [mode, setMode] = useState<'year' | 'month'>(selectedMonth === null ? 'year' : 'month');
   const [tempYear, setTempYear] = useState(selectedYear);
   const [tempMonth, setTempMonth] = useState(selectedMonth || 1);
