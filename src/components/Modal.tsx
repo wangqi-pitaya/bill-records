@@ -1,4 +1,4 @@
-import { View, Text, Button } from '@tarojs/components';
+import { View, Text } from '@tarojs/components';
 import { Icon } from './Icon';
 
 interface ModalProps {
@@ -8,6 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
   showFooter?: boolean;
   confirmText?: string;
+  cancelText?: string;
   confirmDisabled?: boolean;
   confirmVariant?: 'primary' | 'danger' | 'warning';
   onConfirm?: () => void;
@@ -20,6 +21,7 @@ export function Modal({
   children,
   showFooter = false,
   confirmText = '确定',
+  cancelText = '取消',
   confirmDisabled = false,
   confirmVariant = 'primary',
   onConfirm,
@@ -27,9 +29,9 @@ export function Modal({
   if (!isOpen) return null;
 
   const confirmColors = {
-    primary: 'bg-blue-500',
-    danger: 'bg-red-500',
-    warning: 'bg-amber-500',
+    primary: 'bg-blue-500 active:bg-blue-600',
+    danger: 'bg-red-500 active:bg-red-600',
+    warning: 'bg-amber-500 active:bg-amber-600',
   };
 
   return (
@@ -42,19 +44,22 @@ export function Modal({
         <View className="px-6 py-2">{children}</View>
         {showFooter && (
           <View className="flex border-t border-gray-100 dark:border-gray-700 mt-2">
-            <Button
-              className="flex-1 h-[96rpx] text-gray-600 dark:text-gray-300 text-base bg-transparent border-0 rounded-none after:border-0 flex items-center justify-center"
+            <View
+              className="flex-1 h-[96rpx] text-gray-600 dark:text-gray-300 text-base bg-transparent active:bg-gray-50 dark:active:bg-gray-700/50 flex items-center justify-center border-0 rounded-none"
               onClick={onClose}
+              hoverClass=""
             >
-              取消
-            </Button>
-            <Button
-              className={`flex-1 h-[96rpx] text-white text-base border-0 rounded-none after:border-0 flex items-center justify-center ${confirmColors[confirmVariant]} ${confirmDisabled ? 'opacity-50' : ''}`}
-              onClick={onConfirm}
-              disabled={confirmDisabled}
+              <Text>{cancelText}</Text>
+            </View>
+            <View
+              className={`flex-1 h-[96rpx] text-white text-base border-0 rounded-none flex items-center justify-center ${confirmColors[confirmVariant]} ${confirmDisabled ? 'opacity-50' : ''}`}
+              onClick={() => {
+                if (!confirmDisabled) onConfirm?.();
+              }}
+              hoverClass=""
             >
-              {confirmText}
-            </Button>
+              <Text className="text-white">{confirmText}</Text>
+            </View>
           </View>
         )}
       </View>

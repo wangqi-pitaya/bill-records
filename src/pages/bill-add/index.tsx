@@ -1,39 +1,27 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillForm } from '../../hooks/useBillForm';
+import { useBillStore } from '../../store/useBillStore';
 import { CategoryGrid } from '../../components/CategoryGrid';
 import { CalendarPicker } from '../../components/Calendar';
 import { Icon } from '../../components/Icon';
 import { Bill } from '../../types';
 import { getShortDateLabel } from '../../lib/utils';
 
-interface PageParams {
-  billId?: string;
-}
-
 export default function BillAdd() {
-  const [params] = useState<PageParams>(() => {
-    // Taro H5: 读取 URL query
+  // 解析 URL 参数：H5 通过 router.params 读取
+  const billId = (() => {
     try {
       const router = Taro.getCurrentInstance()?.router;
-      const q = router?.params || {};
-      return { billId: q.billId };
+      return router?.params?.billId;
     } catch {
-      return {};
+      return undefined;
     }
-  });
+  })();
 
-  // 编辑模式：仅用于读取展示，不在编辑页直接更新 store
-  const [editBill] = useState<Bill | null>(() => {
-    if (!params.billId) return null;
-    try {
-      const bills = Taro.getStorageSync<Bill[]>('bill-records') || [];
-      return bills.find((b) => b.id === params.billId) || null;
-    } catch {
-      return null;
-    }
-  });
+  const getBillById = useBillStore((s) => s.getBillById);
+  const editBill = useMemo<Bill | null>(() => (billId ? getBillById(billId) || null : null), [billId, getBillById]);
 
   const form = useBillForm({
     editBill: editBill || undefined,
