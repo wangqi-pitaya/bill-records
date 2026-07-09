@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
-import Taro from '@tarojs/taro';
 import { BillType, Category } from '../../types';
 import { useCategoryStore } from '../../store/useCategoryStore';
-import { useToast } from '../../hooks/useToast';
 import { useWalletStore } from '../../store/useWalletStore';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
@@ -14,7 +12,6 @@ export default function CategoryManage() {
   const [tab, setTab] = useState<BillType>('expense');
   const [showAdd, setShowAdd] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showIconPicker, setShowIconPicker] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedIcon, setSelectedIcon] = useState('MoreHorizontal');
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
@@ -22,22 +19,15 @@ export default function CategoryManage() {
   const { categories, addCategory, deleteCategory, isCategoryUsed, moveCategoryUp, moveCategoryDown } = useCategoryStore();
   const { currentWalletId, wallets } = useWalletStore();
   const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
-  const toast = useToast();
 
   const filteredCategories = categories.filter((c) => c.type === tab);
 
   const handleAdd = () => {
-    if (!newCategoryName.trim()) {
-      toast.error('请输入分类名称');
-      return;
-    }
+    if (!newCategoryName.trim()) return;
     const exists = categories.some(
       (c) => c.type === tab && c.name === newCategoryName.trim()
     );
-    if (exists) {
-      toast.error('分类已存在');
-      return;
-    }
+    if (exists) return;
     addCategory({
       name: newCategoryName.trim(),
       icon: selectedIcon,
@@ -46,32 +36,31 @@ export default function CategoryManage() {
     setNewCategoryName('');
     setSelectedIcon('MoreHorizontal');
     setShowAdd(false);
-    toast.success('分类已添加');
   };
 
   const handleDeleteRequest = (cat: Category) => {
     setDeleteTarget(cat);
-    if (isCategoryUsed(cat.name)) {
-      toast.error('该分类已被使用，无法删除');
-      return;
-    }
+    if (isCategoryUsed(cat.name)) return;
     setShowDeleteConfirm(true);
   };
 
   const handleDelete = () => {
     if (deleteTarget) {
-      const success = deleteCategory(deleteTarget.id);
-      if (success) {
-        toast.success('分类已删除');
-      }
+      deleteCategory(deleteTarget.id);
       setShowDeleteConfirm(false);
       setDeleteTarget(null);
     }
   };
 
+  const openAdd = () => {
+    setNewCategoryName('');
+    setSelectedIcon('MoreHorizontal');
+    setShowAdd(true);
+  };
+
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      <PageHeader title="分类管理" />
+      <PageHeader title="分类管理" rightIcon="Plus" onRightClick={openAdd} />
 
       <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
         <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
@@ -98,7 +87,7 @@ export default function CategoryManage() {
         </View>
       </View>
 
-      <ScrollView scrollY className="flex-1 overflow-hidden scrollbar-hide">
+      <ScrollView scrollY className="flex-1 overflow-hidden">
         <View className="px-4 py-4">
           <View className="grid grid-cols-4 gap-3">
             {filteredCategories.map((cat, index) => (
@@ -142,15 +131,6 @@ export default function CategoryManage() {
                 </View>
               </View>
             ))}
-            <View
-              className="bg-white dark:bg-gray-800 rounded-card shadow-card p-3 flex flex-col items-center gap-2 active:bg-gray-50 dark:active:bg-gray-700"
-              onClick={() => setShowAdd(true)}
-            >
-              <View className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
-                <Icon name="Plus" size={20} style={{ color: themeColor }} />
-              </View>
-              <Text className="text-xs font-medium text-center" style={{ color: themeColor }}>添加分类</Text>
-            </View>
           </View>
         </View>
       </ScrollView>
@@ -176,22 +156,24 @@ export default function CategoryManage() {
           </View>
           <View>
             <Text className="text-sm text-gray-700 dark:text-gray-300 mb-2 block">图标</Text>
-            <View className="grid grid-cols-6 gap-2">
-              {availableIcons.map((icon) => (
-                <View
-                  key={icon}
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                    selectedIcon === icon
-                      ? 'text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }`}
-                  style={selectedIcon === icon ? { backgroundColor: themeColor } : undefined}
-                  onClick={() => setSelectedIcon(icon)}
-                >
-                  <Icon name={icon} size={18} color={selectedIcon === icon ? '#fff' : 'currentColor'} />
-                </View>
-              ))}
-            </View>
+            <ScrollView scrollY className="max-h-[300px]">
+              <View className="grid grid-cols-6 gap-x-2 gap-y-3">
+                {availableIcons.map((icon) => (
+                  <View
+                    key={icon}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      selectedIcon === icon
+                        ? 'text-white'
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                    }`}
+                    style={selectedIcon === icon ? { backgroundColor: themeColor } : undefined}
+                    onClick={() => setSelectedIcon(icon)}
+                  >
+                    <Icon name={icon} size={18} color={selectedIcon === icon ? '#fff' : 'currentColor'} />
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>

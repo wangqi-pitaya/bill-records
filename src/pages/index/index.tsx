@@ -3,8 +3,6 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
-import { useTheme } from '../../hooks/useTheme';
-import { useToast } from '../../hooks/useToast';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { StatCard } from '../../components/StatCard';
 import { BillItem } from '../../components/BillItem';
@@ -22,8 +20,6 @@ import {
 export default function Index() {
   const { bills: allBills, softDeleteBill } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
-  const { isDark, toggleTheme } = useTheme();
-  const toast = useToast();
   const dateFilter = useDateFilter();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -67,13 +63,7 @@ export default function Index() {
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Custom Header */}
       <View className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm">
-        <View className="h-12 flex items-center justify-between">
-          <View
-            className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-            onClick={() => Taro.navigateTo({ url: '/pages/wallet-manage/index' })}
-          >
-            <Icon name="Menu" size={20} />
-          </View>
+        <View className="h-12 flex items-center justify-center">
           <View
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg active:bg-gray-100 dark:active:bg-gray-700"
             onClick={() => setShowDatePicker(true)}
@@ -83,16 +73,10 @@ export default function Index() {
             </Text>
             <Icon name="ChevronDown" size={16} className="text-gray-500 dark:text-gray-400" />
           </View>
-          <View
-            className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-            onClick={toggleTheme}
-          >
-            <Icon name={isDark ? 'Sun' : 'Moon'} size={20} />
-          </View>
         </View>
       </View>
 
-      <ScrollView scrollY className="pt-12 pb-20">
+      <ScrollView scrollY className="pt-12 pb-12">
         <View className="px-4 py-4 space-y-4">
           <StatCard
             income={yearStatistics.income}
@@ -129,7 +113,6 @@ export default function Index() {
                         bill={bill}
                         onDelete={(id) => {
                           softDeleteBill(id);
-                          toast.success('账单已删除，可在回收站找回');
                         }}
                         onEdit={handleEdit}
                         isLast={idx === group.bills.length - 1}
@@ -172,7 +155,6 @@ export default function Index() {
             dateFilter.setSelectedMonth(month);
           }
         }}
-        themeColor={themeColor}
       />
     </View>
   );
@@ -184,10 +166,9 @@ interface DatePickerDrawerProps {
   selectedYear: number;
   selectedMonth: number | null;
   onConfirm: (year: number, month: number | null) => void;
-  themeColor?: string;
 }
 
-function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm, themeColor = '#10b981' }: DatePickerDrawerProps) {
+function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm }: DatePickerDrawerProps) {
   const [mode, setMode] = useState<'year' | 'month'>(selectedMonth === null ? 'year' : 'month');
   const [tempYear, setTempYear] = useState(selectedYear);
   const [tempMonth, setTempMonth] = useState(selectedMonth || 1);
@@ -208,7 +189,6 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
       showClose={false}
       showFooter
       confirmText="确定"
-      title="选择时间"
       onConfirm={handleConfirm}
     >
       <View className="p-4">
@@ -218,18 +198,16 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
               mode === 'year' ? 'bg-white dark:bg-gray-600 shadow-sm' : 'text-gray-600 dark:text-gray-400'
             }`}
             onClick={() => setMode('year')}
-            style={mode === 'year' ? { color: themeColor } : undefined}
           >
-            <Text>按年</Text>
+            <Text>年</Text>
           </View>
           <View
             className={`flex-1 py-2 rounded-md text-sm font-medium text-center transition-colors ${
               mode === 'month' ? 'bg-white dark:bg-gray-600 shadow-sm' : 'text-gray-600 dark:text-gray-400'
             }`}
             onClick={() => setMode('month')}
-            style={mode === 'month' ? { color: themeColor } : undefined}
           >
-            <Text>按月</Text>
+            <Text>月</Text>
           </View>
         </View>
 
@@ -241,13 +219,12 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
                   key={y}
                   className={`py-3 rounded-md text-center text-sm transition-colors ${
                     tempYear === y
-                      ? 'text-white'
+                      ? 'bg-blue-500 text-white'
                       : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                   }`}
-                  style={tempYear === y ? { backgroundColor: themeColor } : undefined}
                   onClick={() => setTempYear(y)}
                 >
-                  <Text className={tempYear === y ? 'text-white' : 'text-gray-700 dark:text-gray-300'}>{y}年</Text>
+                  <Text>{y}年</Text>
                 </View>
               ))}
             </View>
@@ -259,13 +236,12 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
                     key={y}
                     className={`py-2 rounded-md text-center text-sm transition-colors ${
                       tempYear === y
-                        ? 'text-white'
+                        ? 'bg-blue-500 text-white'
                         : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                     }`}
-                    style={tempYear === y ? { backgroundColor: themeColor } : undefined}
                     onClick={() => setTempYear(y)}
                   >
-                    <Text className={tempYear === y ? 'text-white' : 'text-gray-700 dark:text-gray-300'}>{y}年</Text>
+                    <Text>{y}年</Text>
                   </View>
                 ))}
               </View>
@@ -275,13 +251,12 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
                     key={m}
                     className={`py-3 rounded-md text-center text-sm transition-colors ${
                       tempMonth === m && tempYear === selectedYear
-                        ? 'text-white'
+                        ? 'bg-blue-500 text-white'
                         : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
                     }`}
-                    style={tempMonth === m && tempYear === selectedYear ? { backgroundColor: themeColor } : undefined}
                     onClick={() => setTempMonth(m)}
                   >
-                    <Text className={tempMonth === m && tempYear === selectedYear ? 'text-white' : 'text-gray-700 dark:text-gray-300'}>{m}月</Text>
+                    <Text>{m}月</Text>
                   </View>
                 ))}
               </View>

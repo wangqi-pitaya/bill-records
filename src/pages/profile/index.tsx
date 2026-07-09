@@ -4,7 +4,6 @@ import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useTheme } from '../../hooks/useTheme';
-import { useToast } from '../../hooks/useToast';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 
@@ -12,7 +11,6 @@ export default function Profile() {
   const { bills } = useBillStore();
   const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
-  const toast = useToast();
 
   const [nickname, setNickname] = useState('用户');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -21,9 +19,6 @@ export default function Profile() {
   const [importJson, setImportJson] = useState('');
   const [showNicknameModal, setShowNicknameModal] = useState(false);
   const [tempNickname, setTempNickname] = useState('');
-
-  const currentWallet = wallets.find((w) => w.id === currentWalletId);
-  const themeColor = currentWallet?.color || '#3b82f6';
 
   const activeBills = bills.filter((b) => !b.deleted);
   const allBillDates = [...new Set(activeBills.map((b) => b.date))].sort();
@@ -34,39 +29,8 @@ export default function Profile() {
   const startDate = firstBillDate ? new Date(firstBillDate) : now;
   const usageDays = Math.max(1, Math.ceil((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1);
 
-  const exportData = () => {
-    const data = {
-      bills,
-      wallets,
-      exportDate: new Date().toISOString(),
-    };
-    const json = JSON.stringify(data, null, 2);
-    setShowExportModal(false);
-    toast.success('数据已导出');
-  };
-
-  const importData = () => {
-    try {
-      if (!importJson.trim()) {
-        toast.error('请输入数据');
-        return;
-      }
-      const data = JSON.parse(importJson);
-      if (data.bills && Array.isArray(data.bills)) {
-        setShowImportModal(false);
-        setImportJson('');
-        toast.success('数据导入成功');
-      } else {
-        toast.error('数据格式错误');
-      }
-    } catch {
-      toast.error('JSON格式错误');
-    }
-  };
-
   const handleClear = () => {
     setShowClearConfirm(false);
-    toast.success('数据已清除');
   };
 
   const actionItems = [
@@ -110,7 +74,6 @@ export default function Profile() {
         <Switch
           checked={isDark}
           onChange={toggleTheme}
-          color={themeColor}
         />
       ),
     },
@@ -125,9 +88,9 @@ export default function Profile() {
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
       <View className="bg-white dark:bg-gray-800 px-4 pt-4 pb-6">
-        <View className="flex items-center gap-4">
-          <View className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: themeColor }}>
-            <Text className="text-2xl font-bold text-white">{nickname[0]}</Text>
+        <View className="flex items-center gap-3">
+          <View className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500">
+            <Text className="text-lg font-bold text-white">{nickname[0]}</Text>
           </View>
           <View className="flex-1">
             <View className="flex items-center gap-2">
@@ -136,7 +99,6 @@ export default function Profile() {
                 <Icon name="Pencil" size={14} className="text-gray-400" />
               </View>
             </View>
-            <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">记账本用户</Text>
           </View>
         </View>
       </View>
@@ -144,15 +106,15 @@ export default function Profile() {
       <View className="px-4 py-4">
         <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 flex justify-around">
           <View className="flex flex-col items-center">
-            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100" style={{ color: themeColor }}>{usageDays}</Text>
+            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100">{usageDays}</Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">使用天数</Text>
           </View>
           <View className="flex flex-col items-center">
-            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100" style={{ color: themeColor }}>{totalDays}</Text>
+            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100">{totalDays}</Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账天数</Text>
           </View>
           <View className="flex flex-col items-center">
-            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100" style={{ color: themeColor }}>{activeBills.length}</Text>
+            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100">{activeBills.length}</Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账笔数</Text>
           </View>
         </View>
@@ -167,8 +129,8 @@ export default function Profile() {
               onClick={item.onClick}
             >
               <View className="flex items-center gap-3">
-                <View className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
-                  <Icon name={item.icon} size={16} style={{ color: themeColor }} />
+                <View className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500/10">
+                  <Icon name={item.icon} size={16} className="text-blue-500" />
                 </View>
                 <Text className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</Text>
               </View>
@@ -185,8 +147,8 @@ export default function Profile() {
               onClick={item.onClick}
             >
               <View className="flex items-center gap-3">
-                <View className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? 'bg-red-500/10' : ''}`} style={!item.danger ? { backgroundColor: `${themeColor}20` } : undefined}>
-                  <Icon name={item.icon} size={16} className={item.danger ? 'text-red-500' : ''} style={!item.danger ? { color: themeColor } : undefined} />
+                <View className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
+                  <Icon name={item.icon} size={16} className={item.danger ? 'text-red-500' : 'text-blue-500'} />
                 </View>
                 <Text className={`text-sm font-medium ${item.danger ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>{item.label}</Text>
               </View>
@@ -206,7 +168,6 @@ export default function Profile() {
           if (tempNickname.trim()) {
             setNickname(tempNickname.trim());
             setShowNicknameModal(false);
-            toast.success('昵称已更新');
           }
         }}
       >
@@ -225,7 +186,7 @@ export default function Profile() {
         title="导出账单"
         showFooter
         confirmText="导出"
-        onConfirm={exportData}
+        onConfirm={() => setShowExportModal(false)}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">确定要导出所有账单数据吗？</Text>
       </Modal>
@@ -236,7 +197,10 @@ export default function Profile() {
         title="导入账单"
         showFooter
         confirmText="导入"
-        onConfirm={importData}
+        onConfirm={() => {
+          setShowImportModal(false);
+          setImportJson('');
+        }}
       >
         <textarea
           value={importJson}

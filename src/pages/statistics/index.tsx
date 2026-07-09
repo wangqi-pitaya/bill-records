@@ -4,7 +4,6 @@ import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useCategoryStore } from '../../store/useCategoryStore';
-import { useTheme } from '../../hooks/useTheme';
 import { StatCard } from '../../components/StatCard';
 import { FilterDrawer } from '../../components/FilterDrawer';
 import { YearMonthPicker } from '../../components/Calendar';
@@ -57,7 +56,6 @@ export default function Statistics() {
   const { bills } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
   const { categories } = useCategoryStore();
-  const { isDark } = useTheme();
 
   const statsWalletId = filters.walletId !== 'all' ? filters.walletId : currentWalletId;
   const statsWallet = wallets.find((w) => w.id === statsWalletId);
@@ -194,9 +192,9 @@ export default function Statistics() {
     });
   };
 
-  const textColor = isDark ? '#d1d5db' : '#4b5563';
-  const axisLineColor = isDark ? '#374151' : '#e5e7eb';
-  const splitLineColor = isDark ? '#374151' : '#f3f4f6';
+  const textColor = '#4b5563';
+  const axisLineColor = '#e5e7eb';
+  const splitLineColor = '#f3f4f6';
 
   const trendOption: EChartsOption = useMemo(() => {
     const series: any[] = [];
@@ -230,7 +228,7 @@ export default function Statistics() {
     return {
       tooltip: {
         trigger: 'axis',
-        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        backgroundColor: '#ffffff',
         borderColor: axisLineColor,
         borderWidth: 1,
         textStyle: { color: textColor, fontSize: 12 },
@@ -280,7 +278,7 @@ export default function Statistics() {
       },
       series,
     } as EChartsOption;
-  }, [stats.trend, trendMode, chartType, isDark, tab]);
+  }, [stats.trend, trendMode, chartType, tab]);
 
   const pieList = pieType === 'expense' ? stats.expenseCategories : stats.incomeCategories;
   const pieTotal = pieType === 'expense' ? stats.expense : stats.income;
@@ -295,7 +293,7 @@ export default function Statistics() {
     return {
       tooltip: {
         trigger: 'item',
-        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        backgroundColor: '#ffffff',
         borderColor: axisLineColor,
         borderWidth: 1,
         textStyle: { color: textColor, fontSize: 12 },
@@ -312,7 +310,7 @@ export default function Statistics() {
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 2,
-            borderColor: isDark ? '#1f2937' : '#ffffff',
+            borderColor: '#ffffff',
             borderWidth: 2,
           },
           label: {
@@ -321,7 +319,7 @@ export default function Statistics() {
             color: textColor,
             fontSize: 11,
             formatter: (p: any) => {
-              if (p.percent < 3) return '';
+              if (p.percent < 2) return '';
               return `{name|${p.name}}\n{value|${p.percent.toFixed(1)}%}`;
             },
             rich: {
@@ -338,7 +336,7 @@ export default function Statistics() {
             },
           },
           labelLine: {
-            show: true,
+            show: (p: any) => p.percent >= 2,
             length: 8,
             length2: 8,
             lineStyle: { color: axisLineColor },
@@ -347,7 +345,7 @@ export default function Statistics() {
         },
       ],
     } as EChartsOption;
-  }, [pieList, isDark]);
+  }, [pieList]);
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-4">
@@ -358,8 +356,8 @@ export default function Statistics() {
             <View
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 tab === 'month'
-                  ? 'bg-white dark:bg-gray-600 text-blue-500 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500'
               }`}
               onClick={() => setTab('month')}
             >
@@ -368,8 +366,8 @@ export default function Statistics() {
             <View
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 tab === 'year'
-                  ? 'bg-white dark:bg-gray-600 text-blue-500 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400'
+                  ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                  : 'text-gray-500'
               }`}
               onClick={() => setTab('year')}
             >
@@ -410,7 +408,6 @@ export default function Statistics() {
             color={statsWallet?.color}
           />
 
-          {/* Trend Chart */}
           <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4">
             <View className="flex items-center justify-between mb-2">
               <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -429,7 +426,9 @@ export default function Statistics() {
             </View>
 
             {stats.hasData ? (
-              <EChartsWrap option={trendOption} height={320} />
+              <View className="w-full">
+                <EChartsWrap option={trendOption} height={320} />
+              </View>
             ) : (
               <View className="h-[320rpx] flex items-center justify-center">
                 <Text className="text-gray-400 dark:text-gray-500 text-sm">暂无数据</Text>
@@ -459,7 +458,6 @@ export default function Statistics() {
             </View>
           </View>
 
-          {/* Pie Chart */}
           {!stats.hasData ? (
             <View className="text-center py-12">
               <Icon name="BarChart3" size={48} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
@@ -467,42 +465,45 @@ export default function Statistics() {
             </View>
           ) : (
             <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 space-y-3">
-              <View className="flex justify-center">
-                <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-                  <View
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      pieType === 'expense'
-                        ? 'bg-white dark:bg-gray-600 text-red-500 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                    onClick={() => setPieType('expense')}
-                  >
-                    <Text>支出</Text>
-                  </View>
-                  <View
-                    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                      pieType === 'income'
-                        ? 'bg-white dark:bg-gray-600 text-green-500 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                    onClick={() => setPieType('income')}
-                  >
-                    <Text>收入</Text>
-                  </View>
-                </View>
-              </View>
-
               {pieList.length > 0 ? (
                 <View>
                   <EChartsWrap option={pieOption} height={340} />
 
-                  <View className="space-y-2 mt-2 px-2">
+                  <Text className="text-xs text-gray-400 dark:text-gray-500 text-center pt-2 block">
+                    占比小于2%的分类不显示标签
+                  </Text>
+
+                  <View className="flex justify-center mt-3">
+                    <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                      <View
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                          pieType === 'expense'
+                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                            : 'text-gray-500'
+                        }`}
+                        onClick={() => setPieType('expense')}
+                      >
+                        <Text>支出</Text>
+                      </View>
+                      <View
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                          pieType === 'income'
+                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                            : 'text-gray-500'
+                        }`}
+                        onClick={() => setPieType('income')}
+                      >
+                        <Text>收入</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View className="space-y-2 mt-3 px-2">
                     {pieList.map((cat, idx) => (
                       <View key={cat.name} className="flex items-center gap-3 p-2">
-                        <View
-                          className="w-3 h-3 rounded-full shrink-0"
-                          style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
-                        />
+                        <View className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${pieType === 'income' ? 'bg-income-100' : 'bg-expense-100'}`}>
+                          <Icon name={cat.icon} size={16} className={pieType === 'income' ? 'text-income-600' : 'text-expense-600'} />
+                        </View>
                         <View className="flex-1 min-w-0">
                           <View className="flex items-center justify-between mb-1">
                             <Text className="text-sm font-medium truncate text-gray-700 dark:text-gray-300">
@@ -530,11 +531,40 @@ export default function Statistics() {
                   </View>
                 </View>
               ) : (
-                <Text className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
-                  暂无{pieType === 'expense' ? '支出' : '收入'}分类数据
-                </Text>
+                <View className="flex justify-center">
+                  <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+                    <View
+                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        pieType === 'expense'
+                          ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                          : 'text-gray-500'
+                      }`}
+                      onClick={() => setPieType('expense')}
+                    >
+                      <Text>支出</Text>
+                    </View>
+                    <View
+                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        pieType === 'income'
+                          ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
+                          : 'text-gray-500'
+                      }`}
+                      onClick={() => setPieType('income')}
+                    >
+                      <Text>收入</Text>
+                    </View>
+                  </View>
+                </View>
               )}
             </View>
+          )}
+
+          {stats.hasData && (
+            <DetailTable
+              tab={tab}
+              data={stats.trend}
+              expense={stats.expense}
+            />
           )}
         </View>
       </ScrollView>
@@ -553,6 +583,60 @@ export default function Statistics() {
         filters={filters}
         onConfirm={setFilters}
       />
+    </View>
+  );
+}
+
+function DetailTable({
+  tab,
+  data,
+  expense,
+}: {
+  tab: 'month' | 'year';
+  data: TrendItem[];
+  expense: number;
+}) {
+  const count = data.length;
+  const avgExpense = count > 0 ? expense / count : 0;
+
+  const title = tab === 'month' ? '日明细' : '月明细';
+  const avgLabel = tab === 'month' ? '日均支出' : '月均支出';
+
+  return (
+    <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4">
+      <View className="flex items-center justify-center mb-3">
+        <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">{title}</Text>
+      </View>
+
+      <View className="flex items-center justify-center mb-4">
+        <Text className="text-xs text-gray-500 dark:text-gray-400">{avgLabel}</Text>
+        <Text className="text-sm font-semibold text-expense-500 ml-2">{formatMoney(avgExpense)}</Text>
+      </View>
+
+      {data.length > 0 ? (
+        <ScrollView scrollX className="overflow-x-auto">
+          <View className="min-w-[320px]">
+            <View className="flex border-b border-gray-100 dark:border-gray-700">
+              <View className="w-20 py-2 px-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 sticky left-0 z-10">日期</View>
+              <View className="w-24 py-2 px-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400">收入</View>
+              <View className="w-24 py-2 px-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400">支出</View>
+              <View className="w-24 py-2 px-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400">结余</View>
+            </View>
+            {data.map((item, index) => (
+              <View key={index} className="flex border-b border-gray-50 dark:border-gray-750 last:border-b-0">
+                <View className="w-20 py-2 px-3 text-gray-700 dark:text-gray-300 text-xs bg-white dark:bg-gray-800 sticky left-0 z-10">{item.label}</View>
+                <View className="w-24 py-2 px-3 text-right text-income-500 text-xs break-all">{item.income > 0 ? formatMoney(item.income) : '-'}</View>
+                <View className="w-24 py-2 px-3 text-right text-expense-500 text-xs break-all">{item.expense > 0 ? formatMoney(item.expense) : '-'}</View>
+                <View className={`w-24 py-2 px-3 text-right text-xs font-medium break-all ${item.balance >= 0 ? 'text-income-500' : 'text-expense-500'}`}>
+                  {formatMoney(item.balance)}
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      ) : (
+        <View className="text-center py-6 text-gray-400 dark:text-gray-500 text-sm">暂无明细数据</View>
+      )}
     </View>
   );
 }

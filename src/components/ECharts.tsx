@@ -15,24 +15,41 @@ interface EChartsWrapProps {
 export function EChartsWrap({ option, height = 300, className = '', style }: EChartsWrapProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<echarts.ECharts | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const sys = Taro.getSystemInfoSync();
     const dpr = sys.pixelRatio || 2;
 
-    const init = () => {
+    const initChart = () => {
       if (!chartRef.current) return;
+      
+      const container = chartRef.current;
+      const rect = container.getBoundingClientRect();
+      
+      if (rect.width === 0 || rect.height === 0) {
+        const retryTimer = setTimeout(initChart, 100);
+        return () => clearTimeout(retryTimer);
+      }
+
       if (instanceRef.current) {
         instanceRef.current.dispose();
       }
-      instanceRef.current = echarts.init(chartRef.current, undefined, {
+
+      instanceRef.current = echarts.init(container, undefined, {
         devicePixelRatio: dpr,
         renderer: 'canvas',
       });
       instanceRef.current.setOption(option);
     };
 
-    const timer = setTimeout(init, 50);
+    const timer = setTimeout(initChart, 50);
 
     const handleResize = () => {
       instanceRef.current?.resize();
@@ -50,11 +67,12 @@ export function EChartsWrap({ option, height = 300, className = '', style }: ECh
       instanceRef.current?.dispose();
       instanceRef.current = null;
     };
-  }, []);
+  }, [isMounted]);
 
   useEffect(() => {
     if (instanceRef.current) {
       instanceRef.current.setOption(option, true);
+      instanceRef.current.resize();
     }
   }, [option]);
 

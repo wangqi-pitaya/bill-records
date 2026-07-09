@@ -23,7 +23,7 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
   const openedRef = useRef(false);
 
   const SWIPE_THRESHOLD = 40;
-  const ACTION_WIDTH = 160; // 两个按钮宽度
+  const ACTION_WIDTH = 160;
 
   const handleEdit = useCallback(() => {
     onEdit?.(bill);
@@ -90,8 +90,7 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
       className="relative overflow-hidden"
       onClick={openedRef.current ? closeSwipe : undefined}
     >
-      {/* Action Buttons - 绝对定位在右侧 */}
-      <View className="absolute right-0 top-0 bottom-0 flex" style={{ width: `${ACTION_WIDTH}rpx` }}>
+      <View className="absolute right-0 top-0 bottom-0 flex" style={{ width: ACTION_WIDTH }}>
         <View
           className="flex-1 flex items-center justify-center text-white"
           style={{ backgroundColor: themeColor }}
@@ -121,13 +120,12 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         </View>
       </View>
 
-      {/* Bill Content - 跟随滑动 */}
       <View
         className={`flex items-center gap-3 p-4 bg-white dark:bg-gray-800 ${
           isLast ? '' : 'border-b border-gray-100 dark:border-gray-700'
         }`}
         style={{
-          transform: `translateX(${translateX}rpx)`,
+          transform: `translateX(${translateX}px)`,
           transition: isHorizontalRef.current === true ? 'none' : 'transform 0.2s ease-out',
         }}
         onTouchStart={handleTouchStart}
@@ -171,7 +169,7 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
                 ? 'text-income-600 dark:text-green-400'
                 : 'text-expense-600 dark:text-red-400'
             }`}
-            style={{ fontSize: formatMoney(bill.amount).length > 10 ? 22 : formatMoney(bill.amount).length > 8 ? 24 : 32 }}
+            style={{ fontSize: formatMoney(bill.amount).length > 10 ? 14 : formatMoney(bill.amount).length > 8 ? 16 : 20 }}
           >
             {bill.type === 'income' ? '+' : '-'}{formatMoney(bill.amount)}
           </Text>

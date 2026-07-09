@@ -11,8 +11,8 @@ import { groupBillsByDate, filterBillsByWallet, getDateLabel } from '../../lib/u
 import { FilterOptions } from '../../types';
 
 export default function Search() {
-  const { bills } = useBillStore();
-  const { currentWalletId } = useWalletStore();
+  const { bills, softDeleteBill } = useBillStore();
+  const { currentWalletId, wallets } = useWalletStore();
   const [query, setQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
@@ -22,6 +22,7 @@ export default function Search() {
     endDate: '',
   });
 
+  const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
   const activeBills = bills.filter((b) => !b.deleted);
 
   const results = useMemo(() => {
@@ -45,6 +46,10 @@ export default function Search() {
   }, [activeBills, filters, query]);
 
   const grouped = groupBillsByDate(results);
+
+  const handleEdit = (bill: { id: string }) => {
+    Taro.navigateTo({ url: `/pages/bill-add/index?billId=${bill.id}` });
+  };
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
@@ -84,8 +89,10 @@ export default function Search() {
                       <BillItem
                         key={bill.id}
                         bill={bill}
-                        onDelete={() => {}}
+                        onDelete={(id) => softDeleteBill(id)}
+                        onEdit={handleEdit}
                         isLast={idx === group.bills.length - 1}
+                        themeColor={themeColor}
                       />
                     ))}
                   </View>
