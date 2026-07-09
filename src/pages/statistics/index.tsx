@@ -382,7 +382,7 @@ export default function Statistics() {
             }`}
             onClick={() => setShowFilter(true)}
           >
-            <Icon name="SlidersHorizontal" size={20} />
+            <Icon name="Funnel" size={20} />
             {hasActiveFilters && (
               <View className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
             )}

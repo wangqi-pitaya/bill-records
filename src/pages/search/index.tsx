@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
 import { BillItem } from '../../components/BillItem';
+import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { FilterDrawer } from '../../components/FilterDrawer';
 import { groupBillsByDate, filterBillsByWallet, getDateLabel } from '../../lib/utils';
@@ -45,34 +47,38 @@ export default function Search() {
   const grouped = groupBillsByDate(results);
 
   return (
-    <View className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <View className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm">
-        <View className="h-12 flex items-center gap-3">
-          <View className="flex-1 flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-2">
-            <Icon name="Search" size={16} className="text-gray-400 mr-2" />
-            <input
-              type="text"
-              value={query}
-              onInput={(e) => setQuery((e.target as any).value)}
-              placeholder="搜索分类、备注、金额..."
-              className="flex-1 bg-transparent text-sm text-gray-800 dark:text-gray-100 focus:outline-none"
-            />
-            {query && (
-              <View onClick={() => setQuery('')}>
-                <Icon name="X" size={16} className="text-gray-400" />
-              </View>
-            )}
-          </View>
-          <View
-            className="w-8 h-8 flex items-center justify-center active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-            onClick={() => setShowFilter(true)}
-          >
-            <Icon name="SlidersHorizontal" size={20} className="text-gray-700 dark:text-gray-300" />
-          </View>
+    <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <View className="bg-white dark:bg-gray-800 px-4 py-2 flex items-center gap-2">
+        <View
+          className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
+          onClick={() => Taro.navigateBack({ fail: () => Taro.switchTab({ url: '/pages/index/index' }) })}
+        >
+          <Icon name="ArrowLeft" size={20} />
+        </View>
+        <View className="flex-1 flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-1.5">
+          <Icon name="Search" size={16} className="text-gray-400 mr-2" />
+          <input
+            type="text"
+            value={query}
+            onInput={(e) => setQuery((e.target as any).value)}
+            placeholder="搜索分类、备注、金额..."
+            className="flex-1 bg-transparent text-sm text-gray-800 dark:text-gray-100 focus:outline-none"
+          />
+          {query && (
+            <View onClick={() => setQuery('')}>
+              <Icon name="X" size={16} className="text-gray-400" />
+            </View>
+          )}
+        </View>
+        <View
+          className="w-8 h-8 flex items-center justify-center active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
+          onClick={() => setShowFilter(true)}
+        >
+          <Icon name="Funnel" size={20} className="text-gray-700 dark:text-gray-300" />
         </View>
       </View>
 
-      <ScrollView scrollY className="pt-12 pb-4">
+      <ScrollView scrollY className="flex-1 pb-4">
         <View className="px-4 py-4">
           {results.length > 0 ? (
             <View className="space-y-4">
@@ -97,10 +103,13 @@ export default function Search() {
               ))}
             </View>
           ) : (
-            <View className="text-center py-12">
-              <Icon name="Search" size={48} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              <Text className="text-gray-500 dark:text-gray-400">
+            <View className="bg-white dark:bg-gray-800 rounded-card shadow-card flex flex-col items-center py-16 px-4">
+              <Icon name="Search" size={64} className="text-gray-300 dark:text-gray-600 mb-3" />
+              <Text className="text-base font-medium text-gray-700 dark:text-gray-300 text-center">
                 {query ? '未找到匹配的账单' : '输入关键词开始搜索'}
+              </Text>
+              <Text className="text-sm text-gray-400 dark:text-gray-500 mt-2 text-center">
+                {query ? '请尝试其他关键词' : '例如：餐饮、工资、100'}
               </Text>
             </View>
           )}

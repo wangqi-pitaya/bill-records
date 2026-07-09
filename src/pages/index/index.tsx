@@ -9,7 +9,7 @@ import { useDateFilter } from '../../hooks/useDateFilter';
 import { StatCard } from '../../components/StatCard';
 import { BillItem } from '../../components/BillItem';
 import { FloatingButton } from '../../components/FloatingButton';
-import { YearMonthPicker } from '../../components/Calendar';
+import { Drawer } from '../../components/Drawer';
 import { Icon } from '../../components/Icon';
 import {
   getDateLabel,
@@ -60,16 +60,8 @@ export default function Index() {
     Taro.navigateTo({ url: `/pages/bill-add/index?billId=${bill.id}` });
   };
 
-  const handleDateConfirm = (date: string) => {
-    const [y, m] = date.split('-').map(Number);
-    dateFilter.setSelectedYear(y);
-    if (dateFilter.pickerMode === 'month') {
-      dateFilter.setSelectedMonth(m);
-    } else {
-      dateFilter.setSelectedMonth(null);
-    }
-    setShowDatePicker(false);
-  };
+  const themeColor = currentWallet?.color || '#10b981';
+  const periodLabel = `${dateFilter.selectedYear}年${dateFilter.selectedMonth !== null ? `${dateFilter.selectedMonth}月` : '全年'}`;
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -106,7 +98,7 @@ export default function Index() {
             income={yearStatistics.income}
             expense={yearStatistics.expense}
             balance={yearStatistics.balance}
-            color={currentWallet?.color}
+            color={themeColor}
           />
 
           {filteredBills.length > 0 ? (
@@ -141,6 +133,7 @@ export default function Index() {
                         }}
                         onEdit={handleEdit}
                         isLast={idx === group.bills.length - 1}
+                        themeColor={themeColor}
                       />
                     ))}
                   </View>
@@ -148,11 +141,17 @@ export default function Index() {
               ))}
             </View>
           ) : (
-            <View className="text-center py-12">
-              <Text className="text-gray-500 dark:text-gray-400">
-                {dateFilter.selectedYear}年{dateFilter.selectedMonth !== null ? `${dateFilter.selectedMonth}月` : ''}暂无账单记录
+            <View className="bg-white dark:bg-gray-800 rounded-card shadow-card flex flex-col items-center py-16 px-4">
+              <Icon name="Receipt" size={64} className="text-gray-300 dark:text-gray-600 mb-3" />
+              <Text className="text-base font-medium text-gray-700 dark:text-gray-300 text-center">
+                {periodLabel}暂无账单记录
               </Text>
-              <Text className="text-sm text-gray-400 dark:text-gray-500 mt-2">点击右下角按钮添加第一笔账单</Text>
+              <Text className="text-sm text-gray-400 dark:text-gray-500 mt-2 text-center">
+                点击右下角按钮
+              </Text>
+              <Text className="text-sm text-gray-400 dark:text-gray-500 text-center">
+                添加第一笔账单
+              </Text>
             </View>
           )}
         </View>
@@ -160,16 +159,136 @@ export default function Index() {
 
       <FloatingButton
         onClick={handleOpenAdd}
-        color={currentWallet?.color}
+        color={themeColor}
       />
 
-      <YearMonthPicker
+      <DatePickerDrawer
         isOpen={showDatePicker}
-        value={`${dateFilter.selectedYear}-${String(dateFilter.selectedMonth || 1).padStart(2, '0')}-01`}
-        onConfirm={handleDateConfirm}
         onClose={() => setShowDatePicker(false)}
-        mode={dateFilter.pickerMode}
+        selectedYear={dateFilter.selectedYear}
+        selectedMonth={dateFilter.selectedMonth}
+        onConfirm={(year, month) => {
+          dateFilter.setSelectedYear(year);
+          if (month === null) {
+            dateFilter.setSelectedMonth(null);
+          } else {
+            dateFilter.setSelectedMonth(month);
+          }
+        }}
       />
     </View>
+  );
+}
+
+interface DatePickerDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedYear: number;
+  selectedMonth: number | null;
+  onConfirm: (year: number, month: number | null) => void;
+}
+
+function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm }: DatePickerDrawerProps) {
+  const [mode, setMode] = useState<'year' | 'month'>(selectedMonth === null ? 'year' : 'month');
+  const [tempYear, setTempYear] = useState(selectedYear);
+  const [tempMonth, setTempMonth] = useState(selectedMonth || 1);
+
+  const years = useMemo(() => Array.from({ length: 12 }, (_, i) => 2018 + i), []);
+  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
+
+  const handleConfirm = () => {
+    onConfirm(tempYear, mode === 'year' ? null : tempMonth);
+    onClose();
+  };
+
+  return (
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      direction="top"
+      showClose={false}
+      showFooter
+      confirmText="确定"
+      title="选择时间"
+    >
+      <View className="p-4">
+        <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 mb-4">
+          <View
+            className={`flex-1 py-2 rounded-md text-sm font-medium text-center transition-colors ${
+              mode === 'year' ? 'bg-white dark:bg-gray-600 shadow-sm' : 'text-gray-600 dark:text-gray-400'
+            }`}
+            onClick={() => setMode('year')}
+            style={mode === 'year' ? { color: themeColor } : undefined}
+          >
+            <Text>按年</Text>
+          </View>
+          <View
+            className={`flex-1 py-2 rounded-md text-sm font-medium text-center transition-colors ${
+              mode === 'month' ? 'bg-white dark:bg-gray-600 shadow-sm' : 'text-gray-600 dark:text-gray-400'
+            }`}
+            onClick={() => setMode('month')}
+            style={mode === 'month' ? { color: themeColor } : undefined}
+          >
+            <Text>按月</Text>
+          </View>
+        </View>
+
+        <View className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+          {mode === 'year' ? (
+            <View className="grid grid-cols-4 gap-2">
+              {years.map((y) => (
+                <View
+                  key={y}
+                  className={`py-3 rounded-md text-center text-sm transition-colors ${
+                    tempYear === y
+                      ? 'text-white'
+                      : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                  }`}
+                  style={tempYear === y ? { backgroundColor: themeColor } : undefined}
+                  onClick={() => setTempYear(y)}
+                >
+                  <Text className={tempYear === y ? 'text-white' : 'text-gray-700 dark:text-gray-300'}>{y}年</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View>
+              <View className="grid grid-cols-4 gap-2 mb-3">
+                {years.map((y) => (
+                  <View
+                    key={y}
+                    className={`py-2 rounded-md text-center text-sm transition-colors ${
+                      tempYear === y
+                        ? 'text-white'
+                        : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                    }`}
+                    style={tempYear === y ? { backgroundColor: themeColor } : undefined}
+                    onClick={() => setTempYear(y)}
+                  >
+                    <Text className={tempYear === y ? 'text-white' : 'text-gray-700 dark:text-gray-300'}>{y}年</Text>
+                  </View>
+                ))}
+              </View>
+              <View className="grid grid-cols-4 gap-2">
+                {months.map((m) => (
+                  <View
+                    key={m}
+                    className={`py-3 rounded-md text-center text-sm transition-colors ${
+                      tempMonth === m && tempYear === selectedYear
+                        ? 'text-white'
+                        : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
+                    }`}
+                    style={tempMonth === m && tempYear === selectedYear ? { backgroundColor: themeColor } : undefined}
+                    onClick={() => setTempMonth(m)}
+                  >
+                    <Text className={tempMonth === m && tempYear === selectedYear ? 'text-white' : 'text-gray-700 dark:text-gray-300'}>{m}月</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+      </View>
+    </Drawer>
   );
 }

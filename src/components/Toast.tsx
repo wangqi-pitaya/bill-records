@@ -14,9 +14,12 @@ export function ToastContainer() {
   if (!visible) return null;
 
   return (
-    <View className="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center">
-      <View className={`px-6 py-3 rounded-full ${typeStyles[type]} shadow-lg`}>
-        <Text className="text-white text-sm font-medium">{message}</Text>
+    <View
+      className="fixed left-0 right-0 z-[100] pointer-events-none flex items-center justify-center"
+      style={{ top: '120rpx' }}
+    >
+      <View className={`px-5 py-2.5 rounded-lg ${typeStyles[type]} shadow-lg max-w-[80%]`}>
+        <Text className="text-white text-sm font-medium text-center block">{message}</Text>
       </View>
     </View>
   );

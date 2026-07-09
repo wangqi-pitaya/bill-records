@@ -1,6 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { View, Text } from '@tarojs/components';
-import Taro from '@tarojs/taro';
 import { Bill } from '../types';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
@@ -11,10 +10,20 @@ interface BillItemProps {
   onDelete: (id: string) => void;
   onEdit?: (bill: Bill) => void;
   isLast?: boolean;
+  themeColor?: string;
 }
 
-export function BillItem({ bill, onDelete, onEdit, isLast = false }: BillItemProps) {
+export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = '#10b981' }: BillItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [translateX, setTranslateX] = useState(0);
+  const startXRef = useRef(0);
+  const startYRef = useRef(0);
+  const isHorizontalRef = useRef<null | boolean>(null);
+  const currentTranslateRef = useRef(0);
+  const openedRef = useRef(false);
+
+  const SWIPE_THRESHOLD = 40;
+  const ACTION_WIDTH = 160; // 两个按钮宽度
 
   const handleEdit = useCallback(() => {
     onEdit?.(bill);
@@ -23,14 +32,108 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false }: BillItemPro
   const handleDelete = useCallback(() => {
     onDelete(bill.id);
     setShowDeleteConfirm(false);
+    setTranslateX(0);
+    openedRef.current = false;
   }, [bill.id, onDelete]);
 
+  const handleTouchStart = (e: any) => {
+    const touch = e.touches[0];
+    startXRef.current = touch.clientX;
+    startYRef.current = touch.clientY;
+    isHorizontalRef.current = null;
+  };
+
+  const handleTouchMove = (e: any) => {
+    const touch = e.touches[0];
+    const dx = touch.clientX - startXRef.current;
+    const dy = touch.clientY - startYRef.current;
+
+    if (isHorizontalRef.current === null) {
+      if (Math.abs(dx) > Math.abs(dy) + 5) {
+        isHorizontalRef.current = true;
+      } else if (Math.abs(dy) > Math.abs(dx) + 5) {
+        isHorizontalRef.current = false;
+      }
+    }
+
+    if (isHorizontalRef.current === true) {
+      e.preventDefault?.();
+      const base = openedRef.current ? -ACTION_WIDTH : 0;
+      let next = base + dx;
+      if (next > 0) next = 0;
+      if (next < -ACTION_WIDTH) next = -ACTION_WIDTH;
+      setTranslateX(next);
+      currentTranslateRef.current = next;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isHorizontalRef.current === true) {
+      if (currentTranslateRef.current < -SWIPE_THRESHOLD) {
+        setTranslateX(-ACTION_WIDTH);
+        openedRef.current = true;
+      } else {
+        setTranslateX(0);
+        openedRef.current = false;
+      }
+    }
+    isHorizontalRef.current = null;
+  };
+
+  const closeSwipe = () => {
+    setTranslateX(0);
+    openedRef.current = false;
+  };
+
   return (
-    <>
+    <View
+      className="relative overflow-hidden"
+      onClick={openedRef.current ? closeSwipe : undefined}
+    >
+      {/* Action Buttons - 绝对定位在右侧 */}
+      <View className="absolute right-0 top-0 bottom-0 flex" style={{ width: `${ACTION_WIDTH}rpx` }}>
+        <View
+          className="flex-1 flex items-center justify-center text-white"
+          style={{ backgroundColor: themeColor }}
+          onClick={(e) => {
+            e?.stopPropagation?.();
+            closeSwipe();
+            handleEdit();
+          }}
+        >
+          <View className="flex flex-col items-center gap-0.5">
+            <Icon name="Pencil" size={18} color="#fff" />
+            <Text className="text-xs text-white">编辑</Text>
+          </View>
+        </View>
+        <View
+          className="flex-1 flex items-center justify-center bg-red-500 text-white"
+          onClick={(e) => {
+            e?.stopPropagation?.();
+            closeSwipe();
+            setShowDeleteConfirm(true);
+          }}
+        >
+          <View className="flex flex-col items-center gap-0.5">
+            <Icon name="Trash2" size={18} color="#fff" />
+            <Text className="text-xs text-white">删除</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Bill Content - 跟随滑动 */}
       <View
         className={`flex items-center gap-3 p-4 bg-white dark:bg-gray-800 ${
-          isLast ? 'rounded-b-[16rpx]' : ''
+          isLast ? '' : 'border-b border-gray-100 dark:border-gray-700'
         }`}
+        style={{
+          transform: `translateX(${translateX}rpx)`,
+          transition: isHorizontalRef.current === true ? 'none' : 'transform 0.2s ease-out',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onClick={() => { if (openedRef.current) closeSwipe(); }}
       >
         <View
           className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
@@ -89,6 +192,6 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false }: BillItemPro
           确定要删除这条账单记录吗？删除后可在回收站找回。
         </Text>
       </Modal>
-    </>
+    </View>
   );
 }

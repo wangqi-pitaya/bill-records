@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import { useBillStore } from '../../store/useBillStore';
 import { useToast } from '../../hooks/useToast';
+import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 import { groupBillsByDate, getDateLabel, formatMoney } from '../../lib/utils';
@@ -15,21 +16,14 @@ export default function Trash() {
   const grouped = groupBillsByDate(deletedBills);
 
   return (
-    <View className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <View className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm">
-        <View className="h-12 flex items-center justify-between">
-          <View className="w-8" />
-          <Text className="text-base font-bold text-gray-800 dark:text-gray-100">回收站</Text>
-          <View
-            className="w-8 h-8 flex items-center justify-center active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-            onClick={() => setShowClearConfirm(true)}
-          >
-            <Icon name="Eraser" size={18} className="text-gray-700 dark:text-gray-300" />
-          </View>
-        </View>
-      </View>
+    <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <PageHeader
+        title="回收站"
+        rightIcon="Eraser"
+        onRightClick={() => setShowClearConfirm(true)}
+      />
 
-      <ScrollView scrollY className="pt-12 pb-4">
+      <ScrollView scrollY className="flex-1 pb-4">
         <View className="px-4 py-4">
           {deletedBills.length > 0 ? (
             <View className="space-y-4">

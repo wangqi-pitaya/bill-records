@@ -4,6 +4,8 @@ import Taro from '@tarojs/taro';
 import { BillType, Category } from '../../types';
 import { useCategoryStore } from '../../store/useCategoryStore';
 import { useToast } from '../../hooks/useToast';
+import { useWalletStore } from '../../store/useWalletStore';
+import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 import { availableIcons } from '../../data/categories';
@@ -18,6 +20,8 @@ export default function CategoryManage() {
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const { categories, addCategory, deleteCategory, isCategoryUsed, moveCategoryUp, moveCategoryDown } = useCategoryStore();
+  const { currentWalletId, wallets } = useWalletStore();
+  const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
   const toast = useToast();
 
   const filteredCategories = categories.filter((c) => c.type === tab);
@@ -66,8 +70,10 @@ export default function CategoryManage() {
   };
 
   return (
-    <View className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <View className="bg-white dark:bg-gray-800 px-4 py-3">
+    <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <PageHeader title="分类管理" />
+
+      <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
         <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
           <View
             className={`flex-1 py-1.5 rounded-md text-sm font-medium text-center transition-colors ${
@@ -92,7 +98,7 @@ export default function CategoryManage() {
         </View>
       </View>
 
-      <ScrollView scrollY className="pb-4">
+      <ScrollView scrollY className="flex-1 overflow-hidden scrollbar-hide">
         <View className="px-4 py-4">
           <View className="grid grid-cols-4 gap-3">
             {filteredCategories.map((cat, index) => (
@@ -100,8 +106,8 @@ export default function CategoryManage() {
                 key={cat.id}
                 className="bg-white dark:bg-gray-800 rounded-card shadow-card p-3 flex flex-col items-center gap-2 relative"
               >
-                <View className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <Icon name={cat.icon} size={20} className="text-blue-500" />
+                <View className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
+                  <Icon name={cat.icon} size={20} style={{ color: themeColor }} />
                 </View>
                 <Text className="text-xs font-medium text-gray-700 dark:text-gray-300 text-center truncate w-full">
                   {cat.name}
@@ -115,22 +121,22 @@ export default function CategoryManage() {
                 <View className="absolute bottom-1 left-1 right-1 flex justify-between">
                   <View
                     className={`w-5 h-5 flex items-center justify-center rounded-full ${
-                      index === 0 ? 'bg-gray-100 dark:bg-gray-700 opacity-40' : 'bg-blue-500/10 active:bg-blue-500/20'
+                      index === 0 ? 'bg-gray-100 dark:bg-gray-700 opacity-40' : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-200'
                     }`}
                     onClick={() => index > 0 && moveCategoryUp(cat.id, tab)}
                   >
                     <View style={{ transform: 'rotate(90deg)' }}>
-                      <Icon name="ChevronDown" size={12} className={index === 0 ? 'text-gray-400' : 'text-blue-500'} />
+                      <Icon name="ChevronDown" size={12} className={index === 0 ? 'text-gray-400' : 'text-gray-600 dark:text-gray-300'} />
                     </View>
                   </View>
                   <View
                     className={`w-5 h-5 flex items-center justify-center rounded-full ${
-                      index === filteredCategories.length - 1 ? 'bg-gray-100 dark:bg-gray-700 opacity-40' : 'bg-blue-500/10 active:bg-blue-500/20'
+                      index === filteredCategories.length - 1 ? 'bg-gray-100 dark:bg-gray-700 opacity-40' : 'bg-gray-100 dark:bg-gray-700 active:bg-gray-200'
                     }`}
                     onClick={() => index < filteredCategories.length - 1 && moveCategoryDown(cat.id, tab)}
                   >
                     <View style={{ transform: 'rotate(-90deg)' }}>
-                      <Icon name="ChevronDown" size={12} className={index === filteredCategories.length - 1 ? 'text-gray-400' : 'text-blue-500'} />
+                      <Icon name="ChevronDown" size={12} className={index === filteredCategories.length - 1 ? 'text-gray-400' : 'text-gray-600 dark:text-gray-300'} />
                     </View>
                   </View>
                 </View>
@@ -140,10 +146,10 @@ export default function CategoryManage() {
               className="bg-white dark:bg-gray-800 rounded-card shadow-card p-3 flex flex-col items-center gap-2 active:bg-gray-50 dark:active:bg-gray-700"
               onClick={() => setShowAdd(true)}
             >
-              <View className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <Icon name="Plus" size={20} className="text-blue-500" />
+              <View className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
+                <Icon name="Plus" size={20} style={{ color: themeColor }} />
               </View>
-              <Text className="text-xs font-medium text-blue-500 text-center">添加分类</Text>
+              <Text className="text-xs font-medium text-center" style={{ color: themeColor }}>添加分类</Text>
             </View>
           </View>
         </View>
@@ -176,12 +182,13 @@ export default function CategoryManage() {
                   key={icon}
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     selectedIcon === icon
-                      ? 'bg-blue-500 text-white'
+                      ? 'text-white'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   }`}
+                  style={selectedIcon === icon ? { backgroundColor: themeColor } : undefined}
                   onClick={() => setSelectedIcon(icon)}
                 >
-                  <Icon name={icon} size={18} />
+                  <Icon name={icon} size={18} color={selectedIcon === icon ? '#fff' : 'currentColor'} />
                 </View>
               ))}
             </View>

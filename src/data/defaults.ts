@@ -23,7 +23,7 @@ export const defaultWallets: Wallet[] = [
     id: 'default',
     name: '默认账本',
     description: '日常收支',
-    color: '#3b82f6',
+    color: '#10b981',
     isDefault: true,
   },
 ];

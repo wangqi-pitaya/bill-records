@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useBillStore } from '../../store/useBillStore';
 import { useToast } from '../../hooks/useToast';
+import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 import { Wallet } from '../../types';
@@ -101,8 +102,9 @@ export default function WalletManage() {
   };
 
   return (
-    <View className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <ScrollView scrollY className="pb-4">
+    <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+      <PageHeader title="账本管理" rightIcon="Plus" onRightClick={openAdd} />
+      <ScrollView scrollY className="flex-1 pb-4">
         <View className="px-4 py-4 space-y-3">
           {wallets.map((wallet) => {
             const stats = getStatistics(wallet.id);

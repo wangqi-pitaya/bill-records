@@ -1,6 +1,15 @@
 @tailwind base;
 @tailwind utilities;
 
+@layer base {
+  html, body {
+    background-color: #f9fafb;
+  }
+  html.dark, html.dark body {
+    background-color: #111827;
+  }
+}
+
 page {
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
@@ -56,4 +65,20 @@ page {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* 抽屉与遮罩动画 */
+.fade-enter {
+  opacity: 0;
+}
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+.fade-exit {
+  opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 200ms ease-in;
 }

@@ -11,7 +11,7 @@ interface CategoryGridProps {
 
 export function CategoryGrid({ categories, selectedCategory, onSelect, type }: CategoryGridProps) {
   return (
-    <ScrollView scrollY className="h-full">
+    <ScrollView scrollY className="h-full scrollbar-hide">
       <View className="grid grid-cols-5 gap-3 p-2">
         {categories.map((cat) => {
           const isSelected = selectedCategory?.id === cat.id;
