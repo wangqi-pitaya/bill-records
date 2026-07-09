@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillForm } from '../../hooks/useBillForm';
 import { useBillStore } from '../../store/useBillStore';
+import { useWalletStore } from '../../store/useWalletStore';
 import { CategoryGrid } from '../../components/CategoryGrid';
 import { CalendarPicker } from '../../components/Calendar';
 import { Icon } from '../../components/Icon';
@@ -10,7 +11,6 @@ import { Bill } from '../../types';
 import { getShortDateLabel } from '../../lib/utils';
 
 export default function BillAdd() {
-  // 解析 URL 参数：H5 通过 router.params 读取
   const billId = (() => {
     try {
       const router = Taro.getCurrentInstance()?.router;
@@ -22,6 +22,10 @@ export default function BillAdd() {
 
   const getBillById = useBillStore((s) => s.getBillById);
   const editBill = useMemo<Bill | null>(() => (billId ? getBillById(billId) || null : null), [billId, getBillById]);
+
+  const { wallets, currentWalletId } = useWalletStore();
+  const currentWallet = useMemo(() => wallets.find((w) => w.id === currentWalletId), [wallets, currentWalletId]);
+  const themeColor = currentWallet?.color || '#3b82f6';
 
   const form = useBillForm({
     editBill: editBill || undefined,
@@ -127,10 +131,11 @@ export default function BillAdd() {
             <View
               className={`flex-1 py-3 rounded-btn text-sm font-semibold text-center transition-all ${
                 form.canSubmit
-                  ? 'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 active:bg-gray-200 dark:active:bg-gray-600'
+                  ? 'bg-gray-100 dark:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
               }`}
               onClick={form.handleSaveAndContinue}
+              style={form.canSubmit ? { color: themeColor } : undefined}
             >
               <Text>再记</Text>
             </View>
@@ -138,9 +143,10 @@ export default function BillAdd() {
           <View
             className={`flex-1 py-3 rounded-btn text-sm font-semibold text-white text-center transition-all ${
               form.canSubmit
-                ? 'bg-blue-500 active:bg-blue-600'
+                ? 'active:opacity-90'
                 : 'bg-gray-300 dark:bg-gray-600'
             }`}
+            style={form.canSubmit ? { backgroundColor: themeColor } : undefined}
             onClick={form.handleSave}
           >
             <Text>保存</Text>

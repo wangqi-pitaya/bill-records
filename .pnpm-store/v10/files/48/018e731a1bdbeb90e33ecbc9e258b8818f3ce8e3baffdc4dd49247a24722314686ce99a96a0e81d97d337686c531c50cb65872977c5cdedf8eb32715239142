@@ -1,0 +1,21 @@
+import { CanvasContext } from '@tarojs/taro';
+export default class WxCanvas {
+    private ctx;
+    private chart;
+    private canvasNode;
+    private event;
+    constructor(ctx: CanvasContext, isNew: boolean, canvasNode?: any);
+    getContext(contextType: any): CanvasContext | undefined;
+    setChart(chart: any): void;
+    attachEvent(): void;
+    addEventListener(): void;
+    removeEventListener(): void;
+    detachEvent(): void;
+    _initCanvas(zrender: any, ctx: any): void;
+    _initStyle(ctx: any): void;
+    _initEvent(): void;
+    set width(w: any);
+    set height(h: any);
+    get width(): any;
+    get height(): any;
+}

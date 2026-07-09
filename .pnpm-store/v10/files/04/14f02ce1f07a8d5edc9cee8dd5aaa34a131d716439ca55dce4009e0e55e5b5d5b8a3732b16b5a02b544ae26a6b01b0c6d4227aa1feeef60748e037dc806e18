@@ -1,0 +1,13 @@
+export declare function wrapTouch(event: any): any;
+export declare function touchStart({ chart, event }: {
+    chart: any;
+    event: any;
+}): void;
+export declare function touchMove({ chart, event }: {
+    chart: any;
+    event: any;
+}): void;
+export declare function touchEnd({ chart, event }: {
+    chart: any;
+    event: any;
+}): void;

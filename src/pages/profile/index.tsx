@@ -7,11 +7,10 @@ import { useTheme } from '../../hooks/useTheme';
 import { useToast } from '../../hooks/useToast';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
-import { formatDate } from '../../lib/utils';
 
 export default function Profile() {
   const { bills } = useBillStore();
-  const { wallets } = useWalletStore();
+  const { wallets, currentWalletId } = useWalletStore();
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
 
@@ -22,6 +21,9 @@ export default function Profile() {
   const [importJson, setImportJson] = useState('');
   const [showNicknameModal, setShowNicknameModal] = useState(false);
   const [tempNickname, setTempNickname] = useState('');
+
+  const currentWallet = wallets.find((w) => w.id === currentWalletId);
+  const themeColor = currentWallet?.color || '#3b82f6';
 
   const activeBills = bills.filter((b) => !b.deleted);
   const allBillDates = [...new Set(activeBills.map((b) => b.date))].sort();
@@ -41,7 +43,6 @@ export default function Profile() {
     const json = JSON.stringify(data, null, 2);
     setShowExportModal(false);
     toast.success('数据已导出');
-    // In real app, use Taro.downloadFile or share
   };
 
   const importData = () => {
@@ -52,7 +53,6 @@ export default function Profile() {
       }
       const data = JSON.parse(importJson);
       if (data.bills && Array.isArray(data.bills)) {
-        // In real app, merge data
         setShowImportModal(false);
         setImportJson('');
         toast.success('数据导入成功');
@@ -65,17 +65,24 @@ export default function Profile() {
   };
 
   const handleClear = () => {
-    // In real app, clear all data
     setShowClearConfirm(false);
     toast.success('数据已清除');
   };
 
-  const menuItems = [
+  const actionItems = [
     {
       icon: 'Search',
       label: '搜索账单',
       onClick: () => Taro.navigateTo({ url: '/pages/search/index' }),
     },
+    {
+      icon: 'Trash2',
+      label: '回收站',
+      onClick: () => Taro.navigateTo({ url: '/pages/trash/index' }),
+    },
+  ];
+
+  const settingItems = [
     {
       icon: 'Wallet',
       label: '钱包管理',
@@ -85,11 +92,6 @@ export default function Profile() {
       icon: 'BookOpen',
       label: '分类管理',
       onClick: () => Taro.navigateTo({ url: '/pages/category-manage/index' }),
-    },
-    {
-      icon: 'Trash2',
-      label: '回收站',
-      onClick: () => Taro.navigateTo({ url: '/pages/trash/index' }),
     },
     {
       icon: 'Download',
@@ -108,7 +110,7 @@ export default function Profile() {
         <Switch
           checked={isDark}
           onChange={toggleTheme}
-          color="#3b82f6"
+          color={themeColor}
         />
       ),
     },
@@ -124,7 +126,7 @@ export default function Profile() {
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
       <View className="bg-white dark:bg-gray-800 px-4 pt-12 pb-6">
         <View className="flex items-center gap-4">
-          <View className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center">
+          <View className="w-16 h-16 rounded-full flex items-center justify-center" style={{ backgroundColor: themeColor }}>
             <Text className="text-2xl font-bold text-white">{nickname[0]}</Text>
           </View>
           <View className="flex-1">
@@ -141,37 +143,57 @@ export default function Profile() {
 
       <View className="px-4 py-4">
         <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 flex justify-around">
-          <View className="text-center">
-            <Text className="text-xl font-bold text-gray-800 dark:text-gray-100">{usageDays}</Text>
+          <View className="flex flex-col items-center">
+            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100" style={{ color: themeColor }}>{usageDays}</Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">使用天数</Text>
           </View>
-          <View className="text-center">
-            <Text className="text-xl font-bold text-gray-800 dark:text-gray-100">{totalDays}</Text>
+          <View className="flex flex-col items-center">
+            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100" style={{ color: themeColor }}>{totalDays}</Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账天数</Text>
           </View>
-          <View className="text-center">
-            <Text className="text-xl font-bold text-gray-800 dark:text-gray-100">{activeBills.length}</Text>
+          <View className="flex flex-col items-center">
+            <Text className="text-2xl font-bold text-gray-800 dark:text-gray-100" style={{ color: themeColor }}>{activeBills.length}</Text>
             <Text className="text-xs text-gray-500 dark:text-gray-400 mt-1">记账笔数</Text>
           </View>
         </View>
       </View>
 
-      <View className="px-4 space-y-2">
-        {menuItems.map((item, idx) => (
-          <View
-            key={item.label}
-            className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 flex items-center justify-between active:bg-gray-50 dark:active:bg-gray-700"
-            onClick={item.onClick}
-          >
-            <View className="flex items-center gap-3">
-              <View className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
-                <Icon name={item.icon} size={16} className={item.danger ? 'text-red-500' : 'text-blue-500'} />
+      <View className="px-4 space-y-4">
+        <View className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden">
+          {actionItems.map((item, idx) => (
+            <View
+              key={item.label}
+              className={`flex items-center justify-between p-4 active:bg-gray-50 dark:active:bg-gray-700 ${idx !== actionItems.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
+              onClick={item.onClick}
+            >
+              <View className="flex items-center gap-3">
+                <View className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
+                  <Icon name={item.icon} size={16} style={{ color: themeColor }} />
+                </View>
+                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</Text>
               </View>
-              <Text className={`text-sm font-medium ${item.danger ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>{item.label}</Text>
+              <Icon name="ChevronDown" size={16} className="text-gray-400 rotate-[-90deg]" />
             </View>
-            {item.right || <Icon name="ChevronDown" size={16} className="text-gray-400 rotate-[-90deg]" />}
-          </View>
-        ))}
+          ))}
+        </View>
+
+        <View className="bg-white dark:bg-gray-800 rounded-card shadow-card overflow-hidden">
+          {settingItems.map((item, idx) => (
+            <View
+              key={item.label}
+              className={`flex items-center justify-between p-4 active:bg-gray-50 dark:active:bg-gray-700 ${idx !== settingItems.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
+              onClick={item.onClick}
+            >
+              <View className="flex items-center gap-3">
+                <View className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? 'bg-red-500/10' : ''}`} style={!item.danger ? { backgroundColor: `${themeColor}20` } : undefined}>
+                  <Icon name={item.icon} size={16} className={item.danger ? 'text-red-500' : ''} style={!item.danger ? { color: themeColor } : undefined} />
+                </View>
+                <Text className={`text-sm font-medium ${item.danger ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>{item.label}</Text>
+              </View>
+              {item.right || <Icon name="ChevronDown" size={16} className="text-gray-400 rotate-[-90deg]" />}
+            </View>
+          ))}
+        </View>
       </View>
 
       <Modal
