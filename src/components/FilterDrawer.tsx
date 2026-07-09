@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { FilterOptions } from '../types';
 import { useWalletStore } from '../store/useWalletStore';
 import { Drawer } from './Drawer';
+import { CalendarRangePicker } from './Calendar';
 
 interface FilterDrawerProps {
   isOpen: boolean;
@@ -20,9 +21,18 @@ const datePresets: { key: FilterOptions['datePreset']; label: string }[] = [
   { key: 'custom', label: '自定义' },
 ];
 
-export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDrawerProps) {
+interface FilterDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  filters: FilterOptions;
+  onConfirm: (filters: FilterOptions) => void;
+  themeColor?: string;
+}
+
+export function FilterDrawer({ isOpen, onClose, filters, onConfirm, themeColor = '#10b981' }: FilterDrawerProps) {
   const { wallets } = useWalletStore();
   const [localFilters, setLocalFilters] = useState<FilterOptions>(filters);
+  const [showRangePicker, setShowRangePicker] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -35,6 +45,10 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
     onClose();
   };
 
+  const handleRangeConfirm = (start: string, end: string) => {
+    setLocalFilters((prev) => ({ ...prev, startDate: start, endDate: end }));
+  };
+
   return (
     <Drawer
       isOpen={isOpen}
@@ -44,6 +58,7 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
       showFooter
       confirmText="确定"
       onConfirm={handleConfirm}
+      themeColor={themeColor}
     >
       <ScrollView scrollY className="max-h-[800rpx]">
         <View className="space-y-6 py-2 px-4">
@@ -54,9 +69,10 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
               <View
                 className={`px-4 py-2 rounded-full text-sm border transition-colors ${
                   localFilters.walletId === 'all'
-                    ? 'bg-blue-500 text-white border-blue-500'
+                    ? 'text-white border-transparent'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-transparent'
                 }`}
+                style={localFilters.walletId === 'all' ? { backgroundColor: themeColor } : undefined}
                 onClick={() => setLocalFilters((prev) => ({ ...prev, walletId: 'all' }))}
               >
                 <Text>全部</Text>
@@ -66,9 +82,10 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
                   key={w.id}
                   className={`px-4 py-2 rounded-full text-sm border transition-colors ${
                     localFilters.walletId === w.id
-                      ? 'bg-blue-500 text-white border-blue-500'
+                      ? 'text-white border-transparent'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-transparent'
                   }`}
+                  style={localFilters.walletId === w.id ? { backgroundColor: w.color } : undefined}
                   onClick={() => setLocalFilters((prev) => ({ ...prev, walletId: w.id }))}
                 >
                   <Text>{w.name}</Text>
@@ -86,9 +103,10 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
                   key={preset.key}
                   className={`px-4 py-2 rounded-full text-sm border transition-colors ${
                     localFilters.datePreset === preset.key
-                      ? 'bg-blue-500 text-white border-blue-500'
+                      ? 'text-white border-transparent'
                       : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-transparent'
                   }`}
+                  style={localFilters.datePreset === preset.key ? { backgroundColor: themeColor } : undefined}
                   onClick={() => setLocalFilters((prev) => ({ ...prev, datePreset: preset.key }))}
                 >
                   <Text>{preset.label}</Text>
@@ -96,34 +114,33 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm }: FilterDraw
               ))}
             </View>
 
-            {/* Custom date range inputs */}
+            {/* Custom date range */}
             {localFilters.datePreset === 'custom' && (
-              <View className="mt-4 space-y-3">
-                <View className="flex gap-2">
-                  <View className="flex-1">
-                    <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 block">开始日期</Text>
-                    <input
-                      type="date"
-                      value={localFilters.startDate}
-                      onInput={(e) => setLocalFilters((prev) => ({ ...prev, startDate: (e.target as any).value }))}
-                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-xs text-gray-500 dark:text-gray-400 mb-1.5 block">结束日期</Text>
-                    <input
-                      type="date"
-                      value={localFilters.endDate}
-                      onInput={(e) => setLocalFilters((prev) => ({ ...prev, endDate: (e.target as any).value }))}
-                      className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </View>
+              <View className="mt-4">
+                <View
+                  className="flex items-center justify-center gap-2 py-3 bg-gray-50 dark:bg-gray-700 rounded-lg active:bg-gray-100 dark:active:bg-gray-600"
+                  onClick={() => setShowRangePicker(true)}
+                >
+                  <Text className="text-sm text-gray-700 dark:text-gray-300">
+                    {localFilters.startDate && localFilters.endDate
+                      ? `${localFilters.startDate} ~ ${localFilters.endDate}`
+                      : '选择日期范围'}
+                  </Text>
                 </View>
               </View>
             )}
           </View>
         </View>
       </ScrollView>
+
+      <CalendarRangePicker
+        isOpen={showRangePicker}
+        startValue={localFilters.startDate}
+        endValue={localFilters.endDate}
+        onConfirm={handleRangeConfirm}
+        onClose={() => setShowRangePicker(false)}
+        themeColor={themeColor}
+      />
     </Drawer>
   );
 }

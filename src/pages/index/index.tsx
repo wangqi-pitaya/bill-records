@@ -9,6 +9,7 @@ import { BillItem } from '../../components/BillItem';
 import { FloatingButton } from '../../components/FloatingButton';
 import { Drawer } from '../../components/Drawer';
 import { Icon } from '../../components/Icon';
+import { Calendar } from '../../components/Calendar';
 import {
   getDateLabel,
   groupBillsByDate,
@@ -147,6 +148,7 @@ export default function Index() {
         onClose={() => setShowDatePicker(false)}
         selectedYear={dateFilter.selectedYear}
         selectedMonth={dateFilter.selectedMonth}
+        themeColor={themeColor}
         onConfirm={(year, month) => {
           dateFilter.setSelectedYear(year);
           if (month === null) {
@@ -168,17 +170,23 @@ interface DatePickerDrawerProps {
   onConfirm: (year: number, month: number | null) => void;
 }
 
-function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm }: DatePickerDrawerProps) {
+function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConfirm, themeColor }: DatePickerDrawerProps & { themeColor?: string }) {
   const [mode, setMode] = useState<'year' | 'month'>(selectedMonth === null ? 'year' : 'month');
-  const [tempYear, setTempYear] = useState(selectedYear);
-  const [tempMonth, setTempMonth] = useState(selectedMonth || 1);
+  const [tempDate, setTempDate] = useState(
+    `${selectedYear}-${String(selectedMonth || 1).padStart(2, '0')}-01`
+  );
 
-  const years = useMemo(() => Array.from({ length: 12 }, (_, i) => 2018 + i), []);
-  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
-
-  const handleConfirm = () => {
-    onConfirm(tempYear, mode === 'year' ? null : tempMonth);
-    onClose();
+  const handleDateChange = (dateStr: string) => {
+    setTempDate(dateStr);
+    if (mode === 'month') {
+      const [y, m] = dateStr.split('-').map(Number);
+      onConfirm(y, m);
+      onClose();
+    } else {
+      const [y] = dateStr.split('-').map(Number);
+      onConfirm(y, null);
+      onClose();
+    }
   };
 
   return (
@@ -187,9 +195,7 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
       onClose={onClose}
       direction="top"
       showClose={false}
-      showFooter
-      confirmText="确定"
-      onConfirm={handleConfirm}
+      showFooter={false}
     >
       <View className="p-4">
         <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 mb-4">
@@ -211,58 +217,17 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
           </View>
         </View>
 
-        <View className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-          {mode === 'year' ? (
-            <View className="grid grid-cols-4 gap-2">
-              {years.map((y) => (
-                <View
-                  key={y}
-                  className={`py-3 rounded-md text-center text-sm transition-colors ${
-                    tempYear === y
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                  }`}
-                  onClick={() => setTempYear(y)}
-                >
-                  <Text>{y}年</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View>
-              <View className="grid grid-cols-4 gap-2 mb-3">
-                {years.map((y) => (
-                  <View
-                    key={y}
-                    className={`py-2 rounded-md text-center text-sm transition-colors ${
-                      tempYear === y
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                    }`}
-                    onClick={() => setTempYear(y)}
-                  >
-                    <Text>{y}年</Text>
-                  </View>
-                ))}
-              </View>
-              <View className="grid grid-cols-4 gap-2">
-                {months.map((m) => (
-                  <View
-                    key={m}
-                    className={`py-3 rounded-md text-center text-sm transition-colors ${
-                      tempMonth === m && tempYear === selectedYear
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                    }`}
-                    onClick={() => setTempMonth(m)}
-                  >
-                    <Text>{m}月</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-        </View>
+        <Calendar
+          mode="single"
+          value={tempDate}
+          onChange={handleDateChange}
+          themeColor={themeColor}
+          config={{
+            showYearPicker: true,
+            showMonthPicker: mode === 'month',
+            showDayPicker: false,
+          }}
+        />
       </View>
     </Drawer>
   );

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import { useBillStore } from '../../store/useBillStore';
+import { useWalletStore } from '../../store/useWalletStore';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
@@ -10,6 +11,8 @@ import { FilterOptions } from '../../types';
 
 export default function Trash() {
   const { bills, restoreBill, permanentDeleteBill, clearTrash, restoreAllDeleted } = useBillStore();
+  const { currentWalletId, wallets } = useWalletStore();
+  const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -176,6 +179,7 @@ export default function Trash() {
         onClose={() => setShowFilter(false)}
         filters={filters}
         onConfirm={setFilters}
+        themeColor={themeColor}
       />
     </View>
   );

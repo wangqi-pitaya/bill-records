@@ -118,6 +118,7 @@ export default function Search() {
         onClose={() => setShowFilter(false)}
         filters={filters}
         onConfirm={setFilters}
+        themeColor={themeColor}
       />
     </View>
   );

@@ -152,6 +152,7 @@ export default function BillAdd() {
         value={form.date}
         onConfirm={form.setDate}
         onClose={() => form.setShowDatePicker(false)}
+        themeColor={themeColor}
       />
     </View>
   );

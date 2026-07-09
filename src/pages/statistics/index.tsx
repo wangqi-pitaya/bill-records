@@ -575,6 +575,7 @@ export default function Statistics() {
         onConfirm={handleConfirmPicker}
         onClose={() => setShowPicker(false)}
         mode={tab === 'month' ? 'month' : 'year'}
+        themeColor={statsWallet?.color}
       />
 
       <FilterDrawer
