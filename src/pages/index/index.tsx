@@ -10,6 +10,7 @@ import { FloatingButton } from '../../components/FloatingButton';
 import { Drawer } from '../../components/Drawer';
 import { Icon } from '../../components/Icon';
 import { Calendar } from '../../components/Calendar';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import {
   getDateLabel,
   groupBillsByDate,
@@ -200,29 +201,19 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
       direction="top"
       showClose={false}
       showFooter
+      cancelText="取消"
       confirmText="确定"
       onConfirm={handleConfirm}
+      onCancel={onClose}
       themeColor={themeColor}
     >
       <View className="p-4">
-        <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1 mb-4">
-          <View
-            className={`flex-1 py-2 rounded-md text-sm font-medium text-center transition-colors ${
-              mode === 'year' ? 'bg-white dark:bg-gray-600 shadow-sm' : 'text-gray-600 dark:text-gray-400'
-            }`}
-            onClick={() => setMode('year')}
-          >
-            <Text>年</Text>
-          </View>
-          <View
-            className={`flex-1 py-2 rounded-md text-sm font-medium text-center transition-colors ${
-              mode === 'month' ? 'bg-white dark:bg-gray-600 shadow-sm' : 'text-gray-600 dark:text-gray-400'
-            }`}
-            onClick={() => setMode('month')}
-          >
-            <Text>月</Text>
-          </View>
-        </View>
+        <SegmentedControl
+          options={[{ key: 'year', label: '年' }, { key: 'month', label: '月' }]}
+          value={mode}
+          onChange={(k) => setMode(k as 'year' | 'month')}
+          className="mb-4"
+        />
 
         <Calendar
           mode="single"

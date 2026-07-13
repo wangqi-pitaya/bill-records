@@ -497,15 +497,13 @@ export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选
         onClose();
       }}
     >
-      <View className="p-4">
-        <Calendar
-          mode="single"
-          value={tempDate}
-          onChange={setTempDate}
-          themeColor={themeColor}
-          config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
-        />
-      </View>
+      <Calendar
+        mode="single"
+        value={tempDate}
+        onChange={setTempDate}
+        themeColor={themeColor}
+        config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
+      />
     </Modal>
   );
 }
@@ -552,8 +550,7 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
         }
       }}
     >
-      <View className="px-4 pt-3 pb-1">
-        <View className="flex items-center justify-center gap-2 text-sm">
+      <View className="flex items-center justify-center gap-2 text-sm pb-2">
           <View className={`px-3 py-1 rounded-lg ${tempStart ? 'text-white' : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700'}`}
             style={tempStart ? { backgroundColor: themeColor } : undefined}
           >
@@ -566,18 +563,15 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
             <Text>{tempEnd || '结束日期'}</Text>
           </View>
         </View>
-      </View>
 
-      <View className="p-4">
-        <Calendar
-          mode="range"
-          startValue={tempStart}
-          endValue={tempEnd}
-          onRangeChange={handleRangeChange}
-          themeColor={themeColor}
-          config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
-        />
-      </View>
+      <Calendar
+        mode="range"
+        startValue={tempStart}
+        endValue={tempEnd}
+        onRangeChange={handleRangeChange}
+        themeColor={themeColor}
+        config={{ showYearPicker: true, showMonthPicker: true, showDayPicker: true }}
+      />
     </Modal>
   );
 }
@@ -615,19 +609,17 @@ export function YearMonthPicker({ isOpen, value, onConfirm, onClose, mode = 'mon
       confirmText="确定"
       onConfirm={handleConfirm}
     >
-      <View className="p-4">
-        <Calendar
-          mode="single"
-          value={tempValue}
-          onChange={setTempValue}
-          themeColor={themeColor}
-          config={{
-            showYearPicker: true,
-            showMonthPicker: mode === 'month',
-            showDayPicker: false,
-          }}
-        />
-      </View>
+      <Calendar
+        mode="single"
+        value={tempValue}
+        onChange={setTempValue}
+        themeColor={themeColor}
+        config={{
+          showYearPicker: true,
+          showMonthPicker: mode === 'month',
+          showDayPicker: false,
+        }}
+      />
     </Modal>
   );
 }

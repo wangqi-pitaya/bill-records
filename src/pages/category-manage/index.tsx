@@ -6,6 +6,7 @@ import { useWalletStore } from '../../store/useWalletStore';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { availableIcons } from '../../data/categories';
 
 export default function CategoryManage() {
@@ -62,29 +63,12 @@ export default function CategoryManage() {
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       <PageHeader title="分类管理" rightIcon="Plus" onRightClick={openAdd} />
 
-      <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700">
-        <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-          <View
-            className={`flex-1 py-1.5 rounded-md text-sm font-medium text-center transition-colors ${
-              tab === 'expense'
-                ? 'bg-white dark:bg-gray-600 text-red-500 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-            onClick={() => setTab('expense')}
-          >
-            <Text>支出</Text>
-          </View>
-          <View
-            className={`flex-1 py-1.5 rounded-md text-sm font-medium text-center transition-colors ${
-              tab === 'income'
-                ? 'bg-white dark:bg-gray-600 text-green-500 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-            onClick={() => setTab('income')}
-          >
-            <Text>收入</Text>
-          </View>
-        </View>
+      <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex justify-center">
+        <SegmentedControl
+          options={[{ key: 'expense', label: '支出' }, { key: 'income', label: '收入' }]}
+          value={tab}
+          onChange={(k) => setTab(k as BillType)}
+        />
       </View>
 
       <ScrollView scrollY className="flex-1 overflow-hidden">

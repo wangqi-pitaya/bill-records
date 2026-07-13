@@ -9,6 +9,7 @@ import { FilterDrawer } from '../../components/FilterDrawer';
 import { YearMonthPicker } from '../../components/Calendar';
 import { EChartsWrap } from '../../components/ECharts';
 import { Icon } from '../../components/Icon';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { FilterOptions } from '../../types';
 import {
   formatMoney,
@@ -352,28 +353,11 @@ export default function Statistics() {
       <View className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 px-4 shadow-sm">
         <View className="h-12 flex items-center justify-between">
           <View className="w-8" />
-          <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-            <View
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === 'month'
-                  ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                  : 'text-gray-500'
-              }`}
-              onClick={() => setTab('month')}
-            >
-              <Text>月</Text>
-            </View>
-            <View
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === 'year'
-                  ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                  : 'text-gray-500'
-              }`}
-              onClick={() => setTab('year')}
-            >
-              <Text>年</Text>
-            </View>
-          </View>
+          <SegmentedControl
+            options={[{ key: 'month', label: '月' }, { key: 'year', label: '年' }]}
+            value={tab}
+            onChange={(k) => setTab(k as 'month' | 'year')}
+          />
           <View
             className={`w-8 h-8 flex items-center justify-center relative active:bg-gray-100 dark:active:bg-gray-700 rounded-lg ${
               hasActiveFilters ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300'
@@ -427,34 +411,24 @@ export default function Statistics() {
 
             {stats.hasData ? (
               <View className="w-full">
-                <EChartsWrap option={trendOption} height={320} />
+                <EChartsWrap option={trendOption} height={260} />
               </View>
             ) : (
-              <View className="h-[320rpx] flex items-center justify-center">
+              <View className="h-[260rpx] flex items-center justify-center">
                 <Text className="text-gray-400 dark:text-gray-500 text-sm">暂无数据</Text>
               </View>
             )}
 
             <View className="flex justify-center mt-3">
-              <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-                {[
+              <SegmentedControl
+                options={[
                   { key: 'expense', label: '支出' },
                   { key: 'income', label: '收入' },
                   { key: 'all', label: '全部' },
-                ].map((opt) => (
-                  <View
-                    key={opt.key}
-                    className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
-                      trendMode === opt.key
-                        ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                    onClick={() => setTrendMode(opt.key as typeof trendMode)}
-                  >
-                    <Text>{opt.label}</Text>
-                  </View>
-                ))}
-              </View>
+                ]}
+                value={trendMode}
+                onChange={(k) => setTrendMode(k as typeof trendMode)}
+              />
             </View>
           </View>
 
@@ -467,35 +441,18 @@ export default function Statistics() {
             <View className="bg-white dark:bg-gray-800 rounded-card shadow-card p-4 space-y-3">
               {pieList.length > 0 ? (
                 <View>
-                  <EChartsWrap option={pieOption} height={340} />
+                  <EChartsWrap option={pieOption} height={280} />
 
                   <Text className="text-xs text-gray-400 dark:text-gray-500 text-center pt-2 block">
                     占比小于2%的分类不显示标签
                   </Text>
 
                   <View className="flex justify-center mt-3">
-                    <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-                      <View
-                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                          pieType === 'expense'
-                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                            : 'text-gray-500'
-                        }`}
-                        onClick={() => setPieType('expense')}
-                      >
-                        <Text>支出</Text>
-                      </View>
-                      <View
-                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                          pieType === 'income'
-                            ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                            : 'text-gray-500'
-                        }`}
-                        onClick={() => setPieType('income')}
-                      >
-                        <Text>收入</Text>
-                      </View>
-                    </View>
+                    <SegmentedControl
+                      options={[{ key: 'expense', label: '支出' }, { key: 'income', label: '收入' }]}
+                      value={pieType}
+                      onChange={(k) => setPieType(k as typeof pieType)}
+                    />
                   </View>
 
                   <View className="space-y-2 mt-3 px-2">
@@ -532,28 +489,11 @@ export default function Statistics() {
                 </View>
               ) : (
                 <View className="flex justify-center">
-                  <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-                    <View
-                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        pieType === 'expense'
-                          ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                          : 'text-gray-500'
-                      }`}
-                      onClick={() => setPieType('expense')}
-                    >
-                      <Text>支出</Text>
-                    </View>
-                    <View
-                      className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                        pieType === 'income'
-                          ? 'bg-white dark:bg-gray-600 text-gray-800 dark:text-gray-100 shadow-sm'
-                          : 'text-gray-500'
-                      }`}
-                      onClick={() => setPieType('income')}
-                    >
-                      <Text>收入</Text>
-                    </View>
-                  </View>
+                  <SegmentedControl
+                    options={[{ key: 'expense', label: '支出' }, { key: 'income', label: '收入' }]}
+                    value={pieType}
+                    onChange={(k) => setPieType(k as typeof pieType)}
+                  />
                 </View>
               )}
             </View>

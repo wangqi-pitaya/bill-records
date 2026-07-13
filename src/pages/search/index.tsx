@@ -69,27 +69,28 @@ export default function Search() {
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      <PageHeader title="搜索账单" rightIcon="Funnel" onRightClick={() => setShowFilter(true)} />
-
-      <View className="bg-white dark:bg-gray-800 px-4 py-3">
-        <View className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-2">
-          <Icon name="Search" size={16} className="text-gray-400 mr-2" />
-          <Input
-            type="text"
-            value={query}
-            onInput={(e) => setQuery(e.detail.value)}
-            placeholder="搜索分类、备注、金额..."
-            className="flex-1 bg-transparent text-sm text-gray-800 dark:text-gray-100 focus:outline-none"
-          />
-          {query && (
-            <View onClick={() => setQuery('')}>
-              <Icon name="X" size={16} className="text-gray-400" />
-            </View>
-          )}
+      <View className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm">
+        <PageHeader title="搜索账单" rightIcon="Funnel" onRightClick={() => setShowFilter(true)} />
+        <View className="px-4 pb-3">
+          <View className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-2">
+            <Icon name="Search" size={16} className="text-gray-400 mr-2" />
+            <Input
+              type="text"
+              value={query}
+              onInput={(e) => setQuery(e.detail.value)}
+              placeholder="搜索分类、备注、金额..."
+              className="flex-1 bg-transparent text-sm text-gray-800 dark:text-gray-100 focus:outline-none"
+            />
+            {query && (
+              <View onClick={() => setQuery('')}>
+                <Icon name="X" size={16} className="text-gray-400" />
+              </View>
+            )}
+          </View>
         </View>
       </View>
 
-      <ScrollView scrollY className="flex-1 pb-4">
+      <ScrollView scrollY className="flex-1 pt-[180rpx] pb-4">
         <View className="px-4 py-4">
           {results.length > 0 ? (
             <View className="space-y-4">

@@ -40,7 +40,7 @@ export function Modal({
     <View className="fixed inset-0 z-[1100] flex items-center justify-center">
       <View className="absolute inset-0 bg-black/50" onClick={onClose} />
       <View className="relative bg-white dark:bg-gray-800 rounded-2xl w-[92%] max-w-[760rpx] overflow-hidden shadow-xl">
-        <View className="px-6 pt-5 pb-3">
+        <View className="px-6 pt-4 pb-2">
           <Text className="text-lg font-semibold text-center text-gray-800 dark:text-gray-100">{title}</Text>
         </View>
         <View className="px-6 py-2">{children}</View>

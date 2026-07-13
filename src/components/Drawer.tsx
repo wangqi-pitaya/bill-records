@@ -49,7 +49,7 @@ const sizeClasses: Record<Direction, { dim: string; size: string }> = {
   top: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
   bottom: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
   left: { dim: 'h-full', size: 'w-[85%] max-w-[700rpx]' },
-  right: { dim: 'h-full', size: 'w-[90%] max-w-[800rpx]' },
+  right: { dim: 'h-full', size: 'w-[92%] max-w-[840rpx]' },
 };
 
 export function Drawer({
@@ -99,8 +99,6 @@ export function Drawer({
   const size = sizeClasses[direction].size;
   const transform = entered ? enterTransformActive[direction] : enterTransform[direction];
 
-  const isWeb = typeof window !== 'undefined';
-
   return (
     <View className="fixed inset-0 z-[1000]">
       <View
@@ -112,7 +110,7 @@ export function Drawer({
         style={{
           ...(width ? { width } : {}),
           ...(height ? { height } : {}),
-          ...(isWeb && direction !== 'top' && direction !== 'bottom' ? { paddingBottom: '50px' } : {}),
+          paddingBottom: '80px',
         }}
       >
         {title !== undefined && (

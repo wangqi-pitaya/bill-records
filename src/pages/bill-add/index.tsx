@@ -8,6 +8,7 @@ import { CategoryGrid } from '../../components/CategoryGrid';
 import { CalendarPicker } from '../../components/Calendar';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
+import { SegmentedControl } from '../../components/SegmentedControl';
 import { Bill } from '../../types';
 import { getShortDateLabel } from '../../lib/utils';
 
@@ -49,29 +50,12 @@ export default function BillAdd() {
       />
 
       {/* Tab Switcher - 固定，宽度缩小 */}
-      <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700 shrink-0">
-        <View className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
-          <View
-            className={`w-24 py-1.5 rounded-md text-sm font-medium text-center transition-colors ${
-              form.activeTab === 'expense'
-                ? 'bg-white dark:bg-gray-600 text-red-500 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-            onClick={() => form.setActiveTab('expense')}
-          >
-            <Text>支出</Text>
-          </View>
-          <View
-            className={`w-24 py-1.5 rounded-md text-sm font-medium text-center transition-colors ${
-              form.activeTab === 'income'
-                ? 'bg-white dark:bg-gray-600 text-green-500 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400'
-            }`}
-            onClick={() => form.setActiveTab('income')}
-          >
-            <Text>收入</Text>
-          </View>
-        </View>
+      <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700 shrink-0 flex justify-center">
+        <SegmentedControl
+          options={[{ key: 'expense', label: '支出' }, { key: 'income', label: '收入' }]}
+          value={form.activeTab}
+          onChange={(k) => form.setActiveTab(k as 'expense' | 'income')}
+        />
       </View>
 
       {/* Category Grid - 仅分类部分滚动 */}
@@ -87,7 +71,7 @@ export default function BillAdd() {
       </ScrollView>
 
       {/* Bottom Form - 固定，间距一致 */}
-      <View className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shrink-0 safe-bottom space-y-3">
+      <View className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 pt-4 pb-6 shrink-0 space-y-3">
         <Input
           type="text"
           value={form.note}
@@ -109,6 +93,7 @@ export default function BillAdd() {
             type="digit"
             value={form.amount}
             onInput={(e) => form.setAmount(e.detail.value)}
+            onConfirm={() => Taro.hideKeyboard()}
             placeholder="0.00"
             className="flex-1 px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-transparent rounded-btn text-base font-bold text-gray-800 dark:text-gray-100 text-center"
             style={{ '--tw-ring-color': themeColor } as any}

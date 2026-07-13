@@ -86,10 +86,8 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
   };
 
   const handleEnd = () => {
-    if (!swipingRef.current) return;
-
-    if (directionRef.current === 'horizontal' || directionRef.current === null) {
-      if (currentTranslateRef.current < -SWIPE_THRESHOLD / 2) {
+    if (directionRef.current === 'horizontal') {
+      if (currentTranslateRef.current < -SWIPE_THRESHOLD) {
         setTranslateX(-ACTION_WIDTH);
         setIsOpened(true);
       } else {
@@ -97,7 +95,6 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         setIsOpened(false);
       }
     }
-
     directionRef.current = null;
     swipingRef.current = false;
   };

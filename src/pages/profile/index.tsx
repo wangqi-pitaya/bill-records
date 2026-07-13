@@ -12,13 +12,12 @@ import { defaultCategories, defaultWallets } from '../../data/defaults';
 
 export default function Profile() {
   const { bills, addBill } = useBillStore();
-  const { wallets, currentWalletId, setWallets, setCurrentWalletId } = useWalletStore();
+  const { wallets, setWallets, setCurrentWalletId } = useWalletStore();
   const { categories, setCategories } = useCategoryStore();
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
 
-  const currentWallet = wallets.find((w) => w.id === currentWalletId);
-  const themeColor = currentWallet?.color || '#10b981';
+  const themeColor = '#10b981';
 
   const [nickname, setNickname] = useState('用户');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -159,18 +158,14 @@ export default function Profile() {
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
-      <View className="px-4 pt-4 pb-6" style={{ backgroundColor: themeColor }}>
-        <View className="flex items-center gap-3">
-          <View className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20">
-            <Text className="text-lg font-bold text-white">{nickname[0]}</Text>
-          </View>
-          <View className="flex-1">
-            <View className="flex items-center gap-2">
-              <Text className="text-lg font-bold text-white">{nickname}</Text>
-              <View onClick={() => { setTempNickname(nickname); setShowNicknameModal(true); }}>
-                <Icon name="Pencil" size={14} className="text-white/80" />
-              </View>
-            </View>
+      <View className="px-4 pt-6 pb-6 flex flex-col items-center" style={{ backgroundColor: themeColor }}>
+        <View className="w-14 h-14 rounded-full flex items-center justify-center bg-white/20">
+          <Text className="text-xl font-bold text-white">{nickname[0]}</Text>
+        </View>
+        <View className="flex items-center gap-2 mt-3">
+          <Text className="text-lg font-bold text-white">{nickname}</Text>
+          <View onClick={() => { setTempNickname(nickname); setShowNicknameModal(true); }}>
+            <Icon name="Pencil" size={14} className="text-white/80" />
           </View>
         </View>
       </View>

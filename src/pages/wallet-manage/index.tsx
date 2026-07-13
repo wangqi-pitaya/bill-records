@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Input } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useWalletStore } from '../../store/useWalletStore';
 import { useBillStore } from '../../store/useBillStore';
@@ -92,51 +92,46 @@ export default function WalletManage() {
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
-      <PageHeader title="账本管理" rightIcon="Plus" onRightClick={openAdd} />
+      <PageHeader title="钱包管理" rightIcon="Plus" onRightClick={openAdd} />
       <ScrollView scrollY className="flex-1 pb-4">
         <View className="px-4 py-4 space-y-3">
           {wallets.map((wallet) => (
             <View
               key={wallet.id}
-              className="rounded-card shadow-card overflow-hidden bg-white dark:bg-gray-800 border-2 transition-all"
-              style={{ borderColor: currentWalletId === wallet.id ? wallet.color : 'transparent' }}
+              className="rounded-card shadow-card overflow-hidden border-2 transition-all"
+              style={{ 
+                borderColor: currentWalletId === wallet.id ? wallet.color : 'transparent',
+                backgroundColor: wallet.color + '20',
+              }}
               onClick={() => handleSwitchWallet(wallet)}
             >
-              <View className="p-4 h-24 relative">
+              <View className="p-4 min-h-[88rpx] relative flex items-center justify-between">
                 <View className="flex items-center gap-2">
-                  <View className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${wallet.color}20` }}>
-                    <Icon name="Wallet" size={20} style={{ color: wallet.color }} />
-                  </View>
-                  <View>
-                    <Text className="text-lg font-bold text-gray-800 dark:text-gray-100">{wallet.name}</Text>
-                    {wallet.isDefault && (
-                      <View className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 inline-flex mt-1">
-                        <Text className="text-xs text-gray-500 dark:text-gray-400">默认</Text>
-                      </View>
-                    )}
-                  </View>
+                  <Text className="text-lg font-bold text-gray-800 dark:text-gray-100">{wallet.name}</Text>
+                  {wallet.isDefault && (
+                    <View className="px-2 py-0.5 rounded-full bg-gray-200/80 dark:bg-gray-700 inline-flex items-center">
+                      <Text className="text-xs text-gray-600 dark:text-gray-400">默认</Text>
+                    </View>
+                  )}
                 </View>
                 {wallet.description && (
-                  <Text className="text-sm text-gray-500 dark:text-gray-400 mt-2">{wallet.description}</Text>
+                  <Text className="text-sm text-gray-500 dark:text-gray-400 ml-2 truncate flex-1">{wallet.description}</Text>
                 )}
 
-                <View className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center">
+                <View className="flex items-center gap-2">
                   {currentWalletId === wallet.id && (
                     <View className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: wallet.color }}>
                       <Icon name="Check" size={14} color="#fff" />
                     </View>
                   )}
-                </View>
-
-                <View className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center">
                   <View
-                    className={`w-6 h-6 rounded-full flex items-center justify-center ${currentWalletId === wallet.id ? '' : 'opacity-0'}`}
+                    className="w-8 h-8 flex items-center justify-center"
                     onClick={(e) => {
                       e.stopPropagation?.();
                       openSettings(wallet);
                     }}
                   >
-                    <Icon name="MoreHorizontal" size={16} className="text-gray-500 dark:text-gray-400" />
+                    <Icon name="Settings" size={18} className="text-gray-500 dark:text-gray-400" />
                   </View>
                 </View>
               </View>
@@ -153,29 +148,29 @@ export default function WalletManage() {
         confirmText={showEdit ? '保存' : '添加'}
         onConfirm={showEdit ? handleUpdate : handleAdd}
       >
-        <View className="space-y-4 py-2">
+        <View className="space-y-3">
           <View>
-            <Text className="text-sm text-gray-700 dark:text-gray-300 mb-2 block">名称</Text>
-            <input
+            <Text className="text-sm text-gray-700 dark:text-gray-300 mb-1.5 block">名称</Text>
+            <Input
               type="text"
               value={name}
-              onInput={(e) => setName((e.target as any).value)}
+              onInput={(e) => setName(e.detail.value)}
               placeholder="账本名称"
-              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm"
             />
           </View>
           <View>
-            <Text className="text-sm text-gray-700 dark:text-gray-300 mb-2 block">描述</Text>
-            <input
+            <Text className="text-sm text-gray-700 dark:text-gray-300 mb-1.5 block">描述</Text>
+            <Input
               type="text"
               value={description}
-              onInput={(e) => setDescription((e.target as any).value)}
+              onInput={(e) => setDescription(e.detail.value)}
               placeholder="账本描述"
-              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm"
             />
           </View>
           <View>
-            <Text className="text-sm text-gray-700 dark:text-gray-300 mb-2 block">颜色</Text>
+            <Text className="text-sm text-gray-700 dark:text-gray-300 mb-1.5 block">颜色</Text>
             <View className="flex gap-2">
               {colors.map((color) => (
                 <View
