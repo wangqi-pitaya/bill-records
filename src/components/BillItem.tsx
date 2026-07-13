@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { View, Text } from '@tarojs/components';
+import Taro from '@tarojs/taro';
 import { Bill } from '../types';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
@@ -16,11 +17,12 @@ interface BillItemProps {
 export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = '#10b981' }: BillItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [translateX, setTranslateX] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isSwiping, setIsSwiping] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const currentTranslateRef = useRef(0);
+  const directionRef = useRef<'horizontal' | 'vertical' | null>(null);
 
   const SWIPE_THRESHOLD = 40;
   const ACTION_WIDTH = 160;
@@ -36,27 +38,42 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
     setIsOpened(false);
   }, [bill.id, onDelete]);
 
-  const handleTouchStart = (e: any) => {
-    const touch = e.touches[0];
-    startXRef.current = touch.clientX;
-    startYRef.current = touch.clientY;
-    setIsDragging(null as any);
+  const getClientX = (e: any) => {
+    if (e.touches && e.touches[0]) return e.touches[0].clientX;
+    if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientX;
+    return e.clientX;
+  };
+  const getClientY = (e: any) => {
+    if (e.touches && e.touches[0]) return e.touches[0].clientY;
+    if (e.changedTouches && e.changedTouches[0]) return e.changedTouches[0].clientY;
+    return e.clientY;
   };
 
-  const handleTouchMove = (e: any) => {
-    const touch = e.touches[0];
-    const dx = touch.clientX - startXRef.current;
-    const dy = touch.clientY - startYRef.current;
+  const handleStart = (e: any) => {
+    const x = getClientX(e);
+    const y = getClientY(e);
+    startXRef.current = x;
+    startYRef.current = y;
+    directionRef.current = null;
+    setIsSwiping(true);
+  };
 
-    if (isDragging === null) {
+  const handleMove = (e: any) => {
+    if (!isSwiping) return;
+    const x = getClientX(e);
+    const y = getClientY(e);
+    const dx = x - startXRef.current;
+    const dy = y - startYRef.current;
+
+    if (directionRef.current === null) {
       if (Math.abs(dx) > Math.abs(dy) + 5) {
-        setIsDragging(true);
+        directionRef.current = 'horizontal';
       } else if (Math.abs(dy) > Math.abs(dx) + 5) {
-        setIsDragging(false);
+        directionRef.current = 'vertical';
       }
     }
 
-    if (isDragging === true) {
+    if (directionRef.current === 'horizontal') {
       e.preventDefault?.();
       const base = isOpened ? -ACTION_WIDTH : 0;
       let next = base + dx;
@@ -67,8 +84,8 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
     }
   };
 
-  const handleTouchEnd = () => {
-    if (isDragging === true) {
+  const handleEnd = () => {
+    if (directionRef.current === 'horizontal') {
       if (currentTranslateRef.current < -SWIPE_THRESHOLD) {
         setTranslateX(-ACTION_WIDTH);
         setIsOpened(true);
@@ -77,7 +94,8 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         setIsOpened(false);
       }
     }
-    setIsDragging(false);
+    directionRef.current = null;
+    setIsSwiping(false);
   };
 
   const closeSwipe = useCallback(() => {
@@ -96,6 +114,8 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
       closeSwipe();
     }
   }, [isOpened, closeSwipe]);
+
+  const isTouch = Taro.getEnv() !== Taro.ENV_TYPE.WEB;
 
   return (
     <View
@@ -138,11 +158,15 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         }`}
         style={{
           transform: `translateX(${translateX}px)`,
-          transition: isDragging === true ? 'none' : 'transform 0.2s ease-out',
+          transition: isSwiping ? 'none' : 'transform 0.2s ease-out',
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={isTouch ? handleStart : undefined}
+        onTouchMove={isTouch ? handleMove : undefined}
+        onTouchEnd={isTouch ? handleEnd : undefined}
+        onMouseDown={!isTouch ? handleStart : undefined}
+        onMouseMove={!isTouch ? handleMove : undefined}
+        onMouseUp={!isTouch ? handleEnd : undefined}
+        onMouseLeave={!isTouch ? handleEnd : undefined}
         onClick={handleInnerClick}
       >
         <View

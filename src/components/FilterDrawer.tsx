@@ -14,6 +14,13 @@ const datePresets: { key: FilterOptions['datePreset']; label: string }[] = [
   { key: 'custom', label: '自定义' },
 ];
 
+const defaultFilters: FilterOptions = {
+  walletId: 'all',
+  datePreset: 'all',
+  startDate: '',
+  endDate: '',
+};
+
 interface FilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -38,6 +45,12 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm, themeColor =
     onClose();
   };
 
+  const handleReset = () => {
+    setLocalFilters(defaultFilters);
+    onConfirm(defaultFilters);
+    onClose();
+  };
+
   const handleRangeConfirm = (start: string, end: string) => {
     setLocalFilters((prev) => ({ ...prev, startDate: start, endDate: end }));
   };
@@ -50,11 +63,13 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm, themeColor =
         direction="right"
         title="筛选"
         showFooter
+        cancelText="重置"
         confirmText="确定"
         onConfirm={handleConfirm}
+        onCancel={handleReset}
         themeColor={themeColor}
       >
-        <ScrollView scrollY className="max-h-[600rpx]">
+        <ScrollView scrollY className="h-full">
           <View className="space-y-6 py-2 px-4">
             <View>
               <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">账本</Text>

@@ -17,6 +17,9 @@ export default function Profile() {
   const { isDark, toggleTheme } = useTheme();
   const toast = useToast();
 
+  const currentWallet = wallets.find((w) => w.id === currentWalletId);
+  const themeColor = currentWallet?.color || '#10b981';
+
   const [nickname, setNickname] = useState('用户');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -156,16 +159,16 @@ export default function Profile() {
 
   return (
     <View className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-8">
-      <View className="bg-white dark:bg-gray-800 px-4 pt-4 pb-6">
+      <View className="px-4 pt-4 pb-6" style={{ backgroundColor: themeColor }}>
         <View className="flex items-center gap-3">
-          <View className="w-10 h-10 rounded-full flex items-center justify-center bg-blue-500">
+          <View className="w-10 h-10 rounded-full flex items-center justify-center bg-white/20">
             <Text className="text-lg font-bold text-white">{nickname[0]}</Text>
           </View>
           <View className="flex-1">
             <View className="flex items-center gap-2">
-              <Text className="text-lg font-bold text-gray-800 dark:text-gray-100">{nickname}</Text>
+              <Text className="text-lg font-bold text-white">{nickname}</Text>
               <View onClick={() => { setTempNickname(nickname); setShowNicknameModal(true); }}>
-                <Icon name="Pencil" size={14} className="text-gray-400" />
+                <Icon name="Pencil" size={14} className="text-white/80" />
               </View>
             </View>
           </View>
@@ -198,8 +201,8 @@ export default function Profile() {
               onClick={item.onClick}
             >
               <View className="flex items-center gap-3">
-                <View className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500/10">
-                  <Icon name={item.icon} size={16} className="text-blue-500" />
+                <View className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor}1A` }}>
+                  <Icon name={item.icon} size={16} style={{ color: themeColor }} />
                 </View>
                 <Text className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</Text>
               </View>
@@ -216,8 +219,8 @@ export default function Profile() {
               onClick={item.onClick}
             >
               <View className="flex items-center gap-3">
-                <View className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? 'bg-red-500/10' : 'bg-blue-500/10'}`}>
-                  <Icon name={item.icon} size={16} className={item.danger ? 'text-red-500' : 'text-blue-500'} />
+                <View className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.danger ? 'bg-red-500/10' : ''}`} style={item.danger ? undefined : { backgroundColor: `${themeColor}1A` }}>
+                  <Icon name={item.icon} size={16} className={item.danger ? 'text-red-500' : ''} style={item.danger ? undefined : { color: themeColor }} />
                 </View>
                 <Text className={`text-sm font-medium ${item.danger ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>{item.label}</Text>
               </View>

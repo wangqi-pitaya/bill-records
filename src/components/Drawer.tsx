@@ -16,6 +16,7 @@ interface DrawerProps {
   confirmDisabled?: boolean;
   confirmVariant?: 'primary' | 'danger' | 'warning';
   onConfirm?: () => void;
+  onCancel?: () => void;
   closeOnMaskClick?: boolean;
   width?: string;
   height?: string;
@@ -48,7 +49,7 @@ const sizeClasses: Record<Direction, { dim: string; size: string }> = {
   top: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
   bottom: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
   left: { dim: 'h-full', size: 'w-[85%] max-w-[700rpx]' },
-  right: { dim: 'h-full', size: 'w-[85%] max-w-[700rpx]' },
+  right: { dim: 'h-full', size: 'w-[90%] max-w-[800rpx]' },
 };
 
 export function Drawer({
@@ -63,6 +64,7 @@ export function Drawer({
   confirmDisabled = false,
   confirmVariant = 'primary',
   onConfirm,
+  onCancel,
   closeOnMaskClick = true,
   width,
   height,
@@ -75,7 +77,6 @@ export function Drawer({
   useEffect(() => {
     if (isOpen) {
       setMounted(true);
-      // 触发动画
       const t = setTimeout(() => setEntered(true), 20);
       return () => clearTimeout(t);
     } else if (mounted) {
@@ -105,7 +106,7 @@ export function Drawer({
         onClick={closeOnMaskClick ? onClose : undefined}
       />
       <View
-        className={`absolute bg-white dark:bg-gray-800 shadow-xl ${positionClasses[direction]} ${dim} ${size} ${transform} transition-transform duration-200`}
+        className={`absolute bg-white dark:bg-gray-800 shadow-xl flex flex-col ${positionClasses[direction]} ${dim} ${size} ${transform} transition-transform duration-200`}
         style={{
           ...(width ? { width } : {}),
           ...(height ? { height } : {}),
@@ -124,8 +125,8 @@ export function Drawer({
           </View>
         )}
 
-        <View className={isHorizontal ? 'flex-1 overflow-hidden' : ''} style={!isHorizontal ? { maxHeight: 'calc(80vh - 96rpx)' } : undefined}>
-          <View className={isHorizontal ? 'h-full overflow-auto' : 'overflow-auto'} style={!isHorizontal ? { maxHeight: 'calc(80vh - 192rpx)' } : undefined}>
+        <View className="flex-1 overflow-hidden">
+          <View className="h-full overflow-auto">
             {children}
           </View>
         </View>
@@ -134,7 +135,7 @@ export function Drawer({
           <View className="flex border-t border-gray-100 dark:border-gray-700 shrink-0">
             <View
               className="flex-1 h-12 text-gray-600 dark:text-gray-300 text-base bg-transparent active:bg-gray-50 dark:active:bg-gray-700/50 flex items-center justify-center"
-              onClick={onClose}
+              onClick={() => onCancel?.()}
             >
               <Text>{cancelText}</Text>
             </View>
