@@ -32,10 +32,12 @@ module.exports = {
         btn: '12rpx',
         input: '10rpx',
       },
+      boxShadow: {
+        card: '0 2rpx 12rpx rgba(0, 0, 0, 0.08)',
+      },
     },
   },
   corePlugins: {
-    // 小程序不支持以下特性，关闭以减少体积
     container: false,
   },
   plugins: [],

@@ -11,6 +11,7 @@ export interface Bill {
   id: string;
   type: BillType;
   category: string;
+  categoryId: string;
   icon: string;
   amount: number;
   note: string;
@@ -46,9 +47,9 @@ export interface FilterOptions {
 export interface BillStore {
   bills: Bill[];
   addBill: (bill: Omit<Bill, 'id' | 'timestamp'>) => void;
-  deleteBill: (id: string) => void;
   softDeleteBill: (id: string) => void;
   restoreBill: (id: string) => void;
+  restoreAllDeleted: () => void;
   permanentDeleteBill: (id: string) => void;
   clearTrash: () => void;
   updateBill: (id: string, bill: Partial<Bill>) => void;

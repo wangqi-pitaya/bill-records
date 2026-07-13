@@ -12,7 +12,13 @@ export function taroPersist<T extends object>(
         set(partial, replace);
         try {
           const state = get();
-          setStorage(options.name, state);
+          const dataOnly: Record<string, unknown> = {};
+          for (const [key, value] of Object.entries(state)) {
+            if (typeof value !== 'function') {
+              dataOnly[key] = value;
+            }
+          }
+          setStorage(options.name, dataOnly);
         } catch (e) {
           console.error('Persist error:', e);
         }

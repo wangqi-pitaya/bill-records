@@ -8,15 +8,28 @@ interface ToastState {
   hide: () => void;
 }
 
+let timer: ReturnType<typeof setTimeout> | null = null;
+
 export const useToastStore = create<ToastState>((set) => ({
   message: '',
   visible: false,
   type: 'success',
   show: (message, type = 'success') => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
     set({ message, visible: true, type });
-    setTimeout(() => {
+    timer = setTimeout(() => {
       set({ visible: false });
+      timer = null;
     }, 2000);
   },
-  hide: () => set({ visible: false }),
+  hide: () => {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    set({ visible: false });
+  },
 }));

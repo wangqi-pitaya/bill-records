@@ -25,6 +25,12 @@ export function useTheme() {
       if (saved === 'dark' || saved === 'light') {
         setTheme(saved);
         applyThemeClass(saved);
+      } else {
+        const systemInfo = Taro.getSystemInfoSync();
+        if (systemInfo.theme === 'dark') {
+          setTheme('dark');
+          applyThemeClass('dark');
+        }
       }
     } catch {
       // ignore
@@ -35,6 +41,15 @@ export function useTheme() {
     Taro.setStorageSync('theme', theme);
     applyThemeClass(theme);
   }, [theme]);
+
+  useEffect(() => {
+    const listener = Taro.onThemeChange((res) => {
+      setTheme(res.theme === 'dark' ? 'dark' : 'light');
+    });
+    return () => {
+      Taro.offThemeChange(listener);
+    };
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));

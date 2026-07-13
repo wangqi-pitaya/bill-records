@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, Input } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
@@ -7,13 +7,14 @@ import { BillItem } from '../../components/BillItem';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { FilterDrawer } from '../../components/FilterDrawer';
-import { groupBillsByDate, filterBillsByWallet, getDateLabel } from '../../lib/utils';
+import { groupBillsByDate, filterBillsByWallet, getDateLabel, getDateRangeByPreset } from '../../lib/utils';
 import { FilterOptions } from '../../types';
 
 export default function Search() {
   const { bills, softDeleteBill } = useBillStore();
   const { currentWalletId, wallets } = useWalletStore();
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     walletId: 'all',
@@ -25,6 +26,13 @@ export default function Search() {
   const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
   const activeBills = bills.filter((b) => !b.deleted);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   const results = useMemo(() => {
     let result = activeBills;
 
@@ -32,8 +40,16 @@ export default function Search() {
       result = filterBillsByWallet(result, filters.walletId);
     }
 
-    if (query.trim()) {
-      const q = query.trim().toLowerCase();
+    const dateRange = getDateRangeByPreset(filters.datePreset, filters.startDate, filters.endDate);
+    if (dateRange.start) {
+      result = result.filter((b) => b.date >= dateRange.start);
+    }
+    if (dateRange.end) {
+      result = result.filter((b) => b.date <= dateRange.end);
+    }
+
+    if (debouncedQuery.trim()) {
+      const q = debouncedQuery.trim().toLowerCase();
       result = result.filter(
         (b) =>
           b.category.toLowerCase().includes(q) ||
@@ -43,7 +59,7 @@ export default function Search() {
     }
 
     return result;
-  }, [activeBills, filters, query]);
+  }, [activeBills, filters, debouncedQuery]);
 
   const grouped = groupBillsByDate(results);
 
@@ -58,10 +74,10 @@ export default function Search() {
       <View className="bg-white dark:bg-gray-800 px-4 py-3">
         <View className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-full px-3 py-2">
           <Icon name="Search" size={16} className="text-gray-400 mr-2" />
-          <input
+          <Input
             type="text"
             value={query}
-            onInput={(e) => setQuery((e.target as any).value)}
+            onInput={(e) => setQuery(e.detail.value)}
             placeholder="搜索分类、备注、金额..."
             className="flex-1 bg-transparent text-sm text-gray-800 dark:text-gray-100 focus:outline-none"
           />

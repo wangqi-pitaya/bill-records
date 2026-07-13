@@ -5,29 +5,29 @@ import { Icon } from './Icon';
 
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
-const formatDateStr = (d) => {
+const formatDateStr = (d: Date): string => {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 };
 
-const parseDate = (dateStr) => {
+const parseDate = (dateStr: string): Date => {
   const [y, m, d] = dateStr.split('-').map(Number);
   return new Date(y, m - 1, d);
 };
 
-const getDaysInMonth = (year, month) => {
+const getDaysInMonth = (year: number, month: number): number => {
   return new Date(year, month + 1, 0).getDate();
 };
 
-const getFirstDayOfWeek = (year, month) => {
+const getFirstDayOfWeek = (year: number, month: number): number => {
   return new Date(year, month, 1).getDay();
 };
 
-const isSameDay = (a, b) => a === b;
+const isSameDay = (a: string, b: string): boolean => a === b;
 
-const isBetween = (date, start, end) => {
+const isBetween = (date: string, start: string, end: string): boolean => {
   if (!start || !end) return false;
   const d = new Date(date).getTime();
   const s = new Date(start).getTime();
@@ -36,6 +36,23 @@ const isBetween = (date, start, end) => {
   const max = Math.max(s, e);
   return d > min && d < max;
 };
+
+interface CalendarConfig {
+  showYearPicker?: boolean;
+  showMonthPicker?: boolean;
+  showDayPicker?: boolean;
+}
+
+interface CalendarProps {
+  mode?: 'single' | 'range';
+  value?: string;
+  startValue?: string;
+  endValue?: string;
+  config?: CalendarConfig;
+  themeColor?: string;
+  onChange?: (date: string) => void;
+  onRangeChange?: (start: string, end: string) => void;
+}
 
 export function Calendar({
   mode = 'single',
@@ -124,12 +141,12 @@ export function Calendar({
   }, [initYear, initMonth]);
 
   const handleSelectDate = useCallback(
-    (year, month, day) => {
+    (year: number, month: number, day?: number) => {
       const d = day != null ? day : 1;
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
       if (mode === 'single') {
-        onChange && onChange(dateStr);
+        onChange?.(dateStr);
         return;
       }
 
@@ -138,15 +155,15 @@ export function Calendar({
           setRangeStart(dateStr);
           setRangeEnd('');
           setSelecting(true);
-          onRangeChange && onRangeChange(dateStr, '');
+          onRangeChange?.(dateStr, '');
         } else {
           const start = rangeStart;
           const end = dateStr;
           const startTime = new Date(start).getTime();
           const endTime = new Date(end).getTime();
 
-          let finalStart;
-          let finalEnd;
+          let finalStart: string;
+          let finalEnd: string;
 
           if (startTime <= endTime) {
             finalStart = start;
@@ -159,7 +176,7 @@ export function Calendar({
           setRangeStart(finalStart);
           setRangeEnd(finalEnd);
           setSelecting(false);
-          onRangeChange && onRangeChange(finalStart, finalEnd);
+          onRangeChange?.(finalStart, finalEnd);
         }
       }
     },
@@ -167,13 +184,13 @@ export function Calendar({
   );
 
   const handleSelectDay = useCallback(
-    (dayInfo) => {
+    (dayInfo: { year: number; month: number; day: number }) => {
       handleSelectDate(dayInfo.year, dayInfo.month, dayInfo.day);
     },
     [handleSelectDate]
   );
 
-  const isInRange = (dateStr) => {
+  const isInRange = (dateStr: string): boolean => {
     if (mode !== 'range') return false;
     const s = rangeStart;
     const e = selecting ? '' : rangeEnd;
@@ -181,17 +198,17 @@ export function Calendar({
     return isBetween(dateStr, s, e);
   };
 
-  const isRangeStart = (dateStr) => {
+  const isRangeStart = (dateStr: string): boolean => {
     if (mode !== 'range') return false;
     return rangeStart === dateStr;
   };
 
-  const isRangeEnd = (dateStr) => {
+  const isRangeEnd = (dateStr: string): boolean => {
     if (mode !== 'range') return false;
     return rangeEnd === dateStr && !selecting;
   };
 
-  const isSelected = (dateStr) => {
+  const isSelected = (dateStr: string): boolean => {
     if (mode === 'single') return isSameDay(dateStr, value);
     return isRangeStart(dateStr) || isRangeEnd(dateStr);
   };
@@ -449,8 +466,16 @@ export function Calendar({
   );
 }
 
-// ==================== 单日期选择弹窗 ====================
-export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选择日期', themeColor = '#10b981' }) {
+interface CalendarPickerProps {
+  isOpen: boolean;
+  value: string;
+  onConfirm: (date: string) => void;
+  onClose: () => void;
+  title?: string;
+  themeColor?: string;
+}
+
+export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选择日期', themeColor = '#10b981' }: CalendarPickerProps) {
   const [tempDate, setTempDate] = useState(value);
 
   useEffect(() => {
@@ -467,7 +492,6 @@ export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选
       showFooter
       cancelText="取消"
       confirmText="确定"
-      confirmColor={themeColor}
       onConfirm={() => {
         onConfirm(tempDate);
         onClose();
@@ -486,8 +510,17 @@ export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选
   );
 }
 
-// ==================== 区间日期选择弹窗 ====================
-export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, onClose, title = '选择日期范围', themeColor = '#10b981' }) {
+interface CalendarRangePickerProps {
+  isOpen: boolean;
+  startValue: string;
+  endValue: string;
+  onConfirm: (start: string, end: string) => void;
+  onClose: () => void;
+  title?: string;
+  themeColor?: string;
+}
+
+export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, onClose, title = '选择日期范围', themeColor = '#10b981' }: CalendarRangePickerProps) {
   const [tempStart, setTempStart] = useState(startValue);
   const [tempEnd, setTempEnd] = useState(endValue);
 
@@ -498,7 +531,7 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
     }
   }, [isOpen, startValue, endValue]);
 
-  const handleRangeChange = (start, end) => {
+  const handleRangeChange = (start: string, end: string) => {
     setTempStart(start);
     setTempEnd(end);
   };
@@ -512,7 +545,6 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
       cancelText="取消"
       confirmText="确定"
       confirmDisabled={!tempStart || !tempEnd}
-      confirmColor={themeColor}
       onConfirm={() => {
         if (tempStart && tempEnd) {
           onConfirm(tempStart, tempEnd);
@@ -550,8 +582,16 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
   );
 }
 
-// ==================== 年月选择弹窗 ====================
-export function YearMonthPicker({ isOpen, value, onConfirm, onClose, mode, themeColor = '#10b981' }) {
+interface YearMonthPickerProps {
+  isOpen: boolean;
+  value: string;
+  onConfirm: (date: string) => void;
+  onClose: () => void;
+  mode?: 'year' | 'month';
+  themeColor?: string;
+}
+
+export function YearMonthPicker({ isOpen, value, onConfirm, onClose, mode = 'month', themeColor = '#10b981' }: YearMonthPickerProps) {
   const [tempValue, setTempValue] = useState(value);
 
   useEffect(() => {
@@ -573,7 +613,6 @@ export function YearMonthPicker({ isOpen, value, onConfirm, onClose, mode, theme
       showFooter
       cancelText="取消"
       confirmText="确定"
-      confirmColor={themeColor}
       onConfirm={handleConfirm}
     >
       <View className="p-4">

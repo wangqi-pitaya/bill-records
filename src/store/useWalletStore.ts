@@ -9,6 +9,8 @@ interface WalletStore {
   wallets: Wallet[];
   currentWalletId: string;
   setCurrentWallet: (id: string) => void;
+  setCurrentWalletId: (id: string) => void;
+  setWallets: (wallets: Wallet[]) => void;
   addWallet: (name: string, description?: string, color?: string) => void;
   updateWallet: (id: string, data: Partial<Omit<Wallet, 'id'>>) => void;
   deleteWallet: (id: string) => void;
@@ -35,6 +37,14 @@ export const useWalletStore = create<WalletStore>()(
           Taro.setStorageSync('wallet-selected-color', wallet.color);
           updateTabBarColor(wallet.color);
         }
+      },
+
+      setCurrentWalletId: (id) => {
+        set({ currentWalletId: id });
+      },
+
+      setWallets: (wallets) => {
+        set({ wallets });
       },
 
       addWallet: (name, description = '', color) => {

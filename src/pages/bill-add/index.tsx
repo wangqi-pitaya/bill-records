@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, ScrollView } from '@tarojs/components';
+import { View, Text, ScrollView, Input } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillForm } from '../../hooks/useBillForm';
 import { useBillStore } from '../../store/useBillStore';
@@ -88,12 +88,12 @@ export default function BillAdd() {
 
       {/* Bottom Form */}
       <View className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 pt-3 pb-3 shrink-0 safe-bottom">
-        <input
+        <Input
           type="text"
           value={form.note}
-          onInput={(e) => form.setNote((e.target as any).value)}
+          onInput={(e) => form.setNote(e.detail.value)}
           placeholder="添加备注..."
-          className="w-full px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent focus:border-transparent rounded-btn text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 mb-2"
+          className="w-full px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent focus:border-transparent rounded-btn text-sm text-gray-800 dark:text-gray-100"
           style={{ '--tw-ring-color': themeColor } as any}
         />
 
@@ -105,12 +105,12 @@ export default function BillAdd() {
             <Icon name="Calendar" size={14} />
             <Text>{getShortDateLabel(form.date)}</Text>
           </View>
-          <input
+          <Input
             type="digit"
             value={form.amount}
-            onInput={(e) => form.setAmount((e.target as any).value)}
+            onInput={(e) => form.setAmount(e.detail.value)}
             placeholder="0.00"
-            className="flex-1 px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent rounded-btn text-base font-bold text-gray-800 dark:text-gray-100 text-center focus:outline-none focus:ring-2"
+            className="flex-1 px-3 py-3 bg-gray-50 dark:bg-gray-700 border border-transparent rounded-btn text-base font-bold text-gray-800 dark:text-gray-100 text-center"
             style={{ '--tw-ring-color': themeColor } as any}
           />
         </View>

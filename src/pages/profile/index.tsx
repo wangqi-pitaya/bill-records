@@ -1,16 +1,21 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Switch } from '@tarojs/components';
+import { View, Text, ScrollView, Switch, Input, Textarea } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
+import { useCategoryStore } from '../../store/useCategoryStore';
 import { useTheme } from '../../hooks/useTheme';
+import { useToast } from '../../hooks/useToast';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
+import { defaultCategories, defaultWallets } from '../../data/defaults';
 
 export default function Profile() {
-  const { bills } = useBillStore();
-  const { wallets, currentWalletId } = useWalletStore();
+  const { bills, addBill } = useBillStore();
+  const { wallets, currentWalletId, setWallets, setCurrentWalletId } = useWalletStore();
+  const { categories, setCategories } = useCategoryStore();
   const { isDark, toggleTheme } = useTheme();
+  const toast = useToast();
 
   const [nickname, setNickname] = useState('用户');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -31,6 +36,70 @@ export default function Profile() {
 
   const handleClear = () => {
     setShowClearConfirm(false);
+    setCategories(defaultCategories);
+    setWallets(defaultWallets);
+    setCurrentWalletId('default');
+    Taro.clearStorageSync();
+    toast.success('数据已清除');
+  };
+
+  const handleExport = () => {
+    const data = {
+      bills: bills.filter((b) => !b.deleted),
+      wallets,
+      categories,
+      nickname,
+      version: '1.0',
+    };
+    const jsonStr = JSON.stringify(data, null, 2);
+    Taro.setClipboardData({
+      data: jsonStr,
+      success: () => {
+        toast.success('数据已复制到剪贴板');
+        setShowExportModal(false);
+      },
+    });
+  };
+
+  const handleImport = () => {
+    if (!importJson.trim()) {
+      toast.warning('请输入数据');
+      return;
+    }
+    try {
+      const data = JSON.parse(importJson);
+      if (!data.bills || !Array.isArray(data.bills)) {
+        toast.error('数据格式错误');
+        return;
+      }
+      data.bills.forEach((bill: any) => {
+        if (bill.id && !bills.find((b) => b.id === bill.id)) {
+          addBill({
+            type: bill.type,
+            category: bill.category,
+            icon: bill.icon,
+            amount: bill.amount,
+            note: bill.note || '',
+            date: bill.date,
+            walletId: bill.walletId,
+          });
+        }
+      });
+      if (data.wallets && Array.isArray(data.wallets)) {
+        setWallets(data.wallets);
+      }
+      if (data.categories && Array.isArray(data.categories)) {
+        setCategories(data.categories);
+      }
+      if (data.nickname) {
+        setNickname(data.nickname);
+      }
+      toast.success('导入成功');
+      setShowImportModal(false);
+      setImportJson('');
+    } catch {
+      toast.error('数据解析失败');
+    }
   };
 
   const actionItems = [
@@ -171,12 +240,12 @@ export default function Profile() {
           }
         }}
       >
-        <input
+        <Input
           type="text"
           value={tempNickname}
-          onInput={(e) => setTempNickname((e.target as any).value)}
+          onInput={(e) => setTempNickname(e.detail.value)}
           placeholder="输入昵称"
-          className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm"
         />
       </Modal>
 
@@ -186,9 +255,9 @@ export default function Profile() {
         title="导出账单"
         showFooter
         confirmText="导出"
-        onConfirm={() => setShowExportModal(false)}
+        onConfirm={handleExport}
       >
-        <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">确定要导出所有账单数据吗？</Text>
+        <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">确定要导出所有账单数据吗？数据将复制到剪贴板。</Text>
       </Modal>
 
       <Modal
@@ -197,16 +266,14 @@ export default function Profile() {
         title="导入账单"
         showFooter
         confirmText="导入"
-        onConfirm={() => {
-          setShowImportModal(false);
-          setImportJson('');
-        }}
+        onConfirm={handleImport}
       >
-        <textarea
+        <Textarea
           value={importJson}
-          onInput={(e) => setImportJson((e.target as any).value)}
+          onInput={(e) => setImportJson(e.detail.value)}
           placeholder="在此粘贴JSON格式的账单数据"
-          className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 h-[200rpx]"
+          className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-input text-gray-800 dark:text-gray-100 text-sm"
+          style={{ height: '200rpx' }}
         />
       </Modal>
 

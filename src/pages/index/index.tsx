@@ -47,7 +47,10 @@ export default function Index() {
     return { income, expense, balance: income - expense };
   }, [filteredBills]);
 
-  const groupedBills = groupBillsByDate(filteredBills);
+  const groupedBills = useMemo(
+    () => groupBillsByDate(filteredBills),
+    [filteredBills]
+  );
 
   const handleOpenAdd = () => {
     Taro.navigateTo({ url: '/pages/bill-add/index' });

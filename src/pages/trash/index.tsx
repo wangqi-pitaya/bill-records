@@ -6,7 +6,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
 import { FilterDrawer } from '../../components/FilterDrawer';
-import { groupBillsByDate, getDateLabel, formatMoney } from '../../lib/utils';
+import { groupBillsByDate, getDateLabel, formatMoney, filterBillsByWallet, getDateRangeByPreset } from '../../lib/utils';
 import { FilterOptions } from '../../types';
 
 export default function Trash() {
@@ -24,8 +24,25 @@ export default function Trash() {
     endDate: '',
   });
 
-  const deletedBills = useMemo(() => bills.filter((b) => b.deleted), [bills]);
-  const grouped = groupBillsByDate(deletedBills);
+  const filteredBills = useMemo(() => {
+    let result = bills.filter((b) => b.deleted);
+
+    if (filters.walletId !== 'all') {
+      result = filterBillsByWallet(result, filters.walletId);
+    }
+
+    const dateRange = getDateRangeByPreset(filters.datePreset, filters.startDate, filters.endDate);
+    if (dateRange.start) {
+      result = result.filter((b) => b.date >= dateRange.start);
+    }
+    if (dateRange.end) {
+      result = result.filter((b) => b.date <= dateRange.end);
+    }
+
+    return result;
+  }, [bills, filters]);
+
+  const grouped = groupBillsByDate(filteredBills);
 
   const handleRestoreAll = () => {
     restoreAllDeleted();
@@ -54,7 +71,7 @@ export default function Trash() {
 
       <ScrollView scrollY className="flex-1 pb-4">
         <View className="px-4 py-4">
-          {deletedBills.length > 0 ? (
+          {filteredBills.length > 0 ? (
             <View className="space-y-4">
               <View className="flex gap-2">
                 <View

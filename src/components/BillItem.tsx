@@ -16,11 +16,11 @@ interface BillItemProps {
 export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = '#10b981' }: BillItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [translateX, setTranslateX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isOpened, setIsOpened] = useState(false);
   const startXRef = useRef(0);
   const startYRef = useRef(0);
-  const isHorizontalRef = useRef<null | boolean>(null);
   const currentTranslateRef = useRef(0);
-  const openedRef = useRef(false);
 
   const SWIPE_THRESHOLD = 40;
   const ACTION_WIDTH = 160;
@@ -33,14 +33,14 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
     onDelete(bill.id);
     setShowDeleteConfirm(false);
     setTranslateX(0);
-    openedRef.current = false;
+    setIsOpened(false);
   }, [bill.id, onDelete]);
 
   const handleTouchStart = (e: any) => {
     const touch = e.touches[0];
     startXRef.current = touch.clientX;
     startYRef.current = touch.clientY;
-    isHorizontalRef.current = null;
+    setIsDragging(null as any);
   };
 
   const handleTouchMove = (e: any) => {
@@ -48,17 +48,17 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
     const dx = touch.clientX - startXRef.current;
     const dy = touch.clientY - startYRef.current;
 
-    if (isHorizontalRef.current === null) {
+    if (isDragging === null) {
       if (Math.abs(dx) > Math.abs(dy) + 5) {
-        isHorizontalRef.current = true;
+        setIsDragging(true);
       } else if (Math.abs(dy) > Math.abs(dx) + 5) {
-        isHorizontalRef.current = false;
+        setIsDragging(false);
       }
     }
 
-    if (isHorizontalRef.current === true) {
+    if (isDragging === true) {
       e.preventDefault?.();
-      const base = openedRef.current ? -ACTION_WIDTH : 0;
+      const base = isOpened ? -ACTION_WIDTH : 0;
       let next = base + dx;
       if (next > 0) next = 0;
       if (next < -ACTION_WIDTH) next = -ACTION_WIDTH;
@@ -68,27 +68,39 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
   };
 
   const handleTouchEnd = () => {
-    if (isHorizontalRef.current === true) {
+    if (isDragging === true) {
       if (currentTranslateRef.current < -SWIPE_THRESHOLD) {
         setTranslateX(-ACTION_WIDTH);
-        openedRef.current = true;
+        setIsOpened(true);
       } else {
         setTranslateX(0);
-        openedRef.current = false;
+        setIsOpened(false);
       }
     }
-    isHorizontalRef.current = null;
+    setIsDragging(false);
   };
 
-  const closeSwipe = () => {
+  const closeSwipe = useCallback(() => {
     setTranslateX(0);
-    openedRef.current = false;
-  };
+    setIsOpened(false);
+  }, []);
+
+  const handleOuterClick = useCallback(() => {
+    if (isOpened) {
+      closeSwipe();
+    }
+  }, [isOpened, closeSwipe]);
+
+  const handleInnerClick = useCallback(() => {
+    if (isOpened) {
+      closeSwipe();
+    }
+  }, [isOpened, closeSwipe]);
 
   return (
     <View
       className="relative overflow-hidden"
-      onClick={openedRef.current ? closeSwipe : undefined}
+      onClick={handleOuterClick}
     >
       <View className="absolute right-0 top-0 bottom-0 flex" style={{ width: ACTION_WIDTH }}>
         <View
@@ -126,12 +138,12 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         }`}
         style={{
           transform: `translateX(${translateX}px)`,
-          transition: isHorizontalRef.current === true ? 'none' : 'transform 0.2s ease-out',
+          transition: isDragging === true ? 'none' : 'transform 0.2s ease-out',
         }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={() => { if (openedRef.current) closeSwipe(); }}
+        onClick={handleInnerClick}
       >
         <View
           className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${

@@ -13,13 +13,9 @@ export const useBillStore = create<BillStore>()(
           ...bill,
           id: generateId(),
           timestamp: Date.now(),
+          categoryId: bill.categoryId || '',
         };
         const updatedBills = [newBill, ...get().bills];
-        set({ bills: updatedBills });
-      },
-
-      deleteBill: (id) => {
-        const updatedBills = get().bills.filter((b) => b.id !== id);
         set({ bills: updatedBills });
       },
 
@@ -33,6 +29,13 @@ export const useBillStore = create<BillStore>()(
       restoreBill: (id) => {
         const updatedBills = get().bills.map((b) =>
           b.id === id ? { ...b, deleted: false, deletedAt: undefined } : b
+        );
+        set({ bills: updatedBills });
+      },
+
+      restoreAllDeleted: () => {
+        const updatedBills = get().bills.map((b) =>
+          b.deleted ? { ...b, deleted: false, deletedAt: undefined } : b
         );
         set({ bills: updatedBills });
       },

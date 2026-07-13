@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCategoryStore } from '../store/useCategoryStore';
 import { useBillStore } from '../store/useBillStore';
 import { useWalletStore } from '../store/useWalletStore';
@@ -92,6 +92,7 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     return {
       type: selectedCategory.type,
       category: selectedCategory.name,
+      categoryId: selectedCategory.id,
       icon: selectedCategory.icon,
       amount: parseFloat(amount),
       note,
@@ -105,18 +106,16 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     if (!billData) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      if (isEdit && editBill) {
-        updateBill(editBill.id, billData);
-        toast.success('账单已更新');
-      } else {
-        addBill(billData);
-        toast.success('账单已保存');
-        resetForm();
-      }
-      setIsSubmitting(false);
-      onSuccess?.();
-    }, 150);
+    if (isEdit && editBill) {
+      updateBill(editBill.id, billData);
+      toast.success('账单已更新');
+    } else {
+      addBill(billData);
+      toast.success('账单已保存');
+      resetForm();
+    }
+    setIsSubmitting(false);
+    onSuccess?.();
   }, [buildBillData, isEdit, editBill, updateBill, addBill, toast, onSuccess, resetForm]);
 
   const handleSaveAndContinue = useCallback(() => {
@@ -124,16 +123,17 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     if (!billData) return;
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      addBill(billData);
-      toast.success('已保存，继续记账');
-      setAmount('');
-      setNote('');
-      setIsSubmitting(false);
-    }, 150);
+    addBill(billData);
+    toast.success('已保存，继续记账');
+    setAmount('');
+    setNote('');
+    setIsSubmitting(false);
   }, [buildBillData, addBill, toast]);
 
-  const currentCategories = getCategoriesByType(activeTab);
+  const currentCategories = useMemo(
+    () => getCategoriesByType(activeTab),
+    [getCategoriesByType, activeTab]
+  );
   const canSubmit = !!selectedCategory && !!amount && !isSubmitting;
 
   return {

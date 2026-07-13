@@ -7,19 +7,24 @@ import { useBillStore } from './useBillStore';
 
 interface CategoryStore {
   categories: Category[];
+  setCategories: (categories: Category[]) => void;
   addCategory: (category: Omit<Category, 'id'>) => void;
   deleteCategory: (id: string) => boolean;
   reorderCategories: (type: BillType, newOrder: Category[]) => void;
   moveCategoryUp: (id: string, type: BillType) => void;
   moveCategoryDown: (id: string, type: BillType) => void;
   getCategoriesByType: (type: BillType) => Category[];
-  isCategoryUsed: (categoryName: string) => boolean;
+  isCategoryUsed: (categoryId: string) => boolean;
 }
 
 export const useCategoryStore = create<CategoryStore>()(
   taroPersist(
     (set, get) => ({
       categories: defaultCategories,
+
+      setCategories: (categories) => {
+        set({ categories });
+      },
 
       addCategory: (category) => {
         const newCategory: Category = {
@@ -35,7 +40,7 @@ export const useCategoryStore = create<CategoryStore>()(
         if (!category) return false;
 
         const bills = useBillStore.getState().bills;
-        const isUsed = bills.some((b) => b.category === category.name);
+        const isUsed = bills.some((b) => b.categoryId === category.id);
 
         if (isUsed) return false;
 
@@ -74,9 +79,9 @@ export const useCategoryStore = create<CategoryStore>()(
         return get().categories.filter((c) => c.type === type);
       },
 
-      isCategoryUsed: (categoryName) => {
+      isCategoryUsed: (categoryId) => {
         const bills = useBillStore.getState().bills;
-        return bills.some((b) => b.category === categoryName);
+        return bills.some((b) => b.categoryId === categoryId);
       },
     }),
     {
