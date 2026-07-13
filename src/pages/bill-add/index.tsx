@@ -50,7 +50,7 @@ export default function BillAdd() {
 
       {/* Tab Switcher - 固定，宽度缩小 */}
       <View className="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-100 dark:border-gray-700 shrink-0">
-        <View className="flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
+        <View className="inline-flex rounded-lg bg-gray-100 dark:bg-gray-700 p-1">
           <View
             className={`w-24 py-1.5 rounded-md text-sm font-medium text-center transition-colors ${
               form.activeTab === 'expense'

@@ -99,8 +99,10 @@ export function Drawer({
   const size = sizeClasses[direction].size;
   const transform = entered ? enterTransformActive[direction] : enterTransform[direction];
 
+  const isWeb = typeof window !== 'undefined';
+
   return (
-    <View className="fixed inset-0 z-[80]">
+    <View className="fixed inset-0 z-[1000]">
       <View
         className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${entered ? 'opacity-100' : 'opacity-0'}`}
         onClick={closeOnMaskClick ? onClose : undefined}
@@ -110,6 +112,7 @@ export function Drawer({
         style={{
           ...(width ? { width } : {}),
           ...(height ? { height } : {}),
+          ...(isWeb && direction !== 'top' && direction !== 'bottom' ? { paddingBottom: '50px' } : {}),
         }}
       >
         {title !== undefined && (

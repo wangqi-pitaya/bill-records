@@ -17,12 +17,13 @@ interface BillItemProps {
 export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = '#10b981' }: BillItemProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [translateX, setTranslateX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
   const [isOpened, setIsOpened] = useState(false);
+
   const startXRef = useRef(0);
   const startYRef = useRef(0);
   const currentTranslateRef = useRef(0);
   const directionRef = useRef<'horizontal' | 'vertical' | null>(null);
+  const swipingRef = useRef(false);
 
   const SWIPE_THRESHOLD = 40;
   const ACTION_WIDTH = 160;
@@ -55,11 +56,11 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
     startXRef.current = x;
     startYRef.current = y;
     directionRef.current = null;
-    setIsSwiping(true);
+    swipingRef.current = true;
   };
 
   const handleMove = (e: any) => {
-    if (!isSwiping) return;
+    if (!swipingRef.current) return;
     const x = getClientX(e);
     const y = getClientY(e);
     const dx = x - startXRef.current;
@@ -85,8 +86,10 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
   };
 
   const handleEnd = () => {
-    if (directionRef.current === 'horizontal') {
-      if (currentTranslateRef.current < -SWIPE_THRESHOLD) {
+    if (!swipingRef.current) return;
+
+    if (directionRef.current === 'horizontal' || directionRef.current === null) {
+      if (currentTranslateRef.current < -SWIPE_THRESHOLD / 2) {
         setTranslateX(-ACTION_WIDTH);
         setIsOpened(true);
       } else {
@@ -94,8 +97,9 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         setIsOpened(false);
       }
     }
+
     directionRef.current = null;
-    setIsSwiping(false);
+    swipingRef.current = false;
   };
 
   const closeSwipe = useCallback(() => {
@@ -158,7 +162,7 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         }`}
         style={{
           transform: `translateX(${translateX}px)`,
-          transition: isSwiping ? 'none' : 'transform 0.2s ease-out',
+          transition: swipingRef.current ? 'none' : 'transform 0.2s ease-out',
         }}
         onTouchStart={isTouch ? handleStart : undefined}
         onTouchMove={isTouch ? handleMove : undefined}
