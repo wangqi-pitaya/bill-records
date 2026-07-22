@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
+import { useWalletStore } from '../../store/useWalletStore';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { StatCard } from '../../components/StatCard';

@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text } from '@tarojs/components';
-import { Button } from './Button';
 import { useTheme } from '../hooks/useTheme';
 import { cn } from '../lib/utils';
 
@@ -77,19 +76,28 @@ export const Modal: React.FC<ModalProps> = ({
 
         <View className="flex gap-3">
           {showCancel && (
-            <Button variant="secondary" fullWidth onClick={onClose}>
-              {cancelText}
-            </Button>
+            <View
+              className={cn(
+                'flex-1 py-3 rounded-xl text-center text-sm font-medium border transition-colors cursor-pointer',
+                isDark
+                  ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600'
+                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+              )}
+              onClick={onClose}
+            >
+              <Text>{cancelText}</Text>
+            </View>
           )}
           {onConfirm && (
-            <Button
-              variant="custom"
-              className={confirmClasses}
-              fullWidth
+            <View
+              className={cn(
+                'flex-1 py-3 rounded-xl text-center text-sm font-medium transition-colors cursor-pointer',
+                confirmClasses
+              )}
               onClick={onConfirm}
             >
-              {confirmText}
-            </Button>
+              <Text>{confirmText}</Text>
+            </View>
           )}
         </View>
       </View>
