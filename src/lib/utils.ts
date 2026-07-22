@@ -47,12 +47,17 @@ export const formatDate = (d: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-export const getDateLabel = (dateStr: string) => {
+const getBaseDates = () => {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
   const dayBefore = new Date(today);
   dayBefore.setDate(today.getDate() - 2);
+  return { today, yesterday, dayBefore };
+};
+
+export const getDateLabel = (dateStr: string) => {
+  const { today, yesterday, dayBefore } = getBaseDates();
 
   const date = new Date(dateStr);
   const month = date.getMonth() + 1;
@@ -68,11 +73,7 @@ export const getDateLabel = (dateStr: string) => {
 };
 
 export const getShortDateLabel = (dateStr: string) => {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const dayBefore = new Date(today);
-  dayBefore.setDate(today.getDate() - 2);
+  const { today, yesterday, dayBefore } = getBaseDates();
 
   if (dateStr === formatDate(today)) return '今天';
   if (dateStr === formatDate(yesterday)) return '昨天';
@@ -81,12 +82,17 @@ export const getShortDateLabel = (dateStr: string) => {
 };
 
 export const groupBillsByDate = (bills: Bill[]): DateGroup[] => {
-  const groups: Record<string, Bill[]> = {};
+  const groups: Record<string, { bills: Bill[]; totalIncome: number; totalExpense: number }> = {};
   bills.forEach((bill) => {
     if (!groups[bill.date]) {
-      groups[bill.date] = [];
+      groups[bill.date] = { bills: [], totalIncome: 0, totalExpense: 0 };
     }
-    groups[bill.date].push(bill);
+    groups[bill.date].bills.push(bill);
+    if (bill.type === 'income') {
+      groups[bill.date].totalIncome += bill.amount;
+    } else {
+      groups[bill.date].totalExpense += bill.amount;
+    }
   });
 
   const sortedDates = Object.keys(groups).sort(
@@ -95,13 +101,9 @@ export const groupBillsByDate = (bills: Bill[]): DateGroup[] => {
 
   return sortedDates.map((date) => ({
     date,
-    bills: groups[date],
-    totalIncome: groups[date]
-      .filter((b) => b.type === 'income')
-      .reduce((sum, b) => sum + b.amount, 0),
-    totalExpense: groups[date]
-      .filter((b) => b.type === 'expense')
-      .reduce((sum, b) => sum + b.amount, 0),
+    bills: groups[date].bills,
+    totalIncome: groups[date].totalIncome,
+    totalExpense: groups[date].totalExpense,
   }));
 };
 
@@ -127,10 +129,10 @@ export const filterBillsByWallet = (bills: Bill[], walletId: string): Bill[] => 
 
 export const formatMoney = (value: number, decimals: number = 2): string => {
   if (isNaN(value)) return '0.00';
-  const fixed = value.toFixed(decimals);
-  const [intPart, decPart] = fixed.split('.');
-  const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 };
 
 export const getDateRangeByPreset = (

@@ -30,17 +30,13 @@ export const useWalletStore = create<WalletStore>()(
       wallets: defaultWallets as Wallet[],
       currentWalletId: 'default',
 
-      setCurrentWallet: (id) => {
+          setCurrentWallet: (id) => {
         set({ currentWalletId: id });
         const wallet = get().wallets.find((w) => w.id === id);
         if (wallet) {
           Taro.setStorageSync('wallet-selected-color', wallet.color);
           updateTabBarColor(wallet.color);
         }
-      },
-
-      setCurrentWalletId: (id) => {
-        set({ currentWalletId: id });
       },
 
       setWallets: (wallets) => {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import { useBillStore } from '../../store/useBillStore';
-import { useWalletStore } from '../../store/useWalletStore';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
@@ -11,8 +11,7 @@ import { FilterOptions } from '../../types';
 
 export default function Trash() {
   const { bills, restoreBill, permanentDeleteBill, clearTrash, restoreAllDeleted } = useBillStore();
-  const { currentWalletId, wallets } = useWalletStore();
-  const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
+  const themeColor = useThemeColor();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -42,7 +41,7 @@ export default function Trash() {
     return result;
   }, [bills, filters]);
 
-  const grouped = groupBillsByDate(filteredBills);
+  const grouped = useMemo(() => groupBillsByDate(filteredBills), [filteredBills]);
 
   const handleRestoreAll = () => {
     restoreAllDeleted();
@@ -171,9 +170,8 @@ export default function Trash() {
         isOpen={showClearConfirm}
         onClose={() => setShowClearConfirm(false)}
         title="清空回收站"
-        showFooter
         confirmText="清空"
-        confirmVariant="danger"
+        variant="danger"
         onConfirm={handleClear}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">确定要清空回收站吗？此操作不可恢复！</Text>
@@ -183,9 +181,8 @@ export default function Trash() {
         isOpen={showDeleteConfirm}
         onClose={() => { setShowDeleteConfirm(false); setDeleteTargetId(null); }}
         title="确认删除"
-        showFooter
         confirmText="删除"
-        confirmVariant="danger"
+        variant="danger"
         onConfirm={handleDelete}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 text-center py-2 block">确定要永久删除这条账单吗？此操作不可恢复。</Text>

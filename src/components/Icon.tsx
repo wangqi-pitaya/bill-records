@@ -1,3 +1,4 @@
+import React, { memo } from 'react';
 import { View } from '@tarojs/components';
 
 const iconPaths: Record<string, string> = {
@@ -73,10 +74,9 @@ interface IconProps {
   className?: string;
 }
 
-export function Icon({ name, size = 20, color = 'currentColor', className = '' }: IconProps) {
+export const Icon = memo(function Icon({ name, size = 20, color = 'currentColor', className = '' }: IconProps) {
   const path = iconPaths[name];
   if (!path) {
-    // fallback to circle
     return (
       <View className={className} style={{ width: size, height: size }}>
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -93,4 +93,4 @@ export function Icon({ name, size = 20, color = 'currentColor', className = '' }
       </svg>
     </View>
   );
-}
+});

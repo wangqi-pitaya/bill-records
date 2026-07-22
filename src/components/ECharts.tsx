@@ -16,23 +16,13 @@ export function EChartsWrap({ option, height = 300, className = '', style }: ECh
 
   useEffect(() => {
     let cancelled = false;
-    if (Taro.getEnv() === Taro.ENV_TYPE.WEB) {
-      import('echarts').then((mod) => {
-        if (!cancelled) {
-          setEcharts(() => mod.default || mod);
-        }
-      }).catch((err) => {
-        console.error('Failed to load echarts:', err);
-      });
-    } else {
-      import('echarts').then((mod) => {
-        if (!cancelled) {
-          setEcharts(() => mod.default || mod);
-        }
-      }).catch((err) => {
-        console.error('Failed to load echarts:', err);
-      });
-    }
+    import('echarts').then((mod) => {
+      if (!cancelled) {
+        setEcharts(() => mod.default || mod);
+      }
+    }).catch((err) => {
+      console.error('Failed to load echarts:', err);
+    });
     return () => {
       cancelled = true;
     };

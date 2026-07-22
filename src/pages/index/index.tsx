@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
-import { useWalletStore } from '../../store/useWalletStore';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { useDateFilter } from '../../hooks/useDateFilter';
 import { StatCard } from '../../components/StatCard';
 import { BillItem } from '../../components/BillItem';
@@ -21,14 +21,11 @@ import {
 
 export default function Index() {
   const { bills: allBills, softDeleteBill } = useBillStore();
-  const { wallets, currentWalletId } = useWalletStore();
+  const { currentWalletId } = useWalletStore();
+  const themeColor = useThemeColor();
   const dateFilter = useDateFilter();
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const currentWallet = useMemo(() => {
-    return wallets.find((w) => w.id === currentWalletId);
-  }, [wallets, currentWalletId]);
 
   const bills = useMemo(() => allBills.filter((b) => !b.deleted), [allBills]);
 
@@ -61,7 +58,6 @@ export default function Index() {
     Taro.navigateTo({ url: `/pages/bill-add/index?billId=${bill.id}` });
   };
 
-  const themeColor = currentWallet?.color || '#10b981';
   const periodLabel = `${dateFilter.selectedYear}年${dateFilter.selectedMonth !== null ? `${dateFilter.selectedMonth}月` : '全年'}`;
 
   return (
@@ -200,7 +196,6 @@ function DatePickerDrawer({ isOpen, onClose, selectedYear, selectedMonth, onConf
       onClose={onClose}
       direction="top"
       showClose={false}
-      showFooter
       cancelText="取消"
       confirmText="确定"
       onConfirm={handleConfirm}

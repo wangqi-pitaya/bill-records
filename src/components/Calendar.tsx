@@ -489,7 +489,6 @@ export function CalendarPicker({ isOpen, value, onConfirm, onClose, title = '选
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      showFooter
       cancelText="取消"
       confirmText="确定"
       onConfirm={() => {
@@ -539,7 +538,6 @@ export function CalendarRangePicker({ isOpen, startValue, endValue, onConfirm, o
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      showFooter
       cancelText="取消"
       confirmText="确定"
       confirmDisabled={!tempStart || !tempEnd}
@@ -604,7 +602,6 @@ export function YearMonthPicker({ isOpen, value, onConfirm, onClose, mode = 'mon
       isOpen={isOpen}
       onClose={onClose}
       title={mode === 'year' ? '选择年份' : '选择年月'}
-      showFooter
       cancelText="取消"
       confirmText="确定"
       onConfirm={handleConfirm}

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Input } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
 import { useWalletStore } from '../../store/useWalletStore';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { BillItem } from '../../components/BillItem';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
@@ -12,7 +13,8 @@ import { FilterOptions } from '../../types';
 
 export default function Search() {
   const { bills, softDeleteBill } = useBillStore();
-  const { currentWalletId, wallets } = useWalletStore();
+  const { currentWalletId } = useWalletStore();
+  const themeColor = useThemeColor();
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showFilter, setShowFilter] = useState(false);
@@ -23,7 +25,6 @@ export default function Search() {
     endDate: '',
   });
 
-  const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
   const activeBills = bills.filter((b) => !b.deleted);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function Search() {
     return result;
   }, [activeBills, filters, debouncedQuery]);
 
-  const grouped = groupBillsByDate(results);
+  const grouped = useMemo(() => groupBillsByDate(results), [results]);
 
   const handleEdit = (bill: { id: string }) => {
     Taro.navigateTo({ url: `/pages/bill-add/index?billId=${bill.id}` });

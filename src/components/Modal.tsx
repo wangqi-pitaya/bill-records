@@ -1,71 +1,100 @@
+import React from 'react';
 import { View, Text } from '@tarojs/components';
-import { Icon } from './Icon';
+import { Button } from './Button';
+import { useTheme } from '../hooks/useTheme';
+import { cn } from '../lib/utils';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  showFooter?: boolean;
+  title?: string;
+  children?: React.ReactNode;
   confirmText?: string;
   cancelText?: string;
-  confirmDisabled?: boolean;
-  confirmVariant?: 'primary' | 'danger' | 'warning';
   onConfirm?: () => void;
-  themeColor?: string;
+  showCancel?: boolean;
+  variant?: 'default' | 'danger';
+  className?: string;
 }
 
-export function Modal({
+function getConfirmClasses(variant: 'default' | 'danger', isDark: boolean): string {
+  if (variant === 'danger') {
+    return isDark
+      ? 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
+      : 'bg-red-50 text-red-600 hover:bg-red-100';
+  }
+  return isDark
+    ? 'bg-primary/20 text-primary-light hover:bg-primary/30'
+    : 'bg-primary/10 text-primary hover:bg-primary/20';
+}
+
+export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
   children,
-  showFooter = false,
-  confirmText = '确定',
+  confirmText = '确认',
   cancelText = '取消',
-  confirmDisabled = false,
-  confirmVariant = 'primary',
   onConfirm,
-  themeColor = '#10b981',
-}: ModalProps) {
+  showCancel = true,
+  variant = 'default',
+  className = '',
+}) => {
+  const { isDark } = useTheme();
+
   if (!isOpen) return null;
 
-  const confirmColors = {
-    primary: themeColor,
-    danger: '#ef4444',
-    warning: '#f59e0b',
-  };
+  const confirmClasses = getConfirmClasses(variant, isDark);
 
   return (
-    <View className="fixed inset-0 z-[1100] flex items-center justify-center">
-      <View className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <View className="relative bg-white dark:bg-gray-800 rounded-2xl w-[92%] max-w-[760rpx] overflow-hidden shadow-xl">
-        <View className="px-6 pt-4 pb-2">
-          <Text className="text-lg font-semibold text-center text-gray-800 dark:text-gray-100">{title}</Text>
-        </View>
-        <View className="px-6 py-2">{children}</View>
-        {showFooter && (
-          <View className="flex border-t border-gray-100 dark:border-gray-700 mt-2">
-            <View
-              className="flex-1 h-[96rpx] text-gray-600 dark:text-gray-300 text-base bg-transparent active:bg-gray-50 dark:active:bg-gray-700/50 flex items-center justify-center border-0 rounded-none"
-              onClick={onClose}
-              hoverClass=""
-            >
-              <Text>{cancelText}</Text>
-            </View>
-            <View
-              className={`flex-1 h-[96rpx] text-white text-base border-0 rounded-none flex items-center justify-center ${confirmDisabled ? 'opacity-50' : ''}`}
-              style={{ backgroundColor: confirmColors[confirmVariant] }}
-              onClick={() => {
-                if (!confirmDisabled) onConfirm?.();
-              }}
-              hoverClass=""
-            >
-              <Text className="text-white">{confirmText}</Text>
-            </View>
-          </View>
+    <View
+      className={cn(
+        'fixed inset-0 z-[9999] flex items-center justify-center px-6',
+        isDark ? 'bg-black/60' : 'bg-black/40'
+      )}
+      onClick={onClose}
+    >
+      <View
+        className={cn(
+          'w-full max-w-sm rounded-card p-6 shadow-2xl border',
+          isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200/50',
+          className
         )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {title && (
+          <Text
+            className={cn(
+              'text-lg font-semibold text-center block mb-4',
+              isDark ? 'text-white' : 'text-gray-900'
+            )}
+          >
+            {title}
+          </Text>
+        )}
+
+        {children && <View className="mb-5">{children}</View>}
+
+        <View className="flex gap-3">
+          {showCancel && (
+            <Button variant="secondary" fullWidth onClick={onClose}>
+              {cancelText}
+            </Button>
+          )}
+          {onConfirm && (
+            <Button
+              variant="custom"
+              className={confirmClasses}
+              fullWidth
+              onClick={onConfirm}
+            >
+              {confirmText}
+            </Button>
+          )}
+        </View>
       </View>
     </View>
   );
-}
+};
+
+export default Modal;

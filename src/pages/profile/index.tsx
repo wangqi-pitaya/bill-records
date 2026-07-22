@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Switch, Input, Textarea } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useBillStore } from '../../store/useBillStore';
@@ -79,6 +79,7 @@ export default function Profile() {
           addBill({
             type: bill.type,
             category: bill.category,
+            categoryId: bill.categoryId || '',
             icon: bill.icon,
             amount: bill.amount,
             note: bill.note || '',
@@ -229,7 +230,6 @@ export default function Profile() {
         isOpen={showNicknameModal}
         onClose={() => setShowNicknameModal(false)}
         title="修改昵称"
-        showFooter
         confirmText="保存"
         onConfirm={() => {
           if (tempNickname.trim()) {
@@ -251,7 +251,6 @@ export default function Profile() {
         isOpen={showExportModal}
         onClose={() => setShowExportModal(false)}
         title="导出账单"
-        showFooter
         confirmText="导出"
         onConfirm={handleExport}
       >
@@ -262,7 +261,6 @@ export default function Profile() {
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         title="导入账单"
-        showFooter
         confirmText="导入"
         onConfirm={handleImport}
       >
@@ -279,9 +277,8 @@ export default function Profile() {
         isOpen={showClearConfirm}
         onClose={() => setShowClearConfirm(false)}
         title="清除数据"
-        showFooter
         confirmText="清除"
-        confirmVariant="danger"
+        variant="danger"
         onConfirm={handleClear}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">确定要清除所有数据吗？此操作不可恢复！</Text>

@@ -40,7 +40,7 @@ export const useCategoryStore = create<CategoryStore>()(
         if (!category) return false;
 
         const bills = useBillStore.getState().bills;
-        const isUsed = bills.some((b) => b.categoryId === category.id);
+        const isUsed = bills.some((b) => b.categoryId === id);
 
         if (isUsed) return false;
 

@@ -1,157 +1,137 @@
-import { View, Text } from '@tarojs/components';
-import { useEffect, useState } from 'react';
-import { Icon } from './Icon';
-
-type Direction = 'top' | 'bottom' | 'left' | 'right';
+import React from 'react';
+import { View, Text, ScrollView } from '@tarojs/components';
+import { useTheme } from '../hooks/useTheme';
+import { cn } from '../lib/utils';
 
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  direction?: Direction;
-  title?: string;
-  showClose?: boolean;
-  showFooter?: boolean;
-  cancelText?: string;
-  confirmText?: string;
-  confirmDisabled?: boolean;
-  confirmVariant?: 'primary' | 'danger' | 'warning';
+  title: string;
+  children: React.ReactNode;
   onConfirm?: () => void;
   onCancel?: () => void;
-  closeOnMaskClick?: boolean;
-  width?: string;
-  height?: string;
-  children?: React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: 'default' | 'danger';
   themeColor?: string;
 }
 
-const positionClasses: Record<Direction, string> = {
-  top: 'top-0 left-0 right-0',
-  bottom: 'bottom-0 left-0 right-0',
-  left: 'left-0 top-0 bottom-0',
-  right: 'right-0 top-0 bottom-0',
-};
+function getConfirmClasses(variant: 'default' | 'danger', isDark: boolean): string {
+  if (variant === 'danger') {
+    return isDark
+      ? 'bg-red-900/30 text-red-300 hover:bg-red-900/50'
+      : 'bg-red-50 text-red-600 hover:bg-red-100';
+  }
+  return isDark
+    ? 'bg-primary/20 text-primary-light hover:bg-primary/30'
+    : 'bg-primary/10 text-primary hover:bg-primary/20';
+}
 
-const enterTransform: Record<Direction, string> = {
-  top: '-translate-y-full',
-  bottom: 'translate-y-full',
-  left: '-translate-x-full',
-  right: 'translate-x-full',
-};
-
-const enterTransformActive: Record<Direction, string> = {
-  top: 'translate-y-0',
-  bottom: 'translate-y-0',
-  left: 'translate-x-0',
-  right: 'translate-x-0',
-};
-
-const sizeClasses: Record<Direction, { dim: string; size: string }> = {
-  top: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
-  bottom: { dim: 'w-full', size: 'h-auto max-h-[85vh]' },
-  left: { dim: 'h-full', size: 'w-[85%] max-w-[700rpx]' },
-  right: { dim: 'h-full', size: 'w-[92%] max-w-[840rpx]' },
-};
-
-export function Drawer({
+export const Drawer: React.FC<DrawerProps> = ({
   isOpen,
   onClose,
-  direction = 'bottom',
   title,
-  showClose = true,
-  showFooter = false,
-  cancelText = '取消',
-  confirmText = '确定',
-  confirmDisabled = false,
-  confirmVariant = 'primary',
+  children,
   onConfirm,
   onCancel,
-  closeOnMaskClick = true,
-  width,
-  height,
-  children,
+  confirmText = '确认',
+  cancelText = '取消',
+  variant = 'default',
   themeColor = '#10b981',
-}: DrawerProps) {
-  const [mounted, setMounted] = useState(isOpen);
-  const [entered, setEntered] = useState(false);
+}) => {
+  const { isDark } = useTheme();
 
-  useEffect(() => {
-    if (isOpen) {
-      setMounted(true);
-      const t = setTimeout(() => setEntered(true), 20);
-      return () => clearTimeout(t);
-    } else if (mounted) {
-      setEntered(false);
-      const t = setTimeout(() => setMounted(false), 250);
-      return () => clearTimeout(t);
-    }
-  }, [isOpen, mounted]);
+  if (!isOpen) return null;
 
-  if (!mounted) return null;
-
-  const confirmColors = {
-    primary: themeColor,
-    danger: '#ef4444',
-    warning: '#f59e0b',
-  };
-
-  const isHorizontal = direction === 'left' || direction === 'right';
-  const dim = sizeClasses[direction].dim;
-  const size = sizeClasses[direction].size;
-  const transform = entered ? enterTransformActive[direction] : enterTransform[direction];
+  const confirmClasses = getConfirmClasses(variant, isDark);
 
   return (
-    <View className="fixed inset-0 z-[1000]">
+    <View
+      className={cn(
+        'fixed inset-0 z-[9999] transition-opacity duration-300',
+        isDark ? 'bg-black/60' : 'bg-black/40'
+      )}
+      onClick={onClose}
+    >
       <View
-        className={`absolute inset-0 bg-black/50 transition-opacity duration-200 ${entered ? 'opacity-100' : 'opacity-0'}`}
-        onClick={closeOnMaskClick ? onClose : undefined}
-      />
-      <View
-        className={`absolute bg-white dark:bg-gray-800 shadow-xl flex flex-col ${positionClasses[direction]} ${dim} ${size} ${transform} transition-transform duration-200`}
-        style={{
-          ...(width ? { width } : {}),
-          ...(height ? { height } : {}),
-          paddingBottom: '80px',
-        }}
-      >
-        {title !== undefined && (
-          <View className="flex items-center justify-between px-4 h-12 border-b border-gray-100 dark:border-gray-700 shrink-0">
-            <View
-              className="w-8 h-8 flex items-center justify-center text-gray-700 dark:text-gray-300 active:bg-gray-100 dark:active:bg-gray-700 rounded-lg"
-              onClick={onClose}
-            >
-              {showClose ? <Icon name="X" size={20} /> : <View />}
-            </View>
-            <Text className="text-base font-semibold text-gray-800 dark:text-gray-100">{title}</Text>
-            <View className="w-8 h-8" />
-          </View>
+        className={cn(
+          'absolute bottom-0 left-0 right-0 rounded-t-2xl border-t',
+          isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200/50'
         )}
-
-        <View className="flex-1 overflow-hidden">
-          <View className="h-full overflow-auto">
-            {children}
+        style={{ maxHeight: '70vh' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <View className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+          <Text
+            className={cn(
+              'text-lg font-semibold',
+              isDark ? 'text-white' : 'text-gray-900'
+            )}
+          >
+            {title}
+          </Text>
+          <View
+            className={cn(
+              'w-8 h-8 rounded-full flex items-center justify-center',
+              isDark ? 'bg-gray-700' : 'bg-gray-100'
+            )}
+            onClick={onClose}
+          >
+            <Text
+              className={cn(
+                'text-xl font-light',
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              )}
+            >
+              ×
+            </Text>
           </View>
         </View>
 
-        {showFooter && (
-          <View className="flex border-t border-gray-100 dark:border-gray-700 shrink-0">
-            <View
-              className="flex-1 h-12 text-gray-600 dark:text-gray-300 text-base bg-transparent active:bg-gray-50 dark:active:bg-gray-700/50 flex items-center justify-center"
-              onClick={() => onCancel?.()}
-            >
-              <Text>{cancelText}</Text>
-            </View>
-            <View
-              className={`flex-1 h-12 text-white text-base flex items-center justify-center ${confirmDisabled ? 'opacity-50' : ''}`}
-              style={{ backgroundColor: confirmColors[confirmVariant] }}
-              onClick={() => {
-                if (!confirmDisabled) onConfirm?.();
-              }}
-            >
-              <Text className="text-white">{confirmText}</Text>
-            </View>
+        <ScrollView
+          scrollY
+          style={{ maxHeight: '50vh' }}
+          className="p-4"
+        >
+          {children}
+        </ScrollView>
+
+        {(onConfirm || onCancel) && (
+          <View
+            className={cn(
+              'flex gap-3 p-4 border-t',
+              isDark ? 'border-gray-700' : 'border-gray-200/50'
+            )}
+          >
+            {onCancel && (
+              <View
+                className={cn(
+                  'flex-1 py-3 rounded-xl text-center text-sm font-medium border transition-colors',
+                  isDark
+                    ? 'bg-gray-700 border-gray-600 text-white hover:bg-gray-600'
+                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                )}
+                onClick={onCancel}
+              >
+                <Text>{cancelText}</Text>
+              </View>
+            )}
+            {onConfirm && (
+              <View
+                className={cn(
+                  'flex-1 py-3 rounded-xl text-center text-sm font-medium transition-colors',
+                  confirmClasses
+                )}
+                onClick={onConfirm}
+              >
+                <Text style={{ color: themeColor }}>{confirmText}</Text>
+              </View>
+            )}
           </View>
         )}
       </View>
     </View>
   );
-}
+};
+
+export default Drawer;

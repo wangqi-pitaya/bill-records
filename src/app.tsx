@@ -5,7 +5,7 @@ import { ToastContainer } from './components/Toast';
 
 function App({ children }: PropsWithChildren<any>) {
   useLaunch(() => {
-    console.log('App launched');
+    // App launched
   });
 
   return (

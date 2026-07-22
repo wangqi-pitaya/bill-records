@@ -19,6 +19,7 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
   const currentWalletId = useWalletStore((state) => state.currentWalletId);
 
   const isEdit = !!editBill;
+  const editId = editBill?.id;
 
   const [activeTab, setActiveTab] = useState<BillType>('expense');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -65,7 +66,7 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
   }, [getCategoriesByType]);
 
   useEffect(() => {
-    if (editBill) {
+    if (editId) {
       setActiveTab(editBill.type);
       setAmount(editBill.amount.toString());
       setNote(editBill.note);
@@ -76,7 +77,7 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     } else {
       resetForm();
     }
-  }, [editBill, getCategoriesByType, resetForm]);
+  }, [editId, editBill, getCategoriesByType, resetForm]);
 
   const handleTabChange = useCallback(
     (type: BillType) => {
@@ -106,8 +107,8 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     if (!billData) return;
 
     setIsSubmitting(true);
-    if (isEdit && editBill) {
-      updateBill(editBill.id, billData);
+    if (isEdit && editId) {
+      updateBill(editId, billData);
       toast.success('账单已更新');
     } else {
       addBill(billData);
@@ -116,7 +117,7 @@ export function useBillForm({ editBill, onSuccess }: UseBillFormOptions = {}) {
     }
     setIsSubmitting(false);
     onSuccess?.();
-  }, [buildBillData, isEdit, editBill, updateBill, addBill, toast, onSuccess, resetForm]);
+  }, [buildBillData, isEdit, editId, updateBill, addBill, toast, onSuccess, resetForm]);
 
   const handleSaveAndContinue = useCallback(() => {
     const billData = buildBillData();

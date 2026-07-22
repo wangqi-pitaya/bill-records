@@ -218,9 +218,8 @@ export function BillItem({ bill, onDelete, onEdit, isLast = false, themeColor = 
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="确认删除"
-        showFooter
         confirmText="删除"
-        confirmVariant="danger"
+        variant="danger"
         onConfirm={handleDelete}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 text-center py-2 block">

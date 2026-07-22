@@ -23,7 +23,8 @@ export default function BillAdd() {
   })();
 
   const getBillById = useBillStore((s) => s.getBillById);
-  const editBill = useMemo<Bill | null>(() => (billId ? getBillById(billId) || null : null), [billId, getBillById]);
+  const bills = useBillStore((s) => s.bills);
+  const editBill = useMemo<Bill | null>(() => (billId ? getBillById(billId) || null : null), [billId, getBillById, bills]);
 
   const { wallets, currentWalletId } = useWalletStore();
   const currentWallet = useMemo(() => wallets.find((w) => w.id === currentWalletId), [wallets, currentWalletId]);

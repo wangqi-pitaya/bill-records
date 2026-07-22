@@ -62,7 +62,6 @@ export function FilterDrawer({ isOpen, onClose, filters, onConfirm, themeColor =
         onClose={onClose}
         direction="right"
         title="筛选"
-        showFooter
         cancelText="重置"
         confirmText="确定"
         onConfirm={handleConfirm}

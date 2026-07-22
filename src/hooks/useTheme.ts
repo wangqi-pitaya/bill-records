@@ -20,25 +20,30 @@ export function useTheme() {
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
+    let initialTheme: Theme = 'light';
     try {
       const saved = Taro.getStorageSync<Theme>('theme');
       if (saved === 'dark' || saved === 'light') {
-        setTheme(saved);
-        applyThemeClass(saved);
+        initialTheme = saved;
       } else {
         const systemInfo = Taro.getSystemInfoSync();
         if (systemInfo.theme === 'dark') {
-          setTheme('dark');
-          applyThemeClass('dark');
+          initialTheme = 'dark';
         }
       }
     } catch {
       // ignore
     }
+    setTheme(initialTheme);
+    applyThemeClass(initialTheme);
   }, []);
 
   useEffect(() => {
-    Taro.setStorageSync('theme', theme);
+    try {
+      Taro.setStorageSync('theme', theme);
+    } catch {
+      // ignore
+    }
     applyThemeClass(theme);
   }, [theme]);
 
@@ -47,7 +52,9 @@ export function useTheme() {
       setTheme(res.theme === 'dark' ? 'dark' : 'light');
     });
     return () => {
-      Taro.offThemeChange(listener);
+      if (typeof listener === 'function') {
+        listener();
+      }
     };
   }, []);
 

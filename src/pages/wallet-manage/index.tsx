@@ -144,7 +144,6 @@ export default function WalletManage() {
         isOpen={showAdd || showEdit}
         onClose={() => { setShowAdd(false); setShowEdit(false); }}
         title={showEdit ? '编辑账本' : '添加账本'}
-        showFooter
         confirmText={showEdit ? '保存' : '添加'}
         onConfirm={showEdit ? handleUpdate : handleAdd}
       >
@@ -242,7 +241,6 @@ export default function WalletManage() {
         isOpen={showMigrate}
         onClose={() => setShowMigrate(false)}
         title="迁移账单"
-        showFooter
         confirmText="迁移"
         onConfirm={handleMigrate}
       >
@@ -274,9 +272,8 @@ export default function WalletManage() {
         isOpen={showClearConfirm}
         onClose={() => setShowClearConfirm(false)}
         title="清除账单"
-        showFooter
         confirmText="清除"
-        confirmVariant="warning"
+        variant="warning"
         onConfirm={handleClear}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">
@@ -288,9 +285,8 @@ export default function WalletManage() {
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="删除账本"
-        showFooter
         confirmText="删除"
-        confirmVariant="danger"
+        variant="danger"
         onConfirm={handleDelete}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">

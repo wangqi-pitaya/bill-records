@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, ScrollView } from '@tarojs/components';
 import { BillType, Category } from '../../types';
 import { useCategoryStore } from '../../store/useCategoryStore';
-import { useWalletStore } from '../../store/useWalletStore';
+import { useThemeColor } from '../../hooks/useThemeColor';
 import { PageHeader } from '../../components/PageHeader';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
@@ -18,8 +18,7 @@ export default function CategoryManage() {
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
   const { categories, addCategory, deleteCategory, isCategoryUsed, moveCategoryUp, moveCategoryDown } = useCategoryStore();
-  const { currentWalletId, wallets } = useWalletStore();
-  const themeColor = wallets.find((w) => w.id === currentWalletId)?.color || '#10b981';
+  const themeColor = useThemeColor();
 
   const filteredCategories = categories.filter((c) => c.type === tab);
 
@@ -123,7 +122,6 @@ export default function CategoryManage() {
         isOpen={showAdd}
         onClose={() => setShowAdd(false)}
         title="添加分类"
-        showFooter
         confirmText="添加"
         onConfirm={handleAdd}
       >
@@ -166,9 +164,8 @@ export default function CategoryManage() {
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         title="删除分类"
-        showFooter
         confirmText="删除"
-        confirmVariant="danger"
+        variant="danger"
         onConfirm={handleDelete}
       >
         <Text className="text-sm text-gray-600 dark:text-gray-400 py-2 block">
